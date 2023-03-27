@@ -468,7 +468,7 @@ create_workflow_set = function(data,
         
 }
 
-# train averageweight -----------------------------------------------------
+# train and impute averageweight -----------------------------------------------------
 
 # # run script to train averageweight model
 # source(here::here("src", "models", "train_outcome_models_averageweight.R"))
@@ -508,8 +508,11 @@ valid_imputed =
         impute_averageweight(averageweight_fit,
                              .)
 
+
+# train average, usersrated, bayesaverage ---------------------------------
+
 # update base recipe to include averageweight as a predictor
-base_recipe_func_averageweight = function(data,
+base_recipe_func_conditional = function(data,
                                           outcome) {
         
         outcome = enquo(outcome)
@@ -540,7 +543,7 @@ base_recipe_func_averageweight = function(data,
                         new_role = "id") %>%
                 # set averageweight as predictor
                 update_role(one_of("averageweight"),
-                            new_role = "predictor")
+                            new_role = "predictor") %>%
                 # set outcome varable
                 update_role(!!outcome,
                             new_role = "outcome") %>%
@@ -559,7 +562,7 @@ base_recipe_func_averageweight = function(data,
 }
 
 # update recipes to use base recipe with averageweight as a predictor
-create_outcome_recipes_averageweight = function(data,
+create_outcome_recipes_conditional = function(data,
                                   outcome) {
         
         outcome = enquo(outcome)
@@ -573,7 +576,7 @@ create_outcome_recipes_averageweight = function(data,
                 # remove selected variables
                 select(-families, -publishers, -artists, -designers) %>%
                 # make base recipe %>%
-                base_recipe_func_averageweight(outcome = !!outcome) %>%
+                base_recipe_func_conditional(outcome = !!outcome) %>%
                 # dummy extract categories and mechanics
                 dummy_extract_variable(c(mechanics, categories),
                                        threshold = 1) %>%
@@ -593,7 +596,7 @@ create_outcome_recipes_averageweight = function(data,
         all_impute_recipe = 
                 data %>%
                 # make base recipe %>%
-                base_recipe_func_averageweight(outcome = !!outcome) %>%
+                base_recipe_func_conditional(outcome = !!outcome) %>%
                 # dummy extract categorical
                 dummy_recipe_func() %>%
                 # impute missingness
@@ -609,7 +612,7 @@ create_outcome_recipes_averageweight = function(data,
         all_impute_splines_recipe =
                 data %>%
                 # make base recipe %>%
-                base_recipe_func_averageweight(outcome = !!outcome) %>%
+                base_recipe_func_conditional(outcome = !!outcome) %>%
                 # dummy extract categorical
                 dummy_recipe_func() %>%
                 # impute missingness
@@ -629,7 +632,7 @@ create_outcome_recipes_averageweight = function(data,
                 # remove selected variables
                 select(-families, -publishers, -artists, -designers) %>%
                 # make base recipe %>%
-                base_recipe_func_averageweight(outcome = !!outcome) %>%
+                base_recipe_func_conditional(outcome = !!outcome) %>%
                 # dummy extract categories and mechanics
                 dummy_extract_variable(c(mechanics, categories),
                                        threshold = 1) %>%
@@ -642,7 +645,7 @@ create_outcome_recipes_averageweight = function(data,
         all_trees_recipe = 
                 data %>%
                 # make base recipe %>%
-                base_recipe_func_averageweight(outcome = !!outcome) %>%
+                base_recipe_func_conditional(outcome = !!outcome) %>%
                 # dummy extract categorical
                 dummy_recipe_func() %>%
                 # basic preprocessing
@@ -657,6 +660,72 @@ create_outcome_recipes_averageweight = function(data,
         return(recipes)
         
 }
+
+# # implement previous functions in one go
+# build_tune_and_collect_workflows = function(data, outcome, recipes,
+#                                             models) {
+# 
+#         # build
+#         workflow_objs =
+#                 build_workflow_sets(
+#                         data = data,
+#                         models = models
+#                 )
+# 
+#         # get workflow sets
+#         workflow_sets =
+#                 workflow_objs$workflow_sets %>%
+#                 filter(wflow_id %in% c('preproc_xgb',
+#                                        'preproc_cart',
+#                                        'corr_lm',
+#                                        'norm_glmnet')) %>%
+#                 # add tuning options
+#                 option_add(grid = cart_grid, id = c("preproc_cart")) %>%
+#                 # glmnet grid
+#                 option_add(grid = glmnet_grid, id = c("norm_glmnet")) %>%
+#                 # xgb grid
+#                 option_add(grid = xgb_grid, id = c("preproc_xgb"))
+# 
+#         # tune
+#         workflows_res =
+#                 tune_workflow_sets(
+#                         workflow_sets = workflow_sets,
+#                         method = 'tune_race_anova',
+#                         resamples = workflow_objs$resamples)
+# 
+#         # collect
+#         message("collecting metrics")
+# 
+#         # metrics
+#         metrics = workflows_res %>%
+#                 rank_results(select_best = T)
+# 
+#         # predictions
+#         message("collecting predictions")
+# 
+#         predictions = workflows_res %>%
+#                 collect_predictions(select_best = T, metric = 'rmse') %>%
+#                 # join with games used in training
+#                 left_join(.,
+#                           workflow_objs$training %>%
+#                                   mutate(.row = row_number()) %>%
+#                                   select(.row, game_id, name, yearpublished),
+#                           by = c(".row"))
+# 
+#         # best tune
+#         message('selecting best tune')
+#         workflows_res = workflows_res %>%
+#                 mutate(best_tune = map(result, select_best, n = 1, metric = 'rmse'))
+# 
+#         return(list(
+#                 "workflows_res" = workflows_res,
+#                 "metrics" = metrics,
+#                 "predictions" = predictions,
+#                 "training" = workflow_objs$training,
+#                 "resamples" = workflow_objs$resamples)
+#         )
+# 
+# }
 
 # train average, bayesaverage, and usersrated -----------------------------
 
