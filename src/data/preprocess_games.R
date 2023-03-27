@@ -130,7 +130,9 @@ preprocess_games= function(data) {
                          bgg_outcomes,
                          bgg_community,
                          images,
-                         description))
+                         description)) %>%
+                # make logged usersrated
+                mutate(log_usersrated = log(usersrated))
         
 }
 

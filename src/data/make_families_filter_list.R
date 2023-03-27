@@ -1,8 +1,12 @@
 # what: make list of bgg families to be removed before modeling (due to issues of leakage)
 
+# tidyverse package
+library(tidyverse)
+
 # load game families data from games nested
 load(here::here("data", "processed", "games_nested.Rdata"))
 
+# select game families
 game_families = 
         games_nested %>%
         select(families) %>%
@@ -38,22 +42,25 @@ families_filter_table =
                         filter(grepl("Spieleschmiede|Verkami|Indiegogo", value))
         )
         
+# pull values
 families_filter_names = 
         families_filter_table %>%
         pull(value)
 
-# pin
-library(pins)
+# pin to gcs
+source(here::here("src", "data", "connect_to_gcs.R"))
 
-# set local board
-board = board_folder(here::here("data", "processed"),
-                     versioned = T)
+# board on gcs
+data_board =
+        pins::board_gcs(
+                bucket = my_bucket,
+                prefix = "data/",
+                versioned = T)
 
 # write
-board %>%
+data_board %>%
         pin_write(families_filter_names,
                   name = 'families_filter_names',
                   description = 'names of bgg family names to be removed from modeling')
-
 
 

@@ -33,19 +33,48 @@ gcs_upload_set_limit(upload_limit = 200000000L)
 
 # boards ------------------------------------------------------------------
 
-# create board for storing models
-model_board = 
+
+# data board
+data_board =
+        pins::board_gcs(
+                bucket = my_bucket,
+                prefix = "data/",
+                versioned = T)
+
+# results board
+results_board =
+        pins::board_gcs(
+                bucket = my_bucket,
+                prefix = "results/",
+                versioned = T)
+
+# models board
+models_board =
         pins::board_gcs(
                 bucket = my_bucket,
                 prefix = "models/",
                 versioned = T)
 
-# create board for storing results
-results_board = 
+# deployed board
+deployed_board =
         pins::board_gcs(
                 bucket = my_bucket,
-                prefix = "results/",
+                prefix = "deployed/",
                 versioned = T)
+
+# # create board for storing models
+# model_board = 
+#         pins::board_gcs(
+#                 bucket = my_bucket,
+#                 prefix = "models/",
+#                 versioned = T)
+# 
+# # create board for storing results
+# results_board = 
+#         pins::board_gcs(
+#                 bucket = my_bucket,
+#                 prefix = "results/",
+#                 versioned = T)
 
 # # read/write
 # gcs_list_buckets(PROJECT_ID)

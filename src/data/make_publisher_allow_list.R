@@ -1,5 +1,8 @@
 # what: create list of publishers used in modeling
 
+# package
+library(tidyverse)
+
 # load game publisher data from games nested
 load(here::here("data", "processed", "games_nested.Rdata"))
 
@@ -75,22 +78,18 @@ publisher_allow_table =
         filter(id %in% publisher_allow_ids) %>%
         distinct()
 
+# pull names
 publisher_allow_names = 
         publisher_allow_table %>%
         pull(value)
 
-# pin
-library(pins)
-
-# set local board
-board = board_folder(here::here("data", "processed"),
-                     versioned = T)
+# pin to gcs
+source(here::here("src", "data", "connect_to_gcs.R"))
 
 # write
-board %>%
+data_board %>%
         pin_write(publisher_allow_names,
                   name = 'publisher_allow_names',
                   description = 'names of publishers that can be used in modeling')
-                  
-                  
+
 

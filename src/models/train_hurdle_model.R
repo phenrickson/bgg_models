@@ -6,6 +6,7 @@
 
 # packages ----------------------------------------------------------------
 
+
 # load core packages needed for modeling
 suppressPackageStartupMessages({
         
@@ -60,24 +61,8 @@ suppressMessages({
 
 # data --------------------------------------------------------------------
 
-# load tables used in modeling
-# local version
-load(here::here("data", "processed", "games_nested.Rdata"))
-
-# # query from gcp (and update local)
-# source(here::here("pull_analysis_games_tables.R"))
-
-# publisher white list
-processed_board = board_folder(here::here("data", "processed"),
-                               versioned = T)
-
-# read in publisher allow list
-publisher_allow_names = processed_board %>%
-        pin_read("publisher_allow_names")
-
-# read in publisher allow list
-families_filter_names = processed_board %>%
-        pin_read("families_filter_names")
+# run script to load games
+source(here::here("src","data","load_games_data.R"))
 
 
 # preprocessing -----------------------------------------------------------
@@ -87,7 +72,6 @@ message("preprocessing games for modeling...")
 
 # script with functions for standardized preprocessing
 source(here::here("src", "data", "preprocess_games.R"))
-
 
 # use function to preprocess nested data
 games_processed = games_nested %>%
@@ -165,6 +149,14 @@ cart_class_spec <-
         ) %>%
         set_mode("classification") %>%
         set_engine("rpart")
+
+cart_grid = 
+        grid_regular(
+                cost_complexity(), 
+                tree_depth(range = c(3L, 15L)),
+                levels = c(cost_complexity = 5, 
+                           tree_depth = 3)
+        )
 
 # xgb for class
 library(xgboost)
@@ -314,7 +306,7 @@ doMC::registerDoMC(cores = all_cores)
 race_ctrl <-
         finetune::control_race(
                 save_pred = TRUE,
-                parallel_over = "resamples",
+                parallel_over = "everything",
                 event_level = 'second',
                 verbose = TRUE,
                 verbose_elim = TRUE,
@@ -334,23 +326,12 @@ tune_race_wflows = function(wflows) {
                 )
 }
 
-# # pin results
-# pin_results = function(results) {
-#         
-#         results %>%
-#                 pins::pin_write(board = results_board,
-#                                 x = .,
-#                                 name = paste(deparse(quote(results)), end_train_year, sep ="_"))
-# }
-#         
-
 # tuning ------------------------------------------------------------------
 
-# board for storing results
-results_board = pins::board_folder(here::here("models", "results", "hurdle", end_train_year),
-                                   versioned = T)
+# local results board
+local_results_board = pins::board_folder(here::here("models", "results", "hurdle"))
 
-# single decision tree
+# single decision tree fit with different sets of features
 cart_wflows = 
         workflow_set(
                 # recipe with preprocessing/imputation
@@ -365,21 +346,37 @@ cart_wflows =
                         list(
                                 cart = cart_class_spec
                         ),
-                cross = T)
-
+                cross = T) %>%
+        # set grid
+        option_add(grid = cart_grid, id = c("all_cart")) %>%
+        option_add(grid = cart_grid, id = c("base_cart"))
+        
 # tune cart
 cart_res = 
         cart_wflows %>%
         tune_race_wflows()
 
-# save results
+# pin results locally
 cart_res %>%
-        unnest(result) %>%
-        select(wflow_id, id, .order, .metrics) %>%
-        unnest(.metrics) %>%
-        pin_write(.,
-                  name = "cart_res",
-                  board = results_board)
+        pin_write(board = local_results_board,
+                  name  = "cart_res",
+                  description = paste("trained through", end_train_year))
+
+# cart_res %>%
+#         unnest(result) %>%
+#         select(wflow_id, id, .order, .metrics) %>%
+#         unnest(.metrics) %>%
+#         pin_write(.,
+#                   name = "cart_res",
+#                   board = results_board)
+
+# read results
+# cart_res = 
+#         pin_read(local_results_board,
+#                  name = "cart_res")
+# cart_res = 
+#         pin_read(local_results_board,
+#                  name = "cart_res")
 
 # linear models
 linear_wflows = 
@@ -426,14 +423,21 @@ linear_res =
         linear_wflows %>%
         tune_race_wflows()
 
-# save results from the fold level
+# # save results from the fold level
+# linear_res %>%
+#         unnest(result) %>%
+#         select(wflow_id, id, .order, .metrics) %>%
+#         unnest(.metrics) %>%
+#         pin_write(.,
+#                   name = "linear_res",
+#                   board = results_board)
+
+# read results from local board
 linear_res %>%
-        unnest(result) %>%
-        select(wflow_id, id, .order, .metrics) %>%
-        unnest(.metrics) %>%
-        pin_write(.,
-                  name = "linear_res",
-                  board = results_board)
+        pin_write(board = local_results_board,
+                  name  = "linear_res",
+                  description = paste("trained through", end_train_year)
+        )
 
 # xgb wflows
 boost_wflows = 
@@ -442,7 +446,7 @@ boost_wflows =
                 preproc = 
                         list( 
                                 # all features, for trees
-                                all_impute = trees_recipe),
+                                all = trees_recipe),
                 # model specifications
                 models =
                         list(
@@ -456,14 +460,22 @@ boost_res =
         boost_wflows %>%
         tune_race_wflows()
 
-# pin results
+# read results from local board
 boost_res %>%
-        unnest(result) %>%
-        select(wflow_id, id, .order, .metrics) %>%
-        unnest(.metrics) %>%
-        pin_write(.,
-                  name = "boost_res",
-                  board = results_board)
+        pin_write(board = local_results_board,
+                  name  = "boost_res",
+                  description = paste("trained through", end_train_year)
+        )
+
+
+# # pin results
+# boost_res %>%
+#         unnest(result) %>%
+#         select(wflow_id, id, .order, .metrics) %>%
+#         unnest(.metrics) %>%
+#         pin_write(.,
+#                   name = "boost_res",
+#                   board = results_board)
 
 # # rf wflows
 # rf_wflows = 
@@ -524,16 +536,54 @@ race_res =
                   linear_res,
                   boost_res)
 
+
+# results -----------------------------------------------------------------
+
 # pin results
+source(here::here("src", "data", "connect_to_gcs.R"))
+
+# # # create board for storing results
+# results_board =
+#         pins::board_gcs(
+#                 bucket = my_bucket,
+#                 prefix = "results/hurdle/",
+#                 versioned = T)
+
+
+# pin results
+# race_res %>%
+#         pin_write(board = results_board,
+#                   name = 'race_results',
+#                   description = paste('tuning results from workflow sets trained through', end_train_year),
+#                   tags = c("results", "workflows", "hurdle")
+#                   )
 
 # collect metrics
 race_metrics = race_res %>%
         rank_results(select_best = T, rank_metric = 'mn_log_loss')
 
-# pin metrics
+# examine
 race_metrics %>%
-        pin_write(board = results_board,
-                  name = "race_metrics")
+        filter(.metric == 'roc_auc') %>%
+        ggplot(aes(x=rank,
+                   y=mean,
+                   label = wflow_id,
+                   ymin = mean - 1.96 * std_err,
+                   ymax = mean + 1.96 * std_err,
+                   color = wflow_id))+
+        geom_point()+
+        geom_errorbar()+
+        facet_wrap(.metric ~.,
+                   scales = "free_y")+
+        geom_text(aes(y = mean - 0.1, label = wflow_id), angle = 90, hjust = 1) +
+        lims(y = c(.5, 1)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+
+# pin metrics
+# race_metrics %>%
+#         pin_write(board = results_board,
+#                   name = "race_metrics")
 
 # select best model based on log loss
 best_mod = race_metrics %>%
@@ -645,7 +695,7 @@ best_tune = race_res %>%
         filter(wflow_id == best_mod) %>%
         pluck("best_tune", 1)
 
-# finalize mod
+# finalize mod on training set
 hurdle_last_fit = 
         race_res %>%
         extract_workflow(id = best_mod) %>%
@@ -670,6 +720,7 @@ valid_preds = hurdle_last_fit %>%
                                               TRUE ~ 'no'),
                                     levels = c("no", "yes")))
 
+# examine preds by density
 valid_preds %>%
         ggplot(aes(x=.pred_yes,
                    fill = users_threshold))+
@@ -708,47 +759,15 @@ suppressWarnings({
 }) %>%
         autoplot()
 
-# variable importance
-vip = hurdle_last_fit %>%
+# last fit to both train and validation set
+hurdle_fit = hurdle_last_fit %>%
         pluck(".workflow", 1) %>%
-        extract_fit_engine() %>%
-        lightgbm::lgb.importance() %>%
-        mutate_if(is.numeric, round, 3) %>%
-        pivot_longer(cols = -c(Feature),
-                     names_to = 'type',
-                     values_to = 'value') %>%
-        group_by(type) %>%
-        slice_max(n = 30,
-                  order_by = value,
-                  with_ties = T)
-        
-# variable importance
-suppressWarnings({
-        vip %>%
-                mutate(type = factor(type, levels = c("Gain", "Cover", "Frequency"))) %>%
-                mutate(Feature = abbreviate(str_to_title(gsub("_", " ", Feature)), 25)) %>%
-                ggplot(aes(x=value,
-                           y=reorder_within(Feature, value, type)))+
-                geom_col()+
-                facet_wrap(type ~.,
-                           scales = "free",
-                           ncol = 2)+
-                scale_y_reordered()+
-                theme_minimal()+
-                theme(axis.text.y = element_text(size = 6))+
-                ylab("Feature")
-})
+        fit(bind_rows(train,
+                      valid))
 
-# interpret using light gbm
-mod = hurdle_last_fit %>%
-        pluck(".workflow", 1) %>%
-        extract_fit_engine()
 
-data = hurdle_last_fit %>%
-        pluck(".workflow", 1) %>%
-        extract_mold() %$%
-        predictors %>%
-        as.matrix()
+
+# save tuning results to gcs
 
 # 
 # interpret = lgb.interprete(mod,
@@ -764,22 +783,22 @@ data = hurdle_last_fit %>%
 #         geom_col()+
 #         theme_minimal()
 
-# save model with vetiver
-model_board = pins::board_folder(here::here("models", "board"))
-vetiver_hurdle = vetiver::vetiver_model(model = hurdle_fit,
-                                        model_name = "hurdle_model",
-                                        description = paste("classifiation model trained through", end_train_year, "to predict whether games will hit user ratings threshold"))
-
-# test that it predicts
-testthat::test_that("vetiver model does not error due to package",
-                    testthat::expect_no_error(
-                            vetiver_hurdle %>% 
-                                    predict(hurdle_train %>% 
-                                                    sample_n(10)))
-)
-
-# store
-vetiver::vetiver_pin_write(model_board, vetiver_hurdle)
+# # save model with vetiver
+# model_board = pins::board_folder(here::here("models", "board"))
+# vetiver_hurdle = vetiver::vetiver_model(model = hurdle_fit,
+#                                         model_name = "hurdle_model",
+#                                         description = paste("classifiation model trained through", end_train_year, "to predict whether games will hit user ratings threshold"))
+# 
+# # test that it predicts
+# testthat::test_that("vetiver model does not error due to package",
+#                     testthat::expect_no_error(
+#                             vetiver_hurdle %>% 
+#                                     predict(hurdle_train %>% 
+#                                                     sample_n(10)))
+# )
+# 
+# # store
+# vetiver::vetiver_pin_write(model_board, vetiver_hurdle)
 
 # deploy
 
@@ -837,85 +856,3 @@ vetiver::vetiver_pin_write(model_board, vetiver_hurdle)
 #         fit(hurdle_train)
 
 # pin workflow
-
-
-## shapley
-
-# extract mold
-mold = wflow %>%
-        extract_mold()
-
-# extract model
-mod = wflow %>%
-        extract_fit_engine()
-
-# extract recipe template
-template = wflow %>%
-        extract_preprocessor() %$%
-        template
-
-# extract training set
-orig =
-        bind_cols(
-                # outcome
-                wflow %>%
-                        extract_mold() %$%
-                        outcomes,
-                # predictors
-                wflow %>%
-                        extract_mold() %$%
-                        predictors,
-                # ids
-                wflow %>%
-                        extract_mold() %$%
-                        extras %$%
-                        roles %$%
-                        id) %>%
-        select(names(template))
-
-# get outcome var
-outcome =   wflow %>%
-        extract_mold() %$%
-        outcomes
-
-# get list of features used in model
-features =
-        mod %$%
-        feature_names
-
-# matrix of features used in model
-mat = wflow %>%
-        extract_mold() %$%
-        predictors %>%
-        as.matrix()
-
-# bake new
-new =
-        wflow %>%
-        extract_preprocessor() %>%
-        prep(strings_as_factor = F) %>%
-        bake(new_data = valid)
-
-# run shap
-shap = fastshap::explain(mod,
-                         exact = T,
-                         newdata = new %>%
-                                 select(one_of(features)) %>%
-                                 as.matrix) %>%
-        as_tibble()
-
-shap[323,] %>%
-        pivot_longer(cols = everything()) %>%
-        mutate(value = -value) %>%
-        mutate(sign = case_when(value > 0 ~ 'positive',
-                                  value < 0 ~ 'negative')) %>%
-        filter(value !=0) %>%
-        group_by(sign) %>%
-        slice_max(order_by = abs(value), n = 10) %>%
-        ggplot(aes(x=value,
-                   fill = value,
-                   y = reorder(name, value)))+
-        geom_col()+
-        geom_vline(xintercept = 0)+
-        ggthemes::scale_fill_gradient2_tableau()
-

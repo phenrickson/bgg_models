@@ -114,20 +114,6 @@
       ],
       "Hash": "e749cae40fa9ef469b6050959517453c"
     },
-    "RcppArmadillo": {
-      "Package": "RcppArmadillo",
-      "Version": "0.12.0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "dee7cfd76b4c78bab84e09b74b6d471f"
-    },
     "RcppEigen": {
       "Package": "RcppEigen",
       "Version": "0.3.3.9.3",
@@ -181,18 +167,6 @@
         "utils"
       ],
       "Hash": "e5c8af79df616c135b21eaeb1dc6bc5c"
-    },
-    "abind": {
-      "Package": "abind",
-      "Version": "1.4-5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "methods",
-        "utils"
-      ],
-      "Hash": "4f57884290cc75ab22f4af9e9d4ca862"
     },
     "askpass": {
       "Package": "askpass",
@@ -846,23 +820,6 @@
       "Repository": "CRAN",
       "Hash": "f7736a18de97dea803bde0a2daaafb27"
     },
-    "fastshap": {
-      "Package": "fastshap",
-      "Version": "0.0.7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Rcpp",
-        "RcppArmadillo",
-        "abind",
-        "ggplot2",
-        "gridExtra",
-        "matrixStats",
-        "plyr",
-        "tibble"
-      ],
-      "Hash": "8772351ba12c5bd0412f99859553a8e0"
-    },
     "filelock": {
       "Package": "filelock",
       "Version": "1.0.2",
@@ -1073,24 +1030,6 @@
       ],
       "Hash": "d494daf77c4aa7f084dbbe6ca5dcaca7"
     },
-    "ggthemes": {
-      "Package": "ggthemes",
-      "Version": "4.2.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "ggplot2",
-        "graphics",
-        "grid",
-        "methods",
-        "purrr",
-        "scales",
-        "stringr",
-        "tibble"
-      ],
-      "Hash": "617fb2c300f68e8b1ba21043fba88fd7"
-    },
     "glmnet": {
       "Package": "glmnet",
       "Version": "4.1-7",
@@ -1227,20 +1166,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "7a0051eef852c301b5efe2f7913dd45f"
-    },
-    "gridExtra": {
-      "Package": "gridExtra",
-      "Version": "2.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "grDevices",
-        "graphics",
-        "grid",
-        "gtable",
-        "utils"
-      ],
-      "Hash": "7d7f283939f563670a697165b2cf5560"
     },
     "gtable": {
       "Package": "gtable",
@@ -1460,6 +1385,18 @@
       ],
       "Hash": "26f391e42073877818f2d4f0470dca24"
     },
+    "job": {
+      "Package": "job",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "digest",
+        "rstudioapi"
+      ],
+      "Hash": "3c762f5650c9f3f79336937e4cfb5e43"
+    },
     "jquerylib": {
       "Package": "jquerylib",
       "Version": "0.1.4",
@@ -1585,23 +1522,6 @@
       ],
       "Hash": "001cecbeac1cff9301bdc3775ee46a86"
     },
-    "lightgbm": {
-      "Package": "lightgbm",
-      "Version": "3.3.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "R6",
-        "data.table",
-        "graphics",
-        "jsonlite",
-        "methods",
-        "utils"
-      ],
-      "Hash": "e6c3413a4762e6c0cb3a2d32da82a994"
-    },
     "listenv": {
       "Package": "listenv",
       "Version": "0.9.0",
@@ -1649,16 +1569,6 @@
         "R"
       ],
       "Hash": "7ce2733a9826b3aeb1775d56fd305472"
-    },
-    "matrixStats": {
-      "Package": "matrixStats",
-      "Version": "0.63.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "57af0c3da1f1a50680b186591c3359af"
     },
     "memoise": {
       "Package": "memoise",
@@ -1951,17 +1861,6 @@
         "withr"
       ],
       "Hash": "6b0c222c5071efe0f3baf3dae9aa40e2"
-    },
-    "plyr": {
-      "Package": "plyr",
-      "Version": "1.8.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "d744387aef9047b0b48be2933d78e862"
     },
     "polyclip": {
       "Package": "polyclip",
