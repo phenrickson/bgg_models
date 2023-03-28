@@ -1,5 +1,4 @@
-# what: train a hurdle model to predict whether a game will receive a geek rating 
-# aka, predict whether a game is expected to get at least 30 user ratings
+# what: train a series of models to predict outcomes on bgg
 
 # dependencies:
 # load analysis tables (locally) or run query
@@ -67,9 +66,6 @@ suppressMessages({
 # run script to load games
 source(here::here("src","data","load_games_data.R"))
 
-
-# preprocessing -----------------------------------------------------------
-
 message("preprocessing games for modeling...")
 
 # script with functions for standardized preprocessing
@@ -101,7 +97,7 @@ train =
 # valid set for hurdle model
 valid =
         games_processed %>%
-        filter(yearpublished > end_train_year & yearpublished < end_train_year +2)
+        filter(yearpublished > end_train_year & yearpublished <= end_train_year +2)
 
 # create custom split
 # make a split for validating on a specific set of years
@@ -113,7 +109,6 @@ valid_split = make_splits(
         bind_rows(train,
                   valid)
 )
-
 
 # models ------------------------------------------------------------------
 
@@ -246,8 +241,7 @@ race_ctrl <-
 
 # create function for tuning a workflow set via race
 tune_grid_wflows = function(wflows,
-                            resamples,
-                            ctrl = ctrl) {
+                            resamples) {
         
         wflows %>%
                 workflow_map(
@@ -261,15 +255,14 @@ tune_grid_wflows = function(wflows,
 
 # create function for tuning a workflow set via race
 tune_race_wflows = function(wflows,
-                            resamples,
-                            ctrl = race_ctrl) {
+                            resamples) {
         
         wflows %>%
                 workflow_map(
                         "tune_race_anova",
                         seed = 1999,
                         resamples = resamples,
-                        control = ctrl,
+                        control = race_ctrl,
                         metrics = reg_metrics
                 )
 }
@@ -730,3 +723,344 @@ create_outcome_recipes_conditional = function(data,
 # train average, bayesaverage, and usersrated -----------------------------
 
 
+# train average
+source(here::here("src", "models", "train_outcomes_models_average.R"))
+
+# train usersrated
+source(here::here("src", "models", "train_outcomes_models_usersrated.R"))
+
+
+# validate ----------------------------------------------------------------
+
+# load hurdke vetiver
+hurdle_fit =
+        vetiver_pin_read(deployed_board,
+                         name = "hurdle_vetiver")
+
+# load averageweight
+averageweight_last_fit =
+        pin_read(board = pins::board_folder(here::here("models", "models", "averageweight")),
+                  name = "averageweight_fit")
+
+# function to predict
+predict_bgg_outcomes = function(data,
+                                averageweight_mod,
+                                average_mod,
+                                usersrated_mod,
+                                pivot = T,
+                                ratings = 2000) {
+        
+        
+        # predict with hurdle model
+        preds = 
+                data %>%
+                # augment(hurdle_mod,
+                #         new_data = .) %>%
+                # select(-.pred_no,
+                #        -.pred_class) %>%
+                # predict with averageweight
+                augment(averageweight_mod,
+                        new_data = .) %>%
+                # rename
+                rename(.pred_averageweight = .pred,
+                       .actual_averageweight = averageweight) %>%
+                # truncate and replace
+                mutate(.pred_averageweight = case_when(.pred_averageweight > 5 ~5,
+                                                       .pred_averageweight < 1 ~ 1,
+                                                       TRUE ~ .pred_averageweight),
+                       averageweight = .pred_averageweight) %>%
+                # predict with average
+                augment(average_mod,
+                        new_data = .) %>%
+                rename(.pred_average = .pred) %>%
+                mutate(.actual_average = average) %>%
+                # predict with usersrated
+                augment(usersrated_mod,
+                        new_data = .) %>%
+                rename(.pred_usersrated = .pred) %>%
+                mutate(.pred_usersrated = exp(.pred_usersrated)) %>%
+                # round
+                mutate(.pred_usersrated = plyr::round_any(.pred_usersrated, 50)) %>%
+                mutate(.actual_usersrated = usersrated) %>%
+                # estimate bayesaverage putting these together
+                mutate(.pred_bayesaverage =
+                               # numerator
+                               ((ratings * 5.5) + (.pred_average * .pred_usersrated)) /
+                               # denominator
+                               (ratings + .pred_usersrated)
+                ) %>%
+                # get actual
+                rename(.actual_bayesaverage = bayesaverage)
+        
+        if (pivot == T) {
+
+                # get predictions
+                preds = 
+                        preds %>%
+                        select(yearpublished,
+                               game_id,
+                               name,
+                               starts_with(".pred")) %>%
+                        pivot_longer(cols = -c(yearpublished,
+                                               game_id,
+                                               name),
+                                     names_to = c("outcome"),
+                                     values_to = c(".pred")) %>%
+                        mutate(outcome = gsub(".pred_", "", outcome)) %>%
+                        left_join(.,
+                                  preds %>%
+                                          select(yearpublished,
+                                                 game_id,
+                                                 name,
+                                                 starts_with(".actual")) %>%
+                                          pivot_longer(cols = -c(yearpublished,
+                                                                 game_id,
+                                                                 name),
+                                                       names_to = c("outcome"),
+                                                       values_to = c(".actual")) %>%
+                                          mutate(outcome = gsub(".actual_", "", outcome)))
+        }
+
+}
+
+# predict valid with function
+valid_preds =
+        valid %>%
+        predict_bgg_outcomes(data = .,
+                             averageweight_last_fit,
+                             average_last_fit,
+                             usersrated_last_fit)
+
+valid_preds %>%
+        left_join(.,
+                  augment(hurdle_fit,
+                          valid) %>%
+                          select(game_id, name, .pred_yes, usersrated)) %>%
+        mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
+                                   outcome == 'usersrated' ~ log1p(.actual),
+                                   TRUE ~ .actual),
+               .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
+                                 TRUE ~ .pred)) %>%
+        mutate(.pred_class = case_when(.pred_yes > .2 ~ 'yes',
+                                       TRUE ~ 'no')) %>%
+        group_by(outcome, .pred_class) %>%
+        reg_metrics(truth = .actual,
+                    estimate = .pred) %>%
+        arrange(outcome) %>%
+        spread(.pred_class,)
+
+
+valid_preds %>%
+        reg_metrics(truth = .actual,
+                    estimate = .pred)
+
+
+# predict 
+valid_preds %>%
+        left_join(.,
+                  augment(hurdle_fit,
+                          valid) %>%
+                          select(game_id, name, usersrated, .pred_yes)) %>%
+        filter(.pred_yes > .25 ) %>%
+        mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
+                                  outcome == 'usersrated' ~ log1p(.actual),
+                                  TRUE ~ .actual),
+               .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
+                                TRUE ~ .pred))  %>%
+        ggplot(aes(x=.pred,
+                   y=.actual,
+                   color = .pred_yes))+
+        geom_point(alpha = 0.5)+
+        facet_wrap(outcome ~.,
+                   scales = "free")+
+        scale_color_gradient(low = 'red',
+                              high = 'dodgerblue2',
+                             limits = c(0, 0.25),
+                             oob = scales::squish)+
+        geom_abline()
+
+
+# predict new with function
+upcoming_preds =
+        games_processed %>%
+        filter(yearpublished > 2021) %>%
+        predict_bgg_outcomes(data = .,
+                             averageweight_last_fit,
+                             average_last_fit,
+                             usersrated_last_fit) %>%
+        left_join(.,
+                  augment(hurdle_fit,
+                          games_processed %>%
+                                  filter(yearpublished > 2021)) %>%
+                          select(game_id, name, usersrated, .pred_yes))
+
+upcoming_preds %>%
+        filter(.pred_yes > .25) %>%
+        filter(yearpublished == 2024) %>% 
+        filter(outcome == 'bayesaverage') %>% 
+        arrange(desc(.pred)) %>%
+        mutate(.actual = replace_na(.actual, 5.5))
+
+# refit outcome models to train plus additional year
+averageweight_fit = 
+        averageweight_last_fit %>%
+        fit(bind_rows(train_imputed,
+                      valid_imputed) %>%
+                    filter(yearpublished <= end_train_year+1) %>%
+                    filter(usersrated >=25))
+
+# average
+average_fit = 
+        average_last_fit %>%
+        fit(bind_rows(train_imputed,
+                      valid_imputed) %>%
+                    filter(yearpublished <= end_train_year+1) %>%
+                    filter(usersrated >=25))
+
+# usersrated
+usersrated_fit = 
+        usersrated_last_fit %>%
+        fit(bind_rows(train_imputed,
+                      valid_imputed) %>%
+                    filter(yearpublished <= end_train_year+1) %>%
+                    filter(usersrated >=25))
+
+# predict 2021-2023
+upcoming_preds =
+        games_processed %>%
+        filter(yearpublished > end_train_year +1) %>%
+        predict_bgg_outcomes(data = .,
+                             averageweight_last_fit,
+                             average_fit,
+                             usersrated_fit) %>%
+        left_join(.,
+                  augment(hurdle_fit,
+                          games_processed %>%
+                                  filter(yearpublished > end_train_year+1)) %>%
+                          select(game_id, name, usersrated, .pred_yes))
+
+# 
+# valid_preds %>%
+#         select(yearpublished,
+#                game_id,
+#                name,
+#                starts_with(".pred"),
+#                starts_with(".actual")
+#         )
+#                       
+#         
+#         # predict with hurdle model
+#         valid_hurdle = 
+#                 hurdle_fit %>%
+#                 augment(valid,
+#                         type = 'prob')
+#         
+#         # predict with averageweight model
+#         valid_imputed = 
+#                 hurdle_fit %>%
+#                 augment(valid_hurdle,
+#                         type = 'prob')
+#         
+#         
+#         
+#         
+#         
+#         
+# }
+# 
+# 
+# # predict with averageweight and hurdle
+# averageweight_preds =
+#         averageweight_last_fit %>%
+#         augment(
+#                 hurdle_fit %>%
+#                         augment(valid_imputed,
+#                                 type = 'prob')) %>%
+#         rename(.pred_hurdle = .pred_yes) %>%
+#         select(game_id,
+#                name,
+#                yearpublished,
+#                averageweight,
+#                .pred,
+#                averageweight,
+#                .pred_hurdle) %>%
+#         rename(actual = averageweight) %>%
+#         transmute(outcome = 'averageweight',
+#                   yearpublished,
+#                   game_id,
+#                   name,
+#                   .pred,
+#                   actual,
+#                   averageweight,
+#                   .pred_hurdle)
+# 
+# # predict with usersrated and hurdle
+# usersrated_preds =
+#         usersrated_last_fit %>%
+#         augment(
+#                 hurdle_fit %>%
+#                         augment(valid_imputed,
+#                                 type = 'prob')) %>%
+#         rename(.pred_hurdle = .pred_yes) %>%
+#         select(game_id,
+#                name,
+#                yearpublished,
+#                log_usersrated,
+#                .pred,
+#                .pred_hurdle) %>%
+#         rename(actual = log_usersrated) %>%
+#         transmute(outcome = 'usersrated',
+#                   yearpublished,
+#                   game_id,
+#                   name,
+#                   .pred,
+#                   actual,
+#                   .pred_hurdle)
+# 
+# # predict with average and hurdle
+# # preds
+# average_preds =
+#         average_last_fit %>%
+#         augment(
+#                 hurdle_fit %>%
+#                         augment(valid_imputed,
+#                                 type = 'prob')) %>%
+#         rename(.pred_hurdle = .pred_yes) %>%
+#         select(game_id,
+#                name, 
+#                yearpublished, 
+#                usersrated,
+#                .pred, 
+#                average,
+#                .pred_hurdle) %>%
+#         rename(actual = average) %>%
+#         transmute(outcome = 'average',
+#                   yearpublished,
+#                   game_id,
+#                   name,
+#                   .pred,
+#                   actual,
+#                   usersrated,
+#                   .pred_hurdle)
+# 
+# # make bayesaverage preds
+# bayesaverage_preds = 
+#         bind_rows(average_preds,
+#                   usersrated_preds)
+#         
+# bind_rows
+# 
+# 
+# average_preds %>% 
+#         ggplot(aes(x=.pred, 
+#                    size = usersrated,
+#                    y=actual))+
+#         geom_point(alpha = 0.5)+
+#         coord_obs_pred()
+# 
+# usersrated_preds %>%
+#         ggplot(aes(x=.pred,
+#                    size = usersrated,
+#                    y=actual))+
+#         geom_point(alpha = 0.5)+
+#         coord_obs_pred()
