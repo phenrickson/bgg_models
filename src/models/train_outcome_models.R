@@ -89,26 +89,27 @@ end_train_year = 2019
 
 message(paste("splitting games before and after", end_train_year))
 
-# training set for hurdle model
+# training set: games published before end train year
 train =
         games_processed %>%
         filter(yearpublished <= end_train_year)
 
-# valid set for hurdle model
+# valid set: games that have been out for at least 2 years post end train year
 valid =
         games_processed %>%
         filter(yearpublished > end_train_year & yearpublished <= end_train_year +2)
 
 # create custom split
 # make a split for validating on a specific set of years
-valid_split = make_splits(
-        list(analysis =
-                     seq(nrow(train)),
-             assessment =
-                     nrow(train) + seq(nrow(valid))),
-        bind_rows(train,
-                  valid)
-)
+valid_split = 
+        make_splits(
+                list(analysis =
+                             seq(nrow(train)),
+                     assessment =
+                             nrow(train) + seq(nrow(valid))),
+                bind_rows(train,
+                          valid)
+        )
 
 # models ------------------------------------------------------------------
 
@@ -464,195 +465,248 @@ create_workflow_set = function(data,
 # train and impute averageweight -----------------------------------------------------
 
 # # run script to train averageweight model
+# not run
 # source(here::here("src", "models", "train_outcome_models_averageweight.R"))
 
-# read in vetiver model
-averageweight_fit = 
-        vetiver_pin_read(deployed_board,
-         "averageweight_vetiver")
+# # load in averageweight trained through end train year
+averageweight_train_fit =
+        pin_read(models_board,
+                 name = paste(end_train_year, "averageweight_fit", sep="/"))
 
-# impute missing averageweight in training and validation sets with this model
+# run xgb.Booster.complete(.)
+averageweight_train_fit %>%
+        extract_fit_engine() %>%
+        xgb.Booster.complete(.)
+
+# get template for data used in averageweight training
+averageweight_template = 
+        averageweight_train_fit %>%
+        extract_preprocessor %$%
+        template
+ 
+# get resampled predictions for averageweight in training set;
+# that is, the outcome models will be trained on estimated rather than observed averageweight
+set.seed(1999)
+averageweight_oos =
+        averageweight_train_fit %>%
+        # fit model to resamples
+        fit_resamples(
+                # get resamples via cv
+                resamples = 
+                        vfold_cv(data = averageweight_template,
+                                 v = 5,
+                                 strata = 'averageweight'),
+                # keep predictions
+                control = control_resamples(allow_par = T,
+                                            save_pred = T)
+        ) %>%
+        # collect predictions
+        collect_predictions() %>%
+        arrange(.row) %>%
+        # add game id, name, and yearpublished from template
+        left_join(.,
+                  averageweight_template %>%
+                          select(game_id, name, yearpublished) %>%
+                          mutate(.row = row_number()),
+                  by = c(".row")
+        ) %>%
+        transmute(yearpublished, 
+                  game_id, 
+                  name,
+                  est_averageweight = .pred)
+
+# now impute games that do not have averageweight
+averageweight_impute = 
+        averageweight_train_fit %>%
+        # augment
+        augment(train %>%
+                        filter(!(game_id %in% averageweight_template$game_id))
+        ) %>%
+        transmute(yearpublished, 
+                  game_id, 
+                  name,
+                  est_averageweight = .pred)
+        
+
+# impute missing averageweight in new data
 impute_averageweight = function(averageweight_fit,
                                 data) {
-        
-        averageweight_fit %>%
+
+        averageweight_train_fit %>%
                 augment(data) %>%
-                mutate(averageweight = case_when(is.na(averageweight) ~ .pred,
-                                                 TRUE ~ averageweight)) %>%
-                # truncate
-                mutate(averageweight = case_when(averageweight > 5 ~ 5,
-                                                 averageweight < 1 ~ 1,
-                                                 TRUE ~ averageweight)) %>%
-                select(-.pred)
-        
+                rename(est_averageweight = .pred)
+
 }
+
+# estimate averageweight out of sample on training set
+# # filters to only games with at least n user ratings and do not have missingness on average weight
 
 # impute averageweight in train
 train_imputed = 
         train %>%
-        # impute
-        impute_averageweight(averageweight_fit,
-                             .) 
+        # bind in est_averageweight
+        left_join(.,
+                  bind_rows(averageweight_oos,
+                            averageweight_impute),
+                  by = c("game_id", "name", "yearpublished"))
 
-# impute averageweight in valid
+# predict with averageweight model
 valid_imputed = 
         valid %>%
-        # impute
-        impute_averageweight(averageweight_fit,
-                             .)
-
+        impute_averageweight(averageweight_train_fit,
+                             data = .)
 
 # train average, usersrated, bayesaverage ---------------------------------
 
-# update base recipe to include averageweight as a predictor
-base_recipe_func_conditional = function(data,
-                                          outcome) {
-        
-        outcome = enquo(outcome)
-        
-        recipe(x=data) %>%
-                # set bgg id variables
-                update_role(
-                        one_of("game_id",
-                               "name",
-                               "yearpublished",
-                               "image",
-                               "thumbnail",
-                               "description",
-                               # "load_ts",
-                               "average",
-                               "usersrated",
-                               "log_usersrated",
-                               "stddev",
-                               "numcomments",
-                               "numweights",
-                               "owned",
-                               "trading",
-                               "wanting",
-                               "wishing",
-                               "users_threshold",
-                               "averageweight",
-                               "bayesaverage"),
-                        new_role = "id") %>%
-                # set averageweight as predictor
-                update_role(one_of("averageweight"),
-                            new_role = "predictor") %>%
-                # set outcome varable
-                update_role(!!outcome,
-                            new_role = "outcome") %>%
-                # set all others as predictors
-                update_role(-has_role("id"),
-                            -has_role("outcome"),
-                            new_role = "predictor") %>%
-                # indicate missingness in numeric features
-                step_indicate_na(all_numeric_predictors(),
-                                 prefix = "missing") %>%
-                # make time per player variable
-                step_mutate(time_per_player = playingtime/ maxplayers) %>% 
-                # remove zero variance predictors
-                step_zv(all_predictors())
-        
-}
-
-# update recipes to use base recipe with averageweight as a predictor
-create_outcome_recipes_conditional = function(data,
-                                  outcome) {
-        
-        outcome = enquo(outcome)
-        
-        # basic recipe without publishers/artists/designers
-        # tokenize mechanics and categories
-        # impute missigness
-        # preprocess
-        base_impute_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func_conditional(outcome = !!outcome) %>%
-                # dummy extract categories and mechanics
-                dummy_extract_variable(c(mechanics, categories),
-                                       threshold = 1) %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # recipe with all features
-        # dummy extract
-        # preprocessing
-        # imputation
-        all_impute_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func_conditional(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # splines
-        all_impute_splines_recipe =
-                data %>%
-                # make base recipe %>%
-                base_recipe_func_conditional(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # splines
-                splines_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # base with trees
-        base_trees_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func_conditional(outcome = !!outcome) %>%
-                # dummy extract categories and mechanics
-                dummy_extract_variable(c(mechanics, categories),
-                                       threshold = 1) %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        
-        # recipe with all features
-        # for trees, so less preprocessing
-        all_trees_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func_conditional(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        recipes = list("base_impute" = base_impute_recipe,
-                       "base_trees" = base_trees_recipe,
-                       "all_impute" = all_impute_recipe,
-                       "all_impute_splines" = all_impute_splines_recipe,
-                       "all_trees" = all_trees_recipe)
-        
-        return(recipes)
-        
-}
+# # update base recipe to include averageweight as a predictor
+# base_recipe_func_conditional = function(data,
+#                                           outcome) {
+#         
+#         outcome = enquo(outcome)
+#         
+#         recipe(x=data) %>%
+#                 # set bgg id variables
+#                 update_role(
+#                         one_of("game_id",
+#                                "name",
+#                                "yearpublished",
+#                                "image",
+#                                "thumbnail",
+#                                "description",
+#                                # "load_ts",
+#                                "average",
+#                                "usersrated",
+#                                "log_usersrated",
+#                                "stddev",
+#                                "numcomments",
+#                                "numweights",
+#                                "owned",
+#                                "trading",
+#                                "wanting",
+#                                "wishing",
+#                                "users_threshold",
+#                                "averageweight",
+#                                "bayesaverage"),
+#                         new_role = "id") %>%
+#                 # set averageweight as predictor
+#                 update_role(one_of("averageweight"),
+#                             new_role = "predictor") %>%
+#                 # set outcome varable
+#                 update_role(!!outcome,
+#                             new_role = "outcome") %>%
+#                 # set all others as predictors
+#                 update_role(-has_role("id"),
+#                             -has_role("outcome"),
+#                             new_role = "predictor") %>%
+#                 # indicate missingness in numeric features
+#                 step_indicate_na(all_numeric_predictors(),
+#                                  prefix = "missing") %>%
+#                 # make time per player variable
+#                 step_mutate(time_per_player = playingtime/ maxplayers) %>% 
+#                 # remove zero variance predictors
+#                 step_zv(all_predictors())
+#         
+# }
+# 
+# # update recipes to use base recipe with averageweight as a predictor
+# create_outcome_recipes_conditional = function(data,
+#                                   outcome) {
+#         
+#         outcome = enquo(outcome)
+#         
+#         # basic recipe without publishers/artists/designers
+#         # tokenize mechanics and categories
+#         # impute missigness
+#         # preprocess
+#         base_impute_recipe = 
+#                 data %>%
+#                 # remove selected variables
+#                 select(-families, -publishers, -artists, -designers) %>%
+#                 # make base recipe %>%
+#                 base_recipe_func_conditional(outcome = !!outcome) %>%
+#                 # dummy extract categories and mechanics
+#                 dummy_extract_variable(c(mechanics, categories),
+#                                        threshold = 1) %>%
+#                 # impute missingness
+#                 impute_recipe_func() %>%
+#                 # basic preprocessing
+#                 preproc_recipe_func() %>%
+#                 # normalize
+#                 step_normalize(all_numeric_predictors()) %>%
+#                 # check missing
+#                 check_missing(all_predictors())
+#         
+#         # recipe with all features
+#         # dummy extract
+#         # preprocessing
+#         # imputation
+#         all_impute_recipe = 
+#                 data %>%
+#                 # make base recipe %>%
+#                 base_recipe_func_conditional(outcome = !!outcome) %>%
+#                 # dummy extract categorical
+#                 dummy_recipe_func() %>%
+#                 # impute missingness
+#                 impute_recipe_func() %>%
+#                 # basic preprocessing
+#                 preproc_recipe_func() %>%
+#                 # normalize
+#                 step_normalize(all_numeric_predictors()) %>%
+#                 # check missing
+#                 check_missing(all_predictors())
+#         
+#         # splines
+#         all_impute_splines_recipe =
+#                 data %>%
+#                 # make base recipe %>%
+#                 base_recipe_func_conditional(outcome = !!outcome) %>%
+#                 # dummy extract categorical
+#                 dummy_recipe_func() %>%
+#                 # impute missingness
+#                 impute_recipe_func() %>%
+#                 # basic preprocessing
+#                 preproc_recipe_func() %>%
+#                 # splines
+#                 splines_recipe_func() %>%
+#                 # normalize
+#                 step_normalize(all_numeric_predictors()) %>%
+#                 # check missing
+#                 check_missing(all_predictors())
+#         
+#         # base with trees
+#         base_trees_recipe = 
+#                 data %>%
+#                 # remove selected variables
+#                 select(-families, -publishers, -artists, -designers) %>%
+#                 # make base recipe %>%
+#                 base_recipe_func_conditional(outcome = !!outcome) %>%
+#                 # dummy extract categories and mechanics
+#                 dummy_extract_variable(c(mechanics, categories),
+#                                        threshold = 1) %>%
+#                 # basic preprocessing
+#                 preproc_recipe_func()
+#         
+#         
+#         # recipe with all features
+#         # for trees, so less preprocessing
+#         all_trees_recipe = 
+#                 data %>%
+#                 # make base recipe %>%
+#                 base_recipe_func_conditional(outcome = !!outcome) %>%
+#                 # dummy extract categorical
+#                 dummy_recipe_func() %>%
+#                 # basic preprocessing
+#                 preproc_recipe_func()
+#         
+#         recipes = list("base_impute" = base_impute_recipe,
+#                        "base_trees" = base_trees_recipe,
+#                        "all_impute" = all_impute_recipe,
+#                        "all_impute_splines" = all_impute_splines_recipe,
+#                        "all_trees" = all_trees_recipe)
+#         
+#         return(recipes)
+#         
+# }
 
 # # implement previous functions in one go
 # build_tune_and_collect_workflows = function(data, outcome, recipes,
@@ -722,25 +776,41 @@ create_outcome_recipes_conditional = function(data,
 
 # train average, bayesaverage, and usersrated -----------------------------
 
+# # train average
+# source(here::here("src", "models", "train_outcomes_models_average.R"))
+# 
+# # train usersrated
+# source(here::here("src", "models", "train_outcomes_models_usersrated.R"))
 
-# train average
-source(here::here("src", "models", "train_outcomes_models_average.R"))
+# load in trained models
+# load in average trained through end train year
+average_train_fit =
+        pin_read(models_board,
+                 name = paste(end_train_year, "average_fit", sep="/"))
 
-# train usersrated
-source(here::here("src", "models", "train_outcomes_models_usersrated.R"))
+# run xgb.Booster.complete(.)
+average_train_fit %>%
+        extract_fit_engine() %>%
+        xgb.Booster.complete(.)
+
+# # load in average trained through end train year
+usersrated_train_fit =
+        pin_read(models_board,
+                 name = paste(end_train_year, "usersrated_fit", sep="/"))
+
+# run xgb.Booster.complete(.)
+usersrated_train_fit %>%
+        extract_fit_engine() %>%
+        xgb.Booster.complete(.)
 
 
-# validate ----------------------------------------------------------------
+# predict on valid set ----------------------------------------------------------------
 
-# load hurdke vetiver
+# load hurdle vetiver
 hurdle_fit =
         vetiver_pin_read(deployed_board,
                          name = "hurdle_vetiver")
 
-# load averageweight
-averageweight_last_fit =
-        pin_read(board = pins::board_folder(here::here("models", "models", "averageweight")),
-                  name = "averageweight_fit")
 
 # function to predict
 predict_bgg_outcomes = function(data,
@@ -754,21 +824,11 @@ predict_bgg_outcomes = function(data,
         # predict with hurdle model
         preds = 
                 data %>%
-                # augment(hurdle_mod,
-                #         new_data = .) %>%
-                # select(-.pred_no,
-                #        -.pred_class) %>%
-                # predict with averageweight
-                augment(averageweight_mod,
-                        new_data = .) %>%
-                # rename
-                rename(.pred_averageweight = .pred,
+                # impute averageweight
+                impute_averageweight(averageweight_mod,
+                                     data =.) %>%
+                mutate(.pred_averageweight = est_averageweight,
                        .actual_averageweight = averageweight) %>%
-                # truncate and replace
-                mutate(.pred_averageweight = case_when(.pred_averageweight > 5 ~5,
-                                                       .pred_averageweight < 1 ~ 1,
-                                                       TRUE ~ .pred_averageweight),
-                       averageweight = .pred_averageweight) %>%
                 # predict with average
                 augment(average_mod,
                         new_data = .) %>%
@@ -818,7 +878,9 @@ predict_bgg_outcomes = function(data,
                                                                  name),
                                                        names_to = c("outcome"),
                                                        values_to = c(".actual")) %>%
-                                          mutate(outcome = gsub(".actual_", "", outcome)))
+                                          mutate(outcome = gsub(".actual_", "", outcome)),
+                                  by = c("yearpublished", "game_id", "name", "outcome")
+                        )
         }
 
 }
@@ -827,240 +889,242 @@ predict_bgg_outcomes = function(data,
 valid_preds =
         valid %>%
         predict_bgg_outcomes(data = .,
-                             averageweight_last_fit,
-                             average_last_fit,
-                             usersrated_last_fit)
+                             averageweight_train_fit,
+                             average_train_fit,
+                             usersrated_train_fit)
 
-valid_preds %>%
-        left_join(.,
-                  augment(hurdle_fit,
-                          valid) %>%
-                          select(game_id, name, .pred_yes, usersrated)) %>%
-        mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
-                                   outcome == 'usersrated' ~ log1p(.actual),
-                                   TRUE ~ .actual),
-               .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
-                                 TRUE ~ .pred)) %>%
-        mutate(.pred_class = case_when(.pred_yes > .2 ~ 'yes',
-                                       TRUE ~ 'no')) %>%
-        group_by(outcome, .pred_class) %>%
-        reg_metrics(truth = .actual,
-                    estimate = .pred) %>%
-        arrange(outcome) %>%
-        spread(.pred_class,)
-
-
-valid_preds %>%
-        reg_metrics(truth = .actual,
-                    estimate = .pred)
-
-
-# predict 
-valid_preds %>%
-        left_join(.,
-                  augment(hurdle_fit,
-                          valid) %>%
-                          select(game_id, name, usersrated, .pred_yes)) %>%
-        filter(.pred_yes > .25 ) %>%
-        mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
-                                  outcome == 'usersrated' ~ log1p(.actual),
-                                  TRUE ~ .actual),
-               .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
-                                TRUE ~ .pred))  %>%
-        ggplot(aes(x=.pred,
-                   y=.actual,
-                   color = .pred_yes))+
-        geom_point(alpha = 0.5)+
-        facet_wrap(outcome ~.,
-                   scales = "free")+
-        scale_color_gradient(low = 'red',
-                              high = 'dodgerblue2',
-                             limits = c(0, 0.25),
-                             oob = scales::squish)+
-        geom_abline()
-
-
-# predict new with function
-upcoming_preds =
-        games_processed %>%
-        filter(yearpublished > 2021) %>%
-        predict_bgg_outcomes(data = .,
-                             averageweight_last_fit,
-                             average_last_fit,
-                             usersrated_last_fit) %>%
-        left_join(.,
-                  augment(hurdle_fit,
-                          games_processed %>%
-                                  filter(yearpublished > 2021)) %>%
-                          select(game_id, name, usersrated, .pred_yes))
-
-upcoming_preds %>%
-        filter(.pred_yes > .25) %>%
-        filter(yearpublished == 2024) %>% 
-        filter(outcome == 'bayesaverage') %>% 
-        arrange(desc(.pred)) %>%
-        mutate(.actual = replace_na(.actual, 5.5))
-
-# refit outcome models to train plus additional year
-averageweight_fit = 
-        averageweight_last_fit %>%
-        fit(bind_rows(train_imputed,
-                      valid_imputed) %>%
-                    filter(yearpublished <= end_train_year+1) %>%
-                    filter(usersrated >=25))
-
-# average
-average_fit = 
-        average_last_fit %>%
-        fit(bind_rows(train_imputed,
-                      valid_imputed) %>%
-                    filter(yearpublished <= end_train_year+1) %>%
-                    filter(usersrated >=25))
-
-# usersrated
-usersrated_fit = 
-        usersrated_last_fit %>%
-        fit(bind_rows(train_imputed,
-                      valid_imputed) %>%
-                    filter(yearpublished <= end_train_year+1) %>%
-                    filter(usersrated >=25))
-
-# predict 2021-2023
-upcoming_preds =
-        games_processed %>%
-        filter(yearpublished > end_train_year +1) %>%
-        predict_bgg_outcomes(data = .,
-                             averageweight_last_fit,
-                             average_fit,
-                             usersrated_fit) %>%
-        left_join(.,
-                  augment(hurdle_fit,
-                          games_processed %>%
-                                  filter(yearpublished > end_train_year+1)) %>%
-                          select(game_id, name, usersrated, .pred_yes))
-
+# valid_preds %>%
+#         left_join(.,
+#                   augment(hurdle_fit,
+#                           valid) %>%
+#                           select(game_id, name, .pred_yes, usersrated)) %>%
+#         mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
+#                                    outcome == 'usersrated' ~ log1p(.actual),
+#                                    TRUE ~ .actual),
+#                .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
+#                                  TRUE ~ .pred)) %>%
+#         mutate(.pred_class = case_when(.pred_yes > .2 ~ 'yes',
+#                                        TRUE ~ 'no')) %>%
+#         group_by(outcome, .pred_class) %>%
+#         reg_metrics(truth = .actual,
+#                     estimate = .pred) %>%
+#         arrange(outcome) %>%
+#         spread(.pred_class, .estimate)
+# 
 # 
 # valid_preds %>%
-#         select(yearpublished,
-#                game_id,
-#                name,
-#                starts_with(".pred"),
-#                starts_with(".actual")
-#         )
-#                       
-#         
-#         # predict with hurdle model
-#         valid_hurdle = 
-#                 hurdle_fit %>%
-#                 augment(valid,
-#                         type = 'prob')
-#         
-#         # predict with averageweight model
-#         valid_imputed = 
-#                 hurdle_fit %>%
-#                 augment(valid_hurdle,
-#                         type = 'prob')
-#         
-#         
-#         
-#         
-#         
-#         
-# }
+#         group_by(outcome) %>%
+#         reg_metrics(truth = .actual,
+#                     estimate = .pred)
 # 
 # 
-# # predict with averageweight and hurdle
-# averageweight_preds =
-#         averageweight_last_fit %>%
-#         augment(
-#                 hurdle_fit %>%
-#                         augment(valid_imputed,
-#                                 type = 'prob')) %>%
-#         rename(.pred_hurdle = .pred_yes) %>%
-#         select(game_id,
-#                name,
-#                yearpublished,
-#                averageweight,
-#                .pred,
-#                averageweight,
-#                .pred_hurdle) %>%
-#         rename(actual = averageweight) %>%
-#         transmute(outcome = 'averageweight',
-#                   yearpublished,
-#                   game_id,
-#                   name,
-#                   .pred,
-#                   actual,
-#                   averageweight,
-#                   .pred_hurdle)
-# 
-# # predict with usersrated and hurdle
-# usersrated_preds =
-#         usersrated_last_fit %>%
-#         augment(
-#                 hurdle_fit %>%
-#                         augment(valid_imputed,
-#                                 type = 'prob')) %>%
-#         rename(.pred_hurdle = .pred_yes) %>%
-#         select(game_id,
-#                name,
-#                yearpublished,
-#                log_usersrated,
-#                .pred,
-#                .pred_hurdle) %>%
-#         rename(actual = log_usersrated) %>%
-#         transmute(outcome = 'usersrated',
-#                   yearpublished,
-#                   game_id,
-#                   name,
-#                   .pred,
-#                   actual,
-#                   .pred_hurdle)
-# 
-# # predict with average and hurdle
-# # preds
-# average_preds =
-#         average_last_fit %>%
-#         augment(
-#                 hurdle_fit %>%
-#                         augment(valid_imputed,
-#                                 type = 'prob')) %>%
-#         rename(.pred_hurdle = .pred_yes) %>%
-#         select(game_id,
-#                name, 
-#                yearpublished, 
-#                usersrated,
-#                .pred, 
-#                average,
-#                .pred_hurdle) %>%
-#         rename(actual = average) %>%
-#         transmute(outcome = 'average',
-#                   yearpublished,
-#                   game_id,
-#                   name,
-#                   .pred,
-#                   actual,
-#                   usersrated,
-#                   .pred_hurdle)
-# 
-# # make bayesaverage preds
-# bayesaverage_preds = 
-#         bind_rows(average_preds,
-#                   usersrated_preds)
-#         
-# bind_rows
-# 
-# 
-# average_preds %>% 
-#         ggplot(aes(x=.pred, 
-#                    size = usersrated,
-#                    y=actual))+
-#         geom_point(alpha = 0.5)+
-#         coord_obs_pred()
-# 
-# usersrated_preds %>%
+# # predict 
+# valid_preds %>%
+#         left_join(.,
+#                   augment(hurdle_fit,
+#                           valid) %>%
+#                           select(game_id, name, usersrated, .pred_yes)) %>%
+#         filter(.pred_yes > .25 ) %>%
+#         mutate(.actual = case_when(outcome == 'bayesaverage' & is.na(.actual) ~ 5.5,
+#                                   outcome == 'usersrated' ~ log1p(.actual),
+#                                   TRUE ~ .actual),
+#                .pred = case_when(outcome == 'usersrated' ~ log1p(.pred),
+#                                 TRUE ~ .pred))  %>%
 #         ggplot(aes(x=.pred,
-#                    size = usersrated,
-#                    y=actual))+
+#                    y=.actual,
+#                    color = .pred_yes))+
 #         geom_point(alpha = 0.5)+
-#         coord_obs_pred()
+#         facet_wrap(outcome ~.,
+#                    scales = "free")+
+#         scale_color_gradient(low = 'red',
+#                               high = 'dodgerblue2',
+#                              limits = c(0, 0.25),
+#                              oob = scales::squish)+
+#         geom_abline()
+# 
+# 
+# # predict new with function
+# upcoming_preds =
+#         games_processed %>%
+#         filter(yearpublished > end_train_year) %>%
+#         predict_bgg_outcomes(data = .,
+#                              averageweight_train_fit,
+#                              average_train_fit,
+#                              usersrated_train_fit) %>%
+#         left_join(.,
+#                   augment(hurdle_fit,
+#                           games_processed %>%
+#                                   filter(yearpublished > end_train_year)) %>%
+#                           select(game_id, name, usersrated, .pred_yes))
+# 
+# upcoming_preds %>%
+#         filter(.pred_yes > .25) %>%
+#         filter(yearpublished == 2024) %>% 
+#         filter(outcome == 'bayesaverage') %>% 
+#         arrange(desc(.pred)) %>%
+#         mutate(.actual = replace_na(.actual, 5.5))
+# 
+# # refit outcome models to train plus additional year
+# averageweight_fit = 
+#         averageweight_train_fit %>%
+#         fit(bind_rows(train_imputed,
+#                       valid_imputed) %>%
+#                     filter(yearpublished <= end_train_year+1) %>%
+#                     filter(numweights > 5) %>%
+#                     filter(usersrated >=25))
+# 
+# # average
+# average_fit = 
+#         average_train_fit %>%
+#         fit(bind_rows(train_imputed,
+#                       valid_imputed) %>%
+#                     filter(yearpublished <= end_train_year+1) %>%
+#                     filter(usersrated >=25))
+# 
+# # usersrated
+# usersrated_fit = 
+#         usersrated_train_fit %>%
+#         fit(bind_rows(train_imputed,
+#                       valid_imputed) %>%
+#                     filter(yearpublished <= end_train_year+1) %>%
+#                     filter(usersrated >=25))
+# 
+# # predict 2021-2023
+# upcoming_preds =
+#         games_processed %>%
+#         filter(yearpublished > end_train_year +1) %>%
+#         predict_bgg_outcomes(data = .,
+#                              averageweight_fit,
+#                              average_fit,
+#                              usersrated_fit) %>%
+#         left_join(.,
+#                   augment(hurdle_fit,
+#                           games_processed %>%
+#                                   filter(yearpublished > end_train_year+1)) %>%
+#                           select(game_id, name, usersrated, .pred_yes))
+# 
+# # 
+# # valid_preds %>%
+# #         select(yearpublished,
+# #                game_id,
+# #                name,
+# #                starts_with(".pred"),
+# #                starts_with(".actual")
+# #         )
+# #                       
+# #         
+# #         # predict with hurdle model
+# #         valid_hurdle = 
+# #                 hurdle_fit %>%
+# #                 augment(valid,
+# #                         type = 'prob')
+# #         
+# #         # predict with averageweight model
+# #         valid_imputed = 
+# #                 hurdle_fit %>%
+# #                 augment(valid_hurdle,
+# #                         type = 'prob')
+# #         
+# #         
+# #         
+# #         
+# #         
+# #         
+# # }
+# # 
+# # 
+# # # predict with averageweight and hurdle
+# # averageweight_preds =
+# #         averageweight_train_fit %>%
+# #         augment(
+# #                 hurdle_fit %>%
+# #                         augment(valid_imputed,
+# #                                 type = 'prob')) %>%
+# #         rename(.pred_hurdle = .pred_yes) %>%
+# #         select(game_id,
+# #                name,
+# #                yearpublished,
+# #                averageweight,
+# #                .pred,
+# #                averageweight,
+# #                .pred_hurdle) %>%
+# #         rename(actual = averageweight) %>%
+# #         transmute(outcome = 'averageweight',
+# #                   yearpublished,
+# #                   game_id,
+# #                   name,
+# #                   .pred,
+# #                   actual,
+# #                   averageweight,
+# #                   .pred_hurdle)
+# # 
+# # # predict with usersrated and hurdle
+# # usersrated_preds =
+# #         usersrated_train_fit %>%
+# #         augment(
+# #                 hurdle_fit %>%
+# #                         augment(valid_imputed,
+# #                                 type = 'prob')) %>%
+# #         rename(.pred_hurdle = .pred_yes) %>%
+# #         select(game_id,
+# #                name,
+# #                yearpublished,
+# #                log_usersrated,
+# #                .pred,
+# #                .pred_hurdle) %>%
+# #         rename(actual = log_usersrated) %>%
+# #         transmute(outcome = 'usersrated',
+# #                   yearpublished,
+# #                   game_id,
+# #                   name,
+# #                   .pred,
+# #                   actual,
+# #                   .pred_hurdle)
+# # 
+# # # predict with average and hurdle
+# # # preds
+# # average_preds =
+# #         average_train_fit %>%
+# #         augment(
+# #                 hurdle_fit %>%
+# #                         augment(valid_imputed,
+# #                                 type = 'prob')) %>%
+# #         rename(.pred_hurdle = .pred_yes) %>%
+# #         select(game_id,
+# #                name, 
+# #                yearpublished, 
+# #                usersrated,
+# #                .pred, 
+# #                average,
+# #                .pred_hurdle) %>%
+# #         rename(actual = average) %>%
+# #         transmute(outcome = 'average',
+# #                   yearpublished,
+# #                   game_id,
+# #                   name,
+# #                   .pred,
+# #                   actual,
+# #                   usersrated,
+# #                   .pred_hurdle)
+# # 
+# # # make bayesaverage preds
+# # bayesaverage_preds = 
+# #         bind_rows(average_preds,
+# #                   usersrated_preds)
+# #         
+# # bind_rows
+# # 
+# # 
+# # average_preds %>% 
+# #         ggplot(aes(x=.pred, 
+# #                    size = usersrated,
+# #                    y=actual))+
+# #         geom_point(alpha = 0.5)+
+# #         coord_obs_pred()
+# # 
+# # usersrated_preds %>%
+# #         ggplot(aes(x=.pred,
+# #                    size = usersrated,
+# #                    y=actual))+
+# #         geom_point(alpha = 0.5)+
+# #         coord_obs_pred()

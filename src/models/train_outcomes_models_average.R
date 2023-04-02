@@ -17,87 +17,81 @@ average_resamples =
 
 # builds all recipes for outcome
 average_recipes = 
-        create_outcome_recipes_conditional(data = average_train,
+        create_outcome_recipes(data = average_train,
                                outcome = average)
 
-# # create workflow sets
-# 
-# # linear models
-# average_linear_wflows = 
-#         create_workflow_set(data = average_train,
-#                             # select recipes
-#                             recipes = list("base_impute" = average_recipes$base_impute,
-#                                            "all_impute" = average_recipes$all_impute,
-#                                            "all_impute_splines" = average_recipes$all_impute_splines,
-#                                            "all_impute_pca" = average_recipes$all_impute %>%
-#                                                    step_pca(all_predictors(),
-#                                                             id = "pca",
-#                                                             threshold = 0.75)
-#                             ),
-#                             # select models
-#                             models = list("glmnet" = models$glmnet,
-#                                           "lm" = models$lm)
-#         )
-# 
-# # tune linear
-# average_linear_res = 
-#         average_linear_wflows %>%
-#         tune_grid_wflows(wflows = .,
-#                          resamples = average_resamples)
-# 
-# 
-# # create workflows for decision trees
-# average_cart_wflows =
-#         create_workflow_set(data = average_train,
-#                             # select recipes
-#                             recipes = list("base_trees" = average_recipes$base_trees,
-#                                            "all_trees" = average_recipes$all_trees),
-#                             # select models
-#                             models = list("cart" = cart_spec)
-#         )
-# 
-# # tune via race
-# average_cart_res =
-#         average_cart_wflows %>%
-#         tune_race_wflows(.,
-#                          resamples = average_resamples)
-# 
-# # make boosted workflows
-# average_boost_wflows = 
-#         create_workflow_set(data = average_train,
-#                             # select recipes
-#                             recipes = list("all_trees" = average_recipes$all_trees),
-#                             # select models
-#                             models = list("xgb" = xgb_spec)
-#         )
-# 
-# # tune xgb without parallel
-# # ctrl_xgb = ctrl
-# # ctrl_xgb$allow_par=F
-# 
-# # tune via race
-# average_boost_res =
-#         average_boost_wflows %>%
-#         tune_race_wflows(.,
-#                          resamples = average_resamples)
-# 
-# # collect results
-# average_res = 
-#         bind_rows(average_linear_res,
-#                   average_cart_res,
-#                   average_boost_res)
+# create workflow sets
 
-# # pin results locally
-# average_res %>%
-#         pin_write(board = pins::board_folder(here::here("models", "results", "average")),
-#                   name  = "average_res",
-#                   description = paste("trained through", end_train_year)
-#         )
+# linear models
+average_linear_wflows = 
+        create_workflow_set(data = average_train,
+                            # select recipes
+                            recipes = list("base_impute" = average_recipes$base_impute,
+                                           "all_impute" = average_recipes$all_impute,
+                                           "all_impute_splines" = average_recipes$all_impute_splines,
+                                           "all_impute_pca" = average_recipes$all_impute %>%
+                                                   step_pca(all_predictors(),
+                                                            id = "pca",
+                                                            threshold = 0.75)
+                            ),
+                            # select models
+                            models = list("glmnet" = models$glmnet,
+                                          "lm" = models$lm)
+        )
 
-# pin read
-average_res =
-        pin_read(board = pins::board_folder(here::here("models", "results", "average")),
-                 name = "average_res")
+# tune linear
+average_linear_res = 
+        average_linear_wflows %>%
+        tune_grid_wflows(wflows = .,
+                         resamples = average_resamples)
+
+# create workflows for decision trees
+average_cart_wflows =
+        create_workflow_set(data = average_train,
+                            # select recipes
+                            recipes = list("base_trees" = average_recipes$base_trees,
+                                           "all_trees" = average_recipes$all_trees),
+                            # select models
+                            models = list("cart" = cart_spec)
+        )
+
+# tune via race
+average_cart_res =
+        average_cart_wflows %>%
+        tune_race_wflows(.,
+                         resamples = average_resamples)
+
+# make boosted workflows
+average_boost_wflows = 
+        create_workflow_set(data = average_train,
+                            # select recipes
+                            recipes = list("all_trees" = average_recipes$all_trees),
+                            # select models
+                            models = list("xgb" = xgb_spec)
+        )
+
+# tune xgb without parallel
+# ctrl_xgb = ctrl
+# ctrl_xgb$allow_par=F
+
+# tune via race
+average_boost_res =
+        average_boost_wflows %>%
+        tune_race_wflows(.,
+                         resamples = average_resamples)
+
+# collect results
+average_res = 
+        bind_rows(average_linear_res,
+                  average_cart_res,
+                  average_boost_res)
+
+# pin results locally
+average_res %>%
+        pin_write(board = pins::board_folder(here::here("models", "results", end_train_year)),
+                  name  = "average_res",
+                  description = paste("trained through", end_train_year)
+        )
 
 # get best mod given training set and finalize fit
 # select best model based on log loss
@@ -118,86 +112,28 @@ average_best_tune =
         select(wflow_id, best_tune) %>%
         pluck("best_tune", 1)
 
-# predict validation set
-average_last_fit = 
+# fit on train
+average_train_fit = 
         average_res %>%
-        extract_workflow(id = average_best_mod) %>% 
+        extract_workflow(id = average_best_mod) %>%
         finalize_workflow(parameters = average_best_tune) %>%
         fit(average_train)
 
-# # load vetiver
-# hurdle_fit = 
-#         vetiver_pin_read(deployed_board,
-#                          name = "hurdle_vetiver")
-# 
-# # preds
-# average_preds =
-#         average_last_fit %>%
-#         augment(
-#                 hurdle_fit %>%
-#                         augment(valid_imputed,
-#                                 type = 'prob')) %>%
-#         rename(.pred_hurdle = .pred_yes) %>%
-#         select(game_id,
-#                name, 
-#                yearpublished, 
-#                usersrated,
-#                .pred, 
-#                average,
-#                .pred_hurdle) %>%
-#         rename(actual = average) %>%
-#         transmute(outcome = 'average',
-#                   yearpublished,
-#                   game_id,
-#                   name,
-#                   .pred,
-#                   actual,
-#                   usersrated,
-#                   .pred_hurdle)
-# 
-# average_preds %>% 
-#         ggplot(aes(x=.pred, 
-#                    size = usersrated,
-#                    y=actual))+
-#         geom_point(alpha = 0.5)+
-#         coord_obs_pred()
-# 
-# # # fit on train
-# # average_train_fit = 
-# #         average_res %>%
-# #         extract_workflow(id = average_best_mod) %>%
-# #         finalize_workflow(parameters = average_best_tune) %>%
-# #         fit(average_train)
-# # 
-# # # save workflow to local board
-# # average_train_fit %>%
-# #         pin_write(board = pins::board_folder(here::here("models", "models", "average")),
-# #                   name = "average_fit",
-# #                   description = paste("trained through", end_train_year))
-# # 
-# # 
-# # 
-# 
-# # # deploy with vetiver
-# # # vetiver version (for active use)
-# # average_vetiver =
-# #         vetiver::vetiver_model(model = average_train_fit,
-# #                                model_name = "average_vetiver",
-# #                                description = paste("xgboost classifiation model trained through",
-# #                                                    end_train_year , 
-# #                                                    "to predict average"))
-# # 
-# # # test that it works
-# # testthat::test_that("vetiver model does not error due to package",
-# #                     testthat::expect_no_error(
-# #                             average_vetiver %>%
-# #                                     predict(train %>%
-# #                                                     sample_n(10)))
-# # )
-# # 
-# # # connect to gcs again
-# # source(here::here("src", "data", "connect_to_gcs.R"))
-# # 
-# # # pin to gcs
-# # vetiver::vetiver_pin_write(board = deployed_board,
-# #                            average_vetiver)
+# save trained workflow to models board
+# prefix with training year in gcs
+temp_models_board = 
+        # models board
+        pins::board_gcs(
+                bucket = my_bucket,
+                prefix = paste("models/", end_train_year, "/", sep=""),
+                versioned = T)
+
+# pin
+average_train_fit %>%
+        pin_write(board = temp_models_board,
+                  name = "average_fit",
+                  description = paste("model trained to predict average; trained through", end_train_year))
+
+# # deploy with vetiver
+# # vetiver version (for active use)
+# average_vetiver =

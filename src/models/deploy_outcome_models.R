@@ -3,15 +3,16 @@
 # refit outcome models to train plus additional year
 # averageweight
 averageweight_fit = 
-        averageweight_last_fit %>%
+        averageweight_train_fit %>%
         fit(bind_rows(train_imputed,
                       valid_imputed) %>%
                     filter(yearpublished <= end_train_year+1) %>%
+                    filter(numweights > 5) %>%
                     filter(usersrated >=25))
 
 # average
 average_fit = 
-        average_last_fit %>%
+        average_train_fit %>%
         fit(bind_rows(train_imputed,
                       valid_imputed) %>%
                     filter(yearpublished <= end_train_year+1) %>%
@@ -19,7 +20,7 @@ average_fit =
 
 # usersrated
 usersrated_fit = 
-        usersrated_last_fit %>%
+        usersrated_train_fit %>%
         fit(bind_rows(train_imputed,
                       valid_imputed) %>%
                     filter(yearpublished <= end_train_year+1) %>%
@@ -67,7 +68,7 @@ averageweight_vetiver =
 testthat::test_that("vetiver model does not error due to package",
                     testthat::expect_no_error(
                             averageweight_vetiver %>%
-                                    predict(train %>%
+                                    predict(train_imputed %>%
                                                     sample_n(10)))
 )
 
@@ -91,7 +92,7 @@ average_vetiver =
 testthat::test_that("vetiver model does not error due to package",
                     testthat::expect_no_error(
                             average_vetiver %>%
-                                    predict(train %>%
+                                    predict(train_imputed %>%
                                                     sample_n(10)))
 )
 
@@ -115,7 +116,7 @@ usersrated_vetiver =
 testthat::test_that("vetiver model does not error due to package",
                     testthat::expect_no_error(
                             usersrated_vetiver %>%
-                                    predict(train %>%
+                                    predict(train_imputed %>%
                                                     sample_n(10)))
 )
 

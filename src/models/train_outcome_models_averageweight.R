@@ -5,7 +5,8 @@
 averageweight_train_and_resamples =
         create_train_and_resamples(data = train %>%
                                            filter(!is.na(averageweight)) %>%
-                                           filter(usersrated >= 25),
+                                           filter(usersrated >= 25) %>%
+                                           filter(numweights > 5),
                                    outcome = averageweight)
 
 # get train
@@ -90,10 +91,11 @@ averageweight_res =
 
 # pin results locally
 averageweight_res %>%
-        pin_write(board = pins::board_folder(here::here("models", "results", "averageweight")),
+        pin_write(board = pins::board_folder(here::here("models", "results", end_train_year)),
                   name  = "averageweight_res",
                   description = paste("trained through", end_train_year)
         )
+
 
 # get best mod given training set and finalize fit
 # select best model based on log loss
@@ -121,33 +123,16 @@ averageweight_train_fit =
         finalize_workflow(parameters = averageweight_best_tune) %>%
         fit(averageweight_train)
 
-# save workflow to local board
+# save trained workflow to models board
+# prefix with training year in gcs
+temp_models_board = 
+        # models board
+        pins::board_gcs(
+                bucket = my_bucket,
+                prefix = paste("models/", end_train_year, "/", sep=""),
+                versioned = T)
+        
 averageweight_train_fit %>%
-        pin_write(board = pins::board_folder(here::here("models", "models", "averageweight")),
+        pin_write(board = temp_models_board,
                   name = "averageweight_fit",
-                  description = paste("trained through", end_train_year))
-        
-# deploy with vetiver
-# vetiver version (for active use)
-averageweight_vetiver =
-        vetiver::vetiver_model(model = averageweight_train_fit,
-                               model_name = "averageweight_vetiver",
-                               description = paste("xgboost classifiation model trained through",
-                                                   end_train_year , 
-                                                   "to predict averageweight"))
-
-# test that it works
-testthat::test_that("vetiver model does not error due to package",
-                    testthat::expect_no_error(
-                            averageweight_vetiver %>%
-                                    predict(train %>%
-                                                    sample_n(10)))
-)
-
-# connect to gcs again
-source(here::here("src", "data", "connect_to_gcs.R"))
-        
-# pin to gcs
-vetiver::vetiver_pin_write(board = deployed_board,
-                           averageweight_vetiver)
-        
+                  description = paste("model trained to predict averageweight; trained through", end_train_year))

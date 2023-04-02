@@ -4,7 +4,6 @@ source(here::here("src", "data", "connect_to_gcs.R"))
 
 # packages ----------------------------------------------------------------
 
-
 # tidyverse packages
 library(tidyverse)
 library(tidymodels)
@@ -32,10 +31,22 @@ games_processed = games_nested %>%
 
 # upcoming games
 games_upcoming = games_processed %>%
-        filter(yearpublished >= 2021)
+        filter(yearpublished > 2021)
 
 # functions ---------------------------------------------------------------
 
+# augment games with estimated averageweight
+impute_averageweight = function(averageweight_mod,
+                                data) {
+        
+        averageweight_mod %>%
+                augment(data) %>%
+                rename(est_averageweight = .pred)
+        
+}
+
+# predict all bgg outcomes with mods
+# function to predict
 predict_bgg_outcomes = function(data,
                                 averageweight_mod,
                                 average_mod,
@@ -47,21 +58,11 @@ predict_bgg_outcomes = function(data,
         # predict with hurdle model
         preds = 
                 data %>%
-                # augment(hurdle_mod,
-                #         new_data = .) %>%
-                # select(-.pred_no,
-                #        -.pred_class) %>%
-                # predict with averageweight
-                augment(averageweight_mod,
-                        new_data = .) %>%
-                # rename
-                rename(.pred_averageweight = .pred,
+                # impute averageweight
+                impute_averageweight(averageweight_mod,
+                                     data =.) %>%
+                mutate(.pred_averageweight = est_averageweight,
                        .actual_averageweight = averageweight) %>%
-                # truncate and replace
-                mutate(.pred_averageweight = case_when(.pred_averageweight > 5 ~5,
-                                                       .pred_averageweight < 1 ~ 1,
-                                                       TRUE ~ .pred_averageweight),
-                       averageweight = .pred_averageweight) %>%
                 # predict with average
                 augment(average_mod,
                         new_data = .) %>%
@@ -118,7 +119,6 @@ predict_bgg_outcomes = function(data,
         
 }
 
-
 # models ------------------------------------------------------------------
 
 
@@ -150,7 +150,7 @@ outcome_models = tribble(~outcome, ~model,
                          "average", average_fit,
                          "usersrated", usersrated_fit)
 
-# get predictions for games
+# get predictions for upcoming games
 game_preds = 
         # predict outcomes
         games_upcoming %>%
@@ -164,4 +164,33 @@ game_preds =
                           games_upcoming) %>%
                           select(game_id, name, usersrated, .pred_yes),
                   by = c("game_id", "name"))
+
+# top for 2023
+game_preds %>%
+        filter(.pred_yes > .15) %>%
+        filter(outcome == 'bayesaverage') %>%
+        filter(yearpublished == 2022) %>%
+        arrange(desc(.pred)) %>%
+        mutate(rank = row_number()) %>%
+        view()
+
+game_preds %>%
+        filter(.pred_yes > .25) %>%
+        filter(outcome == 'bayesaverage') %>%
+        filter(yearpublished == 2021) %>%
+        arrange(desc(.pred)) %>%
+        mutate(rank = row_number()) %>%
+        view()
+
+game_preds %>%
+        filter(.pred_yes > .25) %>%
+        select(yearpublished, game_id, name, outcome, .pred) %>%
+        spread(outcome, .pred) %>%
+        ggplot(aes(x=average,
+                   y=usersrated))+
+        geom_point(size = 0.5,
+                   position = position_jitternormal(sd_y = 0.05))+
+        scale_y_log10()+
+        theme_minimal()+
+        facet_wrap(yearpublished ~.)
 
