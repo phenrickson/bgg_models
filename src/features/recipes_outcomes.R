@@ -54,14 +54,17 @@ dummy_extract_variable = function(recipe,
                              variable,
                              threshold = 100) {
         
-        variable = enquo(variable)
+        var = enquo(variable)
         
         recipe %>%
                 # tokenize 
-                step_dummy_extract(!!variable,
+                step_dummy_extract(!!var,
                                    sep = ", ",
-                                   threshold = threshold)
-        
+                                   other = "remove_other_field",
+                                   threshold = threshold) %>%
+                # remove other var
+                step_rm(contains("remove_other_field"))
+
 }
 
 

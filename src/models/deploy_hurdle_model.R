@@ -23,7 +23,7 @@ hurdle_xgb =
         extract_workflow('all_xgb') %>%
         finalize_workflow(parameters = xgb_tune) %>%
         fit(bind_rows(train, 
-                      valid))
+                      valid %>% filter(yearpublished < end_train_year + 2)))
 
 # pin workflow
 hurdle_xgb  %>%
@@ -36,7 +36,7 @@ hurdle_vetiver =
         vetiver::vetiver_model(model = hurdle_xgb,
                                model_name = "hurdle_vetiver",
                                description = paste("xgboost classifiation model trained through",
-                                                   end_train_year+ 2 , 
+                                                   end_train_year+ 1 , 
                                                    "to predict whether games will hit user ratings threshold"))
 
 # test that it works

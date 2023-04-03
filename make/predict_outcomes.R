@@ -31,7 +31,7 @@ games_processed = games_nested %>%
 
 # upcoming games
 games_upcoming = games_processed %>%
-        filter(yearpublished > 2021)
+        filter(yearpublished >=2021)
 
 # functions ---------------------------------------------------------------
 
@@ -163,9 +163,18 @@ game_preds =
                   augment(hurdle_fit,
                           games_upcoming) %>%
                           select(game_id, name, usersrated, .pred_yes),
-                  by = c("game_id", "name"))
+                  by = c("game_id", "name")
+        )
 
 # top for 2023
+game_preds %>%
+        filter(.pred_yes > .15) %>%
+        filter(outcome == 'bayesaverage') %>%
+        filter(yearpublished == 2021) %>%
+        arrange(desc(.pred)) %>%
+        mutate(rank = row_number()) %>%
+        view()
+
 game_preds %>%
         filter(.pred_yes > .15) %>%
         filter(outcome == 'bayesaverage') %>%
@@ -175,12 +184,21 @@ game_preds %>%
         view()
 
 game_preds %>%
-        filter(.pred_yes > .25) %>%
-        filter(outcome == 'bayesaverage') %>%
-        filter(yearpublished == 2021) %>%
+        filter(.pred_yes > .15) %>%
+        filter(outcome == 'average') %>%
+        filter(yearpublished == 2022) %>%
         arrange(desc(.pred)) %>%
-        mutate(rank = row_number()) %>%
-        view()
+        mutate(rank = row_number())
+
+game_preds %>%
+        filter(.pred_yes > .5) %>%
+        filter(outcome == 'bayesaverage') %>%
+        filter(yearpublished == 2024) %>%
+        arrange(desc(.pred)) %>%
+        mutate(rank = row_number())
+
+game_preds %>%
+        filter(name == 'Fire for Light')
 
 game_preds %>%
         filter(.pred_yes > .25) %>%
