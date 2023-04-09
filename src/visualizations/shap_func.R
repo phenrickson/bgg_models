@@ -384,6 +384,13 @@ shap_explain_plot = function(shap,
 }
 
 # make grid
+shap_explain(usersrated_fit,
+             newdata = games_upcoming_est %>%
+                     mutate(yearpublished = 2000) %>%
+                  #   filter(grepl('Oathsworn', name)) %>%
+                     # filter(game_id == 361640)) %>%
+                     sample_n(1)) %>%
+        shap_explain_plot(year = F)
 
 # test functoin on notable game
 shap_explain(average_fit,
@@ -391,4 +398,11 @@ shap_explain(average_fit,
                      # filter(game_id == 361640)) %>%
                      sample_n(1)) %>%
         shap_explain_plot(year = F)
+
+shap_explain(average_fit,
+             newdata = games_upcoming_est %>%
+                     # filter(game_id == 361640)) %>%
+                     sample_n(1)) %>%
+        shap_explain_plot(year = F)
+
 
