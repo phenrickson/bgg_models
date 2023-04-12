@@ -95,6 +95,7 @@ user_wflows =
 
 # glmnet
 tictoc::tic("tuning glmnet...")
+set.seed(1999)
 glmnet_res =
         user_wflows %>%
         filter(grepl("glmnet", wflow_id)) %>%
@@ -109,6 +110,7 @@ tictoc::toc()
 
 # cart
 tictoc::tic("tuning cart...")
+set.seed(1999)
 cart_res =
         user_wflows %>%
         filter(grepl("cart", wflow_id)) %>%
@@ -150,6 +152,7 @@ tictoc::toc()
 
 # lightgbm
 tictoc::tic("tuning lightgbm...")
+set.seed(1999)
 lightgbm_res =
         user_wflows %>%
         filter(grepl("lightgbm", wflow_id)) %>%
@@ -196,6 +199,7 @@ training_results %>%
 
 
 # fit on train
+set.seed(1999)
 train_fits =
         training_results %>%
         finalize_fits(metric = 'mn_log_loss')
