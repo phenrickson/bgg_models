@@ -1,52 +1,69 @@
-# run setup
+
+# setup -------------------------------------------------------------------
+
+# run setup for user models
 source(here::here("src", "models", "setup_user_model.R"))
 
-# parameters
-username = 'mrbananagrabber'
-end_train_year = 2019
+
+# register parallel -------------------------------------------------------
+
+# set parallel
+library(doParallel)
+all_cores <- parallel::detectCores(logical = FALSE)
+doMC::registerDoMC(cores = all_cores)
+
+# parameters for user training
+username = 'GOBBluth89'
+end_train_year = 2020
+valid_window = 2
 outcome = 'ever_owned'
+
+
+# run ---------------------------------------------------------------------
+
 
 message("fetching user collection...")
 
 # create user objects for training
-user_collection = 
+user_collection =
         assemble_user_collection(username,
                                  games_imputed)
 
 message(paste("setting up user models for ", '`', outcome,  '`', "...", sep=""))
 
-# create objects for training with user
-user_setup = 
+user_train_setup = 
         make_user_split_and_resamples(user_collection,
-                                      games = games_imputed,
-                                      end_train_year = 2019,
-                                      valid_window = 2,
-                                      outcome = outcome,
-                                      min_users = 100)
+                              games = games_imputed,
+                              end_train_year = end_train_year,
+                              valid_window = valid_window,
+                              outcome = outcome,
+                              min_users = 30)
 
 message("creating user recipes...")
 
 # create user recipes
 user_recipes = 
-        make_user_recipes(data = user_setup$user_split$train,
-                          outcome = user_setup$outcome)
+        make_user_recipes(data = user_train_setup$user_split$train,
+                          outcome = user_train_setup$outcome)
 
 # model specs to tune over
-models_list = mget(grep("_class_spec",
-              names(.GlobalEnv),
-              value=TRUE)) %>%
+models_list =
+        mget(grep("_class_spec",
+                  names(.GlobalEnv),
+                  value=TRUE)) %>%
         # subnames
         set_names(., gsub("_class_spec", "", names(.)))
-        
+
 # user wflows
 user_wflows = 
         workflow_set(
                 preproc =        
                         list(
-                        minimal_impute = user_recipes$minimal_impute,
-                   #     all_impute = user_recipes$all_impute,
-                        all_splines = user_recipes$all_impute_splines,
+                        minimal = user_recipes$minimal_splines,
+                        impute = user_recipes$all_impute,
+                        splines = user_recipes$all_impute_splines,
                         pca = user_recipes$all_impute_splines %>%
+                                step_rm(contains("year_")) %>%
                                 step_pca(all_numeric_predictors(),
                                          threshold = 0.75,
                                          id = 'pca'),
@@ -60,400 +77,381 @@ user_wflows =
         ) %>%
         # keep only specified wflows
         filter(wflow_id %in% 
-                       c("minimal_impute_glmnet",
-                         "minimal_splines_glmnet",
-                         "all_impute_glmnet",
-                         "all_impute_mars",
-                         "all_splines_glmnet",
-                     #    "pca_glmnet",
-                      #   "pca_knn",
-                         "corr_glm",
-                         "trees_cart",
-                         "trees_xgb",
-                         "trees_lightgbm")
+                       c(
+                               #"minimal_impute_glmnet",
+                               "minimal_glmnet",
+                               # "all_impute_glmnet",
+                               "impute_mars",
+                               "splines_glmnet",
+                               #    "pca_glmnet",
+                               "pca_knn",
+                               "corr_glm",
+                               "trees_cart",
+                               "trees_xgb",
+                               "trees_lightgbm")
         )
-
-
 
 # tune --------------------------------------------------------------------
 
-# # penalized regressions
-
+# glmnet
 tictoc::tic("tuning glmnet...")
-
-# tune glmnet
 glmnet_res =
         user_wflows %>%
         filter(grepl("glmnet", wflow_id)) %>%
         workflow_map(
                 fn = 'tune_grid',
-                resamples = user_setup$user_train_resamples,
+                resamples = user_train_setup$user_train_resamples,
                 metrics = prob_metrics,
                 control = ctrl_grid,
                 grid = glmnet_grid
         )
-
 tictoc::toc()
 
-
-# tuning results
-glmnet_res %>%
-        rank_results(rank_metric = 'mn_log_loss',
-                     select_best = T)
-
-# tuning predictions
-glmnet_res %>%
-        collect_predictions(select_best = T,
-                                    metric = 'mn_log_loss') %>%
-        get_trim_results() %>%
-        left_join(., 
-                  user_setup$user_split$train %>%
-                          mutate(.row = row_number()) %>%
-                          select(.row, game_id, name, yearpublished)) %>%
-        arrange(desc(.pred_yes)) %>%
-        filter(wflow_id == 'all_splines_glmnet') %>%
-        print(n = 25)
-
-
-# fits
-glmnet_fits =
-        glmnet_res %>%
-        mutate(best_tune = map(result,
-                               ~ .x %>% select_best(metric = 'mn_log_loss'))) %>%
-        mutate(last_fit = map2(result,
-                               best_tune,
-                               ~ .x %>%
-                                       extract_workflow() %>%
-                                       finalize_workflow(parameters = .y) %>%
-                                       last_fit(user_setup$valid_split,
-                                                metrics = prob_metrics,
-                                                control = ctrl_last_fit))
+# cart
+tictoc::tic("tuning cart...")
+cart_res =
+        user_wflows %>%
+        filter(grepl("cart", wflow_id)) %>%
+        workflow_map(
+                fn = 'tune_grid',
+                resamples = user_train_setup$user_train_resamples,
+                metrics = prob_metrics,
+                control = ctrl_grid
         )
-
-# coef plot
-library(tidytext)
-glmnet_fits %>% 
-        select(wflow_id, last_fit) %>%
-        mutate(tidied = map(last_fit,
-                            ~ .x %>% 
-                                    extract_fit_parsnip %>%
-                                    tidy))  %>%
-        select(wflow_id, tidied) %>%
-        unnest(tidied) %>%
-        filter(estimate != 0) %>%
-        filter(term != '(Intercept)') %>% 
-        group_by(wflow_id) %>%
-        slice_max(abs(estimate), n = 40) %>% 
-        ggplot(aes(x=estimate, y = reorder_within(term, estimate, wflow_id)))+
-        geom_point()+
-        facet_wrap(wflow_id ~.,
-                   scales = "free_y")+
-        scale_y_reordered()+
-        theme(axis.text.y = element_text(size = 6))
-        
-
-
-# get fits
-
-glmnet_fits %>% 
-        select(wflow_id, last_fit) %>%
-        mutate(tidied = map(last_fit,
-                            ~ .x %>% 
-                                    extract_fit_parsnip %>%
-                                    tidy))  %>%
-        select(wflow_id, tidied) %>%
-        unnest(tidied) %>%
-        filter(estimate != 0) %>%
-        filter(term != '(Intercept)') %>% 
-        group_by(wflow_id) %>%
-        slice_max(abs(estimate), n = 40) %>% 
-        ggplot(aes(x=estimate, y = reorder_within(term, estimate, wflow_id)))+
-        geom_point()+
-        facet_wrap(wflow_id ~.,
-                   scales = "free_y")+
-        scale_y_reordered()+
-        theme(axis.text.y = element_text(size = 6))
-
+tictoc::toc()
 
 # 
-# # k nearest neighbor
-# knn_res = 
-#         user_wflow_set %>%
+# # mars
+# tictoc::tic("tuning mars...")
+# mars_res =
+#         user_wflows %>%
+#         filter(grepl("mars", wflow_id)) %>%
+#         workflow_map(
+#                 fn = 'tune_grid',
+#                 resamples = user_train_setup$user_train_resamples,
+#                 metrics = prob_metrics,
+#                 control = ctrl_grid,
+#                 grid = mars_grid)
+# tictoc::toc()
+
+# # knn
+# tictoc::tic("tuning knn...")
+# knn_res =
+#         user_wflows %>%
 #         filter(grepl("knn", wflow_id)) %>%
 #         workflow_map(
 #                 fn = 'tune_grid',
-#                 resamples = user_train_resamples,
-#                 metrics = tune_metrics,
-#                 control = tune_ctrl,
+#                 resamples = user_train_setup$user_train_resamples,
+#                 metrics = prob_metrics,
+#                 control = ctrl_grid,
 #                 grid = knn_grid
 #         )
+# tictoc::toc()
+
+# lightgbm
+tictoc::tic("tuning lightgbm...")
+lightgbm_res =
+        user_wflows %>%
+        filter(grepl("lightgbm", wflow_id)) %>%
+        workflow_map(
+                fn = 'tune_grid',
+                resamples = user_train_setup$user_train_resamples,
+                metrics = prob_metrics,
+                control = ctrl_grid
+        )
+tictoc::toc()
+
+
+
+# resamples -----------------------------------------------------------------
+
+
+# get results from training
+training_results  =
+        mget(grep("_res$",
+                         names(.GlobalEnv),
+                         value=TRUE)) %>%
+        bind_rows()  %>%
+        check_results()
+
+# training predictions
+training_preds = 
+        training_results %>%
+        collect_predictions(select_best = T,
+                            metric = 'mn_log_loss') %>%
+        left_join(.,
+                  user_train_setup$user_split$train %>%
+                          mutate(.row = row_number()) %>%
+                          select(.row, game_id, name, yearpublished)) %>%
+        trim_results
+
+# tuning results
+training_results %>%
+        rank_results(rank_metric = 'mn_log_loss',
+                     select_best = T) %>%
+        select(wflow_id, .config, .metric, mean, std_err, n, rank) %>%
+        arrange(.metric, rank)
+
+# validation results --------------------------------------------------------------
+
+
+# fit on train
+train_fits =
+        training_results %>%
+        finalize_fits(metric = 'mn_log_loss')
+
+# valid predictions
+valid_preds =
+        train_fits %>%
+        get_predictions()
+
+# valid metrics
+valid_metrics = 
+        train_fits %>%
+        get_metrics()
+
+#
+valid_preds %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        arrange(desc(.pred_yes))
 # 
-# # xgboost
-# xgb_res = 
-#         glmnet_res = 
-#         user_wflow_set %>%
-#         filter(grepl("xgb", wflow_id)) %>%
-#         workflow_map(
-#                 fn = 'tune_grid',
-#                 resamples = user_train_resamples,
-#                 metrics = tune_metrics,
-#                 control = tune_ctrl
-#         )
-# 
-# # light gbm
-# lightgbm_res = 
-#         glmnet_res = 
-#         user_wflow_set %>%
-#         filter(grepl("lightgbm", wflow_id)) %>%
-#         workflow_map(
-#                 fn = 'tune_grid',
-#                 resamples = user_train_resamples,
-#                 metrics = tune_metrics,
-#                 control = tune_ctrl
-#         )
-# 
-# # combine
-# rbind(glmnet_res,
-#       xgb_res,
-#       knn_res,
-#       lightgbm_res) %>%
-#         rank_results(rank_metric = 'mn_log_loss',
-#                      select_best = T)
-# 
-# 
-# # get final fits
-# train_fits =
-#         rbind(xgb_res,
-#               lightgbm_res,
-#               knn_res,
-#               glmnet_res) %>%
-#         mutate(best_tune = map(result,
-#                                ~ .x %>% select_best(metric = 'mn_log_loss'))) %>%
-#         mutate(last_fit = map2(result,
-#                                best_tune,
-#                                ~ .x %>%
-#                                        extract_workflow() %>%
-#                                        finalize_workflow(parameters = .y) %>%
-#                                        last_fit(valid_split,
-#                                                 metrics = tune_metrics,
-#                                                 event_level = 'second'))
-#         )
-# 
-# # get results on validation set
-# train_fits %>%
-#         select(wflow_id, last_fit) %>%
-#         unnest(last_fit) %>%
-#         select(wflow_id, .metrics) %>%
-#         unnest(.metrics) %>%
-#         arrange(.metric, .estimate)
-# 
-# # look at predictions
-# train_fits %>%
-#         unnest(last_fit) %>%
-#         select(wflow_id, .predictions) %>%
-#         unnest(.predictions) %>%
-#         group_by(wflow_id) %>%
-#         cal_plot_breaks(truth = own,
-#                         num_breaks = 5,
-#                         estimate = .pred_yes,
-#                         event_level = 'second')+
-#         facet_wrap(wflow_id ~.)
-# left_join(., games_split$valid %>%
-#                   mutate(.row = nrow(games_split$train) + row_number()) %>%
-#                   select(.row, game_id, name, yearpublished)) %>%
-#         select(wflow_id, .pred_yes, own, game_id, name, yearpublished)
-# arrange(desc(.pred_yes))
-# 
-# 
-# # get best tunes
-# glmnet_best_tunes = 
-#         glmnet_res %>%
-#         mutate(best_tune = map(result,
-#                                ~ .x %>% select_best(metric = 'mn_log_loss'))) %>%
-#         mutate(.predictions = map2(result,
-#                                    best_tune,
-#                                    ~ .x %>% collect_predictions(parameters = .y)))
-# 
-# # calibration
-# library(probably)
-# 
-# 
-# # get fits
-# glmnet_fits = 
-#         glmnet_res %>%
-#         mutate(best_tune = map(result,
-#                                ~ .x %>% select_best(metric = 'mn_log_loss'))) %>%
-#         mutate(last_fit = map2(result,
-#                                best_tune,
-#                                ~ .x %>% 
-#                                        extract_workflow() %>%
-#                                        finalize_workflow(parameters = .y) %>%
-#                                        last_fit(valid_split,
-#                                                 metrics = tune_metrics,
-#                                                 event_level = 'second'))
-#         )
-# 
-# 
-# glmnet_fits %>% 
-#         select(wflow_id, last_fit) %>%
-#         unnest(last_fit) %>%
-#         unnest(.metrics) %>%
-#         select(wflow_id, id, .metric, .estimate) %>%
-#         arrange()
-# collect_metrics(select_best = T)
-# 
-# 
-# 
-# fit(games)
-# glmnet_res %>%
-#         
-#         mutate(best_tune = map(result,
-#                                ~ .x %>% select_best(metric = 'mn_log_loss'))) %>%
-#         select(wflow_id, best_tune) %>%
-#         unnest(best_tune)
-# 
-# autoplot(glmnet_res) +
-#         facet_wrap(.metric ~ wflow_id,
-#                    scales = "free_y")
-# 
-# glmnet_res %>%
-#         collect_predictions(parameters = glmnet_best_tunes)
-# 
-# 
-# # logistic regression
-# glm_res = 
-#         user_wflow_set %>%
-#         filter(grepl("_glm$", wflow_id)) %>%
-#         workflow_map(
-#                 fn = 'tune_grid',
-#                 resamples = user_train_resamples,
-#                 metrics = tune_metrics,
-#                 control = tune_ctrl)
-# 
-# 
-# glm_fit = glm_res %>%
-#         mutate(last_fit = map(result,
-#                               ~ .x %>%
-#                                       extract_workflow() %>%
-#                                       last_fit(valid_split,
-#                                                event_level = 'second',
-#                                                metrics = tune_metrics))
-#         )
-# 
-# 
-# 
-# # knn
-# 
-# 
-# 
-# 
-# # mars
-# 
-# 
-# # glmnet
-# glmnet_res = 
-#         user_wflow_set %>%
-#         extract_workflow(id = 'impute_glmnet') %>%
-#         tune_grid(
-#                 resamples = user_train_resamples,
-#                 control = tune_ctrl,
-#                 metrics = tune_metrics,
-#                 grid = glmnet_grid)
-# 
-# # tuning plot
-# autoplot(glmnet_res)
-# 
-# # get best tune
-# glmnet_best_tune = 
-#         glmnet_res %>%
-#         select_best(metric = 'mn_log_loss')
-# 
-# # get fit
-# glmnet_fit = 
-#         glmnet_res %>%
-#         extract_workflow() %>%
-#         finalize_workflow(parameters = glmnet_best_tune) %>%
-#         fit(games_split$train)
-# 
-# # plot
-# glmnet_fit %>% 
-#         extract_fit_parsnip() %>% 
-#         tidy() %>% 
-#         filter(estimate !=0 & term!='(Intercept)') %>%
-#         ggplot(aes(x=estimate, y=reorder(term, estimate)))+
-#         geom_point()
-# 
-# # get predictions
-# glmnet_preds = 
-#         glmnet_res %>%
-#         collect_predictions(parameters = glmnet_best_tune) %>%
-#         arrange(.row) %>%
-#         bind_cols(., games_split$train %>%
-#                           select(name, game_id, yearpublished)) %>%
-#         select(id, .config, penalty, .pred_yes, own, name, game_id, yearpublished)
-# 
-# # roc
-# glmnet_res %>%
-#         collect_predictions(parameters = glmnet_best_tune) %>%
-#         roc_curve(truth = own,
-#                   estimate = .pred_yes,
-#                   event_level = 'second') %>%
-#         autoplot()
-# 
-# glmnet_res %>%
-#         collect_predictions(parameters = glmnet_best_tune) %>%
-#         group_by(prob = plyr::round_any(.pred_yes, .05),
-#                  own) %>%
-#         count() %>%
-#         group_by(prob) %>%
-#         mutate(prop = n / sum(n)) %>%
-#         mutate(total = sum(n)) %>%
-#         filter(own == 'yes') %>%
-#         ggplot(aes(x=prob,
-#                    size = total,
-#                    y = prop))+
-#         geom_point()+
-#         geom_line(lwd = 0.5)+
-#         coord_obs_pred()+
-#         geom_abline()+
-#         theme_minimal()
-# 
-# # logistic regression
-# glmn_res = 
-#         user_wflow_set %>%
-#         extract_workflow(id = 'corr_glm') %>%
-#         tune_grid(
-#                 resamples = user_train_resamples,
-#                 control = tune_ctrl,
-#                 metrics = tune_metrics)
-# 
-# # estimate averageweight
-# 
-# # load user data
-# 
-# 
-# # # extract from pca
-# # pca = glmnet_res %>%
-# #         extract_workflow(id = 'pca_glmnet') %>%
-# #         extract_preprocessor() %>%
-# #         prep()
-# # 
-# # # examine
-# # components = 
-# #         pca %>%
-# #         bake(new_data = NULL) %>%
-# #         select(game_id, name, own, starts_with("PC")) %>%
-# #         set_names(., str_replace(names(.), "PC0", "PC") %>%
-# #                           str_replace("PC0", "PC"))
-# # 
-# # 
-# # 
-# # 
-# # 
-# # 
-# # components %>%
-# #         ggplot(aes(x=PC1,
-# #                    y=PC18))+
-# #         geom_point()
-# # select(game_id, 
-# #        
+valid_preds %>%
+        filter(wflow_id == 'splines_glmnet') %>%
+        arrange(desc(.pred_yes))
+
+
+# upcoming ----------------------------------------------------------------
+
+
+# make final test split
+test_split = 
+        split_collection(data = user_collection,
+                         end_train_year = end_train_year + valid_window-1,
+                         valid_window = 4,
+                         min_users = 30)
+
+# filter test set to remove those that dont meet hurdle
+test_split$valid =
+        test_split$valid %>%
+        filter(pred_hurdle > .25)
+
+# create test split
+test_split = 
+        test_split %>%
+        split_rsample()
+
+# fit on train-valid, assess on test
+final_fits = 
+        train_fits %>%
+        mutate(.workflow = map(last_fit,
+                               ~ .x %>%  extract_workflow())) %>%
+        mutate(outcome = outcome) %>%
+        select(wflow_id, outcome, .workflow) %>%
+        mutate(last_fit = 
+                       map(.workflow,
+                           ~ .x %>% 
+                                   last_fit(test_split,
+                                            metrics = prob_metrics,
+                                            control = ctrl_last_fit)))
+
+
+# get results so far
+final_fits %>%
+        get_metrics()
+
+
+# input
+present_text = function(x,
+                        minlength = 40) {
+        
+        suppressWarnings({
+                x %>%
+                        str_replace_all("_", " ") %>%
+                        str_to_title() %>%
+                        str_replace("Minage", "Min Age") %>%
+                        str_replace("Minplayers", "Min Players") %>%
+                        str_replace("Maxplayers", "Max Players") %>%
+                        str_replace("Minplaytime", "Min Play Time") %>%
+                        str_replace("Maxplaytime", "Max Play Time") %>%
+                        str_replace("Playingtime", "Play Time") %>%
+                        str_replace("Usa", "USA") %>%
+                        str_replace("Averageweight", "Average Weight") %>%
+                        str_replace("Usersrated", "Users Rated") %>%
+                        str_replace("Rockpaperscissors", "Rock Paper Scissors") %>%
+                        str_replace("Collectible Collectible", "Collectible") %>%
+                        str_replace("Murdermystery", "Murder Mystery") %>%
+                        str_replace("World War Ii", "World War II") %>%
+                        str_replace("Gemscrystals", "Gems & Crystals") %>%
+                        str_replace("Gmt", "GMT") %>%
+                        str_replace("Cmon", "CMON") %>%
+                        str_replace("Zman", "ZMan") %>%
+                        str_replace("Movies Tv", "Movies TV") %>%
+                        str_replace("Auctionbidding", "Auction Bidding") %>%
+                        str_replace("Postnapoleonic", "Post Napoleonic") %>%
+                        str_replace("Paperandpencil", "Paper And Pencil") %>%
+                        str_replace("Digital Hybrid Appwebsite Required", "Digital Hybrid App") %>%
+                        str_replace("Components 3 Dimensional", "Components") %>%
+                        str_replace("3d", "3D") %>%
+                        str_replace("Usa", "USA") %>%
+                        str_replace("3D", "3D Components") %>%
+                        str_replace("Wizkids I", "WizKids") %>%
+                        str_replace("Decision Kids I", "Decision Kids") %>%
+                        str_replace("^Families", "Fam:") %>%
+                        str_replace("^Mechanics", "Mech:") %>%
+                        str_replace("^Categories", "Cat:") %>%
+                        str_replace("^Publishers", "Pub:") %>%
+                        str_replace("^Designers", "Des:") %>%
+                        str_replace("^Artists", "Art:") %>%
+                        str_replace("Selfpublished", "Self-Published") %>%
+                        str_replace("Gamewright", "GameWright") %>%
+                        str_replace("Eaglegryphon", "Eagle-Gryphon") %>%
+                        str_replace("Scoreandreset", "Score and Reset") %>%
+                        abbreviate(minlength = minlength)
+        })
+        
+}
+
+# get fits
+cart = 
+        final_fits %>%
+        filter(wflow_id == 'trees_cart') %>%
+        pluck("last_fit", 1) %>%
+        extract_workflow() %>%
+        extract_fit_engine()
+
+
+rpart.plot::rpart.plot(cart,
+                       roundint=F)
+
+# glmnet
+glmnet_engine = 
+        final_fits %>%
+        filter(wflow_id == 'splines_glmnet') %>%
+        pluck("last_fit", 1) %>%
+        extract_workflow() %>%
+        extract_fit_engine()
+
+glmnet_parsnip = 
+        final_fits %>%
+        filter(wflow_id == 'splines_glmnet') %>%
+        pluck("last_fit", 1) %>%
+        extract_workflow() %>%
+        extract_fit_parsnip()
+
+# trace plot
+glmnet_engine %>%
+        tidy(return_zeroes = T) %>%
+        filter(term != '(Intercept)') %>%
+        mutate(label = case_when(
+                lambda == min(lambda) & abs(estimate) > 0.1 ~ 
+                        present_text(term))) %>%
+        ggplot(aes(x=log(lambda),
+                   y=estimate,
+                   label = label,
+                   group = term))+
+        geom_line(alpha = 0.5,
+                  color = 'grey60')+
+        guides(color = 'none')+
+        theme_minimal()+
+        geom_vline(xintercept = log(0.0129),
+                   linetype = 'dotted')+
+        ggrepel::geom_text_repel(fontface = "bold",
+                                     size = 2,
+                                     direction = "y",
+                                     hjust =1.5,
+                                     segment.size = .7,
+                                     segment.alpha = .5,
+                                     segment.linetype = "dotted",
+                                     box.padding = .5,
+                                     segment.curvature = 0.2,
+                                     segment.ncp = 3,
+                                     segment.angle = 20)+
+        coord_cartesian(xlim = c(min(log(glmnet_engine$lambda)-2), 0))+
+        theme(panel.grid.major = element_blank())
+
+# coef plot
+glmnet_parsnip %>%
+        tidy() %>%
+        filter(term != '(Intercept)') %>%
+        group_by(sign = factor(case_when(estimate > 0 ~ 'positive',
+                                  estimate < 0 ~ 'negative'),
+                               levels = c("positive", "negative"))) %>%
+        filter(estimate !=0) %>%
+        slice_max(abs(estimate),
+                  n = 25,
+                  with_ties = F)  %>%
+        mutate(term = present_text(term)) %>%
+        ggplot(aes(x=estimate,
+                   fill = estimate,
+                   y= reorder(term, estimate)))+
+        geom_col()+
+        theme_minimal()+
+        theme(axis.text.y = element_text(size = 8))+
+        scale_fill_gradient2(low = 'red',
+                             mid = 'grey60',
+                             high = 'dodgerblue2',
+                             midpoint = 0,
+                             limits = c(-0.2, 0.2),
+                             oob = scales::squish)+
+        ylab("")+
+        facet_wrap(sign~.,
+                   ncol = 1,
+                   scales = "free_y")
+
+# variable importance from lightgbm
+lightgbm = 
+        final_fits %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        pluck("last_fit", 1) %>%
+        pluck(".workflow", 1) %>%
+        extract_fit_engine()
+
+# variable importance
+lightgbm %>%
+        lgb.importance() %>%
+        pivot_longer(cols = -c("Feature"),
+                     names_to = c("type"),
+                     values_to = c("value")) %>%
+        group_by(type) %>%
+        slice_max(order_by = value,
+                  n = 25) %>%
+        mutate(Feature = present_text(Feature)) %>%
+        ggplot(aes(x=value,
+                   y = reorder(Feature, value)))+
+        geom_col()+
+        facet_wrap(type ~.,
+                   scales = "free_x")+
+        theme_minimal()+
+        theme(axis.text.y = element_text(size = 8))+
+        ylab("")
+
+
+# get predictions
+final_fits %>%
+        get_predictions %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        select(yearpublished, game_id, name, .pred_yes, ever_owned) %>%
+        print(n=25)
+
+final_fits %>%
+        get_predictions %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        filter(yearpublished == 2022) %>%
+        select(yearpublished, game_id, name, .pred_yes, ever_owned) %>%
+        print(n=25)
+
+final_fits %>%
+        get_predictions %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        filter(yearpublished == 2023) %>%
+        select(yearpublished, game_id, name, .pred_yes, ever_owned) %>%
+        print(n=25)
+
+
+final_fits %>%
+        get_predictions %>%
+        filter(wflow_id == 'trees_lightgbm') %>%
+        filter(yearpublished == 2024) %>%
+        select(yearpublished, game_id, name, .pred_yes, ever_owned) %>%
+        print(n=25)
+

@@ -2,6 +2,8 @@
 
 #message("creating recipes...")
 
+### helper functions
+
 # basic recipe setup
 base_recipe_func = function(data,
                             outcome) {
@@ -29,6 +31,7 @@ base_recipe_func = function(data,
                                "wanting",
                                "wishing",
                                "users_threshold",
+                               "pred_hurdle",
                                "averageweight",
                                "bayesaverage",
                                "username", 
@@ -37,6 +40,7 @@ base_recipe_func = function(data,
                                "own",
                                "ever_owned",
                                "rated",
+                               "highly_rated",
                                "preordered",
                                "prevowned",
                                "fortrade",
@@ -83,7 +87,6 @@ dummy_extract_variable = function(recipe,
         
 }
 
-
 # standard dummy recipes
 dummy_recipe_func = function(recipe) {
         
@@ -106,44 +109,6 @@ dummy_recipe_func = function(recipe) {
                 # artists min 50
                 dummy_extract_variable(artists,
                                        threshold = 50)
-}
-
-# function for tokenizing specific variable with minimum number of times 
-tokenize_variable = function(recipe,
-                             variable,
-                             max_tokens = 500,
-                             min_times = 100) {
-        
-        variable = enquo(variable)
-        
-        recipe %>%
-                # tokenize 
-                step_tokenize(!!variable) %>%
-                # token filter mechanics and categories with min n of 50
-                step_tokenfilter(!!variable,
-                                 max_tokens = max_tokens,
-                                 min_times = min_times) %>%
-                step_tf(!!variable,
-                        prefix = "d")
-        
-}
-
-# standard tokenization approach i'll use
-tokenize_recipe_func = function(recipe) {
-        
-        recipe %>%
-                # include all mechanics and categories
-                tokenize_variable(c(mechanics, categories),
-                                  min_times = 0) %>%
-                # families at min 100
-                tokenize_variable(families,
-                                  min_times = 100) %>%
-                # publishers and designers min 10
-                tokenize_variable(c(publishers, designers),
-                                  min_times = 10) %>%
-                # artists min 25
-                tokenize_variable(artists,
-                                  min_times = 25)
 }
 
 # imputation
@@ -203,7 +168,6 @@ preproc_recipe_func = function(recipe) {
                                                                           TRUE ~ 0))
 } 
 
-
 # splines
 # add splines for nonlinear effects for linear models
 splines_recipe_func = function(recipe) {
@@ -229,4 +193,141 @@ normalize_recipe_func = function(recipe) {
         
         recipe %>%
                 step_normalize(all_numeric_predictors())
+}
+
+### one function to create standard recipes given outcome
+# create standard recipes for users
+make_user_recipes = function(data,
+                             outcome) {
+        
+        outcome = enquo(outcome)
+        
+        # basic recipe without publishers/artists/designers
+        # tokenize mechanics and categories
+        # impute missigness
+        # preprocess
+        base_impute_recipe = 
+                data %>%
+                # remove selected variables
+                select(-families, -publishers, -artists, -designers) %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categories
+                dummy_extract_variable(c(categories),
+                                       threshold = 1) %>%
+                # dummy extract mechanics
+                dummy_extract_variable(c(mechanics),
+                                       threshold = 50) %>%
+                # impute missingness
+                impute_recipe_func() %>%
+                # basic preprocessing
+                preproc_recipe_func() %>%
+                # remove unmatched
+                step_rm(family_unmatched_series) %>%
+                # normalize
+                step_normalize(all_numeric_predictors()) %>%
+                # check missing
+                check_missing(all_predictors())
+        
+        # basic recipe without publishers/artists/designers
+        # tokenize mechanics and categories
+        # impute missigness
+        # preprocess
+        # add splines
+        base_splines_recipe = 
+                data %>%
+                # remove selected variables
+                select(-families, -publishers, -artists, -designers) %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categories
+                dummy_extract_variable(c(categories),
+                                       threshold = 1) %>%
+                # dummy extract mechanics
+                dummy_extract_variable(c(mechanics),
+                                       threshold = 50) %>%
+                # impute missingness
+                impute_recipe_func() %>%
+                # basic preprocessing
+                preproc_recipe_func() %>%
+                # remove unmatched
+                step_rm(family_unmatched_series) %>%
+                # splines
+                splines_recipe_func() %>%
+                # normalize
+                step_normalize(all_numeric_predictors()) %>%
+                # check missing
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # dummy extract
+        # preprocessing
+        # imputation
+        all_impute_recipe = 
+                data %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categorical
+                dummy_recipe_func() %>%
+                # impute missingness
+                impute_recipe_func() %>%
+                # basic preprocessing
+                preproc_recipe_func() %>%
+                # normalize
+                step_normalize(all_numeric_predictors()) %>%
+                # check missing
+                check_missing(all_predictors())
+        
+        # splines
+        all_impute_splines_recipe =
+                data %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categorical
+                dummy_recipe_func() %>%
+                # impute missingness
+                impute_recipe_func() %>%
+                # basic preprocessing
+                preproc_recipe_func() %>%
+                # splines
+                splines_recipe_func() %>%
+                # normalize
+                step_normalize(all_numeric_predictors()) %>%
+                # check missing
+                check_missing(all_predictors())
+        
+        # base with trees
+        base_trees_recipe = 
+                data %>%
+                # remove selected variables
+                select(-families, -publishers, -artists, -designers) %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categories and mechanics
+                dummy_extract_variable(c(mechanics, categories),
+                                       threshold = 1) %>%
+                # basic preprocessing
+                preproc_recipe_func()
+        
+        
+        # recipe with all features
+        # for trees, so less preprocessing
+        all_trees_recipe = 
+                data %>%
+                # make base recipe %>%
+                base_recipe_func(outcome = !!outcome) %>%
+                # dummy extract categorical
+                dummy_recipe_func() %>%
+                # basic preprocessing
+                preproc_recipe_func()
+        
+        recipes = list("minimal_impute" = base_impute_recipe,
+                       "minimal_trees" = base_trees_recipe,
+                       "minimal_splines" = base_splines_recipe,
+                       "all_impute" = all_impute_recipe,
+                       "all_impute_splines" = all_impute_splines_recipe,
+                       "all_trees" = all_trees_recipe)
+        
+        return(recipes)
+        
 }

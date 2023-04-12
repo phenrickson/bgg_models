@@ -7,14 +7,14 @@ glm_class_spec =
 # penalized logistic regression via glmnet
 glmnet_class_spec = 
         logistic_reg(penalty = tune::tune(),
-                     mixture = 0.5) %>%
+                     mixture = tune::tune()) %>%
         set_engine("glmnet")
 
 # regularization
 glmnet_grid = 
-        grid_regular(
-                penalty(range = c(-4, -0.5)),
-                levels = 10
+        expand.grid(
+                penalty = 10 ^ seq(-3, -1, length = 10), 
+                mixture = (0:5) / 5
         )
 
 # knn
@@ -30,9 +30,19 @@ knn_grid =
         )
 
 # mars
-mars_class_spec = 
-        mars() %>%
+mars_class_spec <-  
+        mars(num_terms = tune("mars terms"),
+             prod_degree = tune(), 
+             prune_method = "none") %>% 
+        set_engine("earth") %>% 
         set_mode("classification")
+
+mars_grid = 
+        grid_max_entropy(
+                num_terms(range = c(5, 100)),
+                prod_degree(range = c(1, 3)),
+                size = 10
+        )
 
 # cart for classification
 cart_class_spec <-
@@ -43,6 +53,13 @@ cart_class_spec <-
         ) %>%
         set_mode("classification") %>%
         set_engine("rpart")
+
+
+cart_grid = 
+        grid_max_entropy(
+                extract_parameter_set_dials(cart_class_spec),
+                size = 10
+        )
 
 # xgb for class
 xgb_class_spec <-
@@ -76,6 +93,15 @@ lightgbm_class_spec <-
         ) %>%
         set_engine("lightgbm", objective = "binary")
 
+lightgbm_grid = 
+        grid_max_entropy(
+                x = dials::parameters(
+                        min_n(), # 2nd important
+                        tree_depth() # 3rd most important
+                ),
+                size = 20
+        )
+        
 # create tuning grid
 # tune_grid =
 #         grid_regular(

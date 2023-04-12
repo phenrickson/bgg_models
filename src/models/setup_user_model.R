@@ -55,7 +55,9 @@ assemble_user_collection = function(username,
                                own = case_when(own == 1 ~ 'yes',
                                                TRUE ~ 'no'),
                                rated = case_when(own == 1 ~ 'yes',
-                                                 TRUE ~ 'no')
+                                                 TRUE ~ 'no'),
+                               highly_rated = case_when(rating >= 8 ~ 'yes',
+                                                        TRUE ~ 'no')
                         ) %>%
                         mutate_at(vars(own, ever_owned, rated),
                                   factor, levels = c("no", "yes"))
@@ -74,24 +76,35 @@ assemble_user_collection = function(username,
         
 }
 
+
 # splits and resamples -------------------------------------------------------------------
+
 
 # function to split collection into training and validation set
 split_collection = function(data,
                             end_train_year,
                             valid_window,
-                            min_users) {
+                            min_users,
+                            filter = F) {
         
         train_collection = 
                 data %>%
                 filter(usersrated >=min_users) %>%
                 filter(yearpublished <= end_train_year)
         
-        valid_collection = 
-                data %>%
-                filter(usersrated >=min_users) %>%
-                filter(yearpublished > end_train_year & yearpublished <= end_train_year + valid_window)
         
+        if (filter == T) {
+                valid_collection = 
+                        data %>%
+                        filter(usersrated >=min_users) %>%
+                        filter(yearpublished > end_train_year & yearpublished <= end_train_year + valid_window)
+        } else {
+                valid_collection = 
+                        data %>%
+                        filter(yearpublished > end_train_year & yearpublished <= end_train_year + valid_window)
+                
+        }
+      
         return(list("train" = train_collection,
                     "valid" = valid_collection))
         
@@ -122,12 +135,12 @@ make_user_split_and_resamples = function(collection,
         # split collection
         user_split = 
                 split_collection(collection,
-                                 2019,
+                                 end_train_year,
                                  valid_window = 2,
                                  min_users = min_users)
         
-        # make valid split
-        valid_split = 
+        # make split with rsample
+        user_rsample_split = 
                 split_rsample(user_split)
         
         # create resamples
@@ -139,126 +152,27 @@ make_user_split_and_resamples = function(collection,
         
         return(list("user_collection" = user_collection,
                     "user_split" = user_split,
-                    "valid_split" = valid_split,
+                    "user_rsample_split" = user_rsample_split,
                     "user_train_resamples" = user_train_resamples,
                     "outcome" = outcome))
         
 }
 
+
 # recipes -----------------------------------------------------------------
 
-# load recipes
-source(here::here("src", "features", "recipes_user.R"))
 
-# create standard recipes for users
-make_user_recipes = function(data,
-                             outcome) {
-        
-        outcome = enquo(outcome)
-        
-        # basic recipe without publishers/artists/designers
-        # tokenize mechanics and categories
-        # impute missigness
-        # preprocess
-        base_impute_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categories
-                dummy_extract_variable(c(categories),
-                                       threshold = 1) %>%
-                # dummy extract mechanics
-                dummy_extract_variable(c(mechanics, categories),
-                                       threshold = 50) %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # recipe with all features
-        # dummy extract
-        # preprocessing
-        # imputation
-        all_impute_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # splines
-        all_impute_splines_recipe =
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # splines
-                splines_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # base with trees
-        base_trees_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categories and mechanics
-                dummy_extract_variable(c(mechanics, categories),
-                                       threshold = 1) %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        
-        # recipe with all features
-        # for trees, so less preprocessing
-        all_trees_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        recipes = list("minimal_impute" = base_impute_recipe,
-                       "minimal_trees" = base_trees_recipe,
-                       "all_impute" = all_impute_recipe,
-                       "all_impute_splines" = all_impute_splines_recipe,
-                       "all_trees" = all_trees_recipe)
-        
-        return(recipes)
-        
-}
+# load user recipes
+source(here::here("src", "features", "recipes_user.R"))
 
 # model specifications ----------------------------------------------------
 
 # get model specs
 source(here::here("src", "models", "class_models.R"))
 
+
 # tuning control --------------------------------------------------------
+
 
 # tuning control for tune grid
 ctrl_grid = 
@@ -290,8 +204,8 @@ ctrl_last_fit =
                          allow_par = T)
 
 
-
 # metrics -----------------------------------------------------------------
+
 
 # metrics
 class_metrics = metric_set(yardstick::mcc,
@@ -310,17 +224,76 @@ prob_metrics = metric_set(yardstick::mn_log_loss,
 # results -----------------------------------------------------------------
 
 # select only necessary from results
-get_trim_results = function(res) {
+trim_results = function(res) {
         
         res %>%
-                select(wflow_id, .row, !!outcome, .pred_yes)
+                select(wflow_id, .row, !!outcome, .pred_yes, any_of(c("game_id", "name", "yearpublished")))
         
 }
 
-# register parallel ----------------------------------------------------------------
+# check that results finished
+check_results = function(res) {
+        
+        res %>%
+                mutate(check = purrr::map_lgl(result, ~identical(.x, list()))) %>%
+                filter(check == F) %>%
+                select(-check)
+}
 
-# set parallel
-library(doParallel)
-all_cores <- parallel::detectCores(logical = FALSE)
-doMC::registerDoMC(cores = all_cores)
+# finalize fits
+finalize_fits = function(res,
+                         metric) {
+        
+        res %>%
+                mutate(best_tune = 
+                               map(result,
+                                   ~ .x %>% 
+                                           select_best(metric = metric))) %>%
+                mutate(last_fit = map2(result,
+                                       best_tune,
+                                       ~ .x %>%
+                                               extract_workflow() %>%
+                                               finalize_workflow(parameters = .y) %>%
+                                               last_fit(user_train_setup$user_rsample_split,
+                                                        metrics = prob_metrics,
+                                                        control = ctrl_last_fit)))
+}
+
+# get individual predictions with ids from last fits
+get_predictions = function(last_fits) {
+        
+        last_fits %>%
+                select(wflow_id, last_fit) %>% 
+                unnest(last_fit) %>%
+                select(wflow_id, splits, .predictions) %>% 
+                mutate(assess = map(splits,~ .x %>% 
+                                            assessment %>% 
+                                            select(game_id, name, yearpublished))) %>% 
+                select(-splits) %>% 
+                unnest(everything()) %>%
+                trim_results() %>%
+                arrange(desc(.pred_yes))
+        
+}
+
+# get metrics from last fits
+get_metrics = function(last_fits) {
+        
+        last_fits %>%
+                select(wflow_id, last_fit) %>%
+                mutate(metrics = map(last_fit,
+                                     collect_metrics)) %>%
+                select(wflow_id, metrics) %>%
+                unnest(metrics) %>%
+                arrange(.metric, .estimate)
+        
+}
+
+
+# bundle ------------------------------------------------------------------
+
+
+
+
+
 
