@@ -260,6 +260,7 @@ save(games_nested,
      file = here::here("data", "processed", "games_nested.Rdata"))
 
 
+rm(list=ls())
 
 # # save local ------------------------------------------------------------------
 # 
@@ -267,3 +268,5 @@ save(games_nested,
 # 
 # save(games_nested,
 #      file = here::here("data", "local", "games_nested.Rdata"))
+
+

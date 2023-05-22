@@ -1,5 +1,3 @@
-# model specifictions and tuning -----------------------------------------------------------
-
 # base logit
 glm_class_spec = 
         logistic_reg()
@@ -13,7 +11,7 @@ glmnet_class_spec =
 # regularization
 glmnet_grid = 
         expand.grid(
-                penalty = 10 ^ seq(-3, -1, length = 10), 
+                penalty = 10 ^ seq(-2, -1, length = 10), 
                 mixture = (0:5) / 5
         )
 
@@ -101,7 +99,7 @@ lightgbm_grid =
                 ),
                 size = 20
         )
-        
+
 # create tuning grid
 # tune_grid =
 #         grid_regular(
@@ -112,4 +110,3 @@ lightgbm_grid =
 #                            freq_cut = 4,
 #                            unique_cut = 1)
 #         )
-

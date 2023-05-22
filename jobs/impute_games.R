@@ -1,38 +1,33 @@
-
-# gcs ---------------------------------------------------------------------
-
-
-# connect to gcs 
-source(here::here("src", "data", "connect_to_gcs.R"))
-
+# what: estimate average weight for games with previously trained averageweight model
 
 # packages ----------------------------------------------------------------
 
-
-# tidyverse packages
-library(tidyverse)
-library(tidymodels)
-tidymodels_prefer()
-
-# my own package
-library(bggUtils)
-
+suppressPackageStartupMessages({
+        
+        # tidyverse packages
+        library(tidyverse)
+        library(tidymodels)
+        # set conflict preferences
+        tidymodels_prefer()
+        
+        # my own package
+        library(bggUtils)
+        
+})
 
 # data --------------------------------------------------------------------
 
-
-# load games nested
-source(here::here("src","data","load_games_data.R"))
+# load local games nested
+source(here::here("src","data","load_local_processed_games.R"))
 
 # functions for standardized preprocessing
 source(here::here("src", "features", "preprocess_games.R"))
 
 
-
 # models ------------------------------------------------------------------
 
 
-# hurdle model
+# load hurdle model
 hurdle_fit = vetiver::vetiver_pin_read(deployed_board,
                                        "hurdle_vetiver")
 
@@ -64,12 +59,12 @@ games_imputed = games_nested %>%
                -.pred_class)
 
 
-# save
-processed_board = pins::board_folder(here::here("data", "processed"))
+# local processed folder
+processed_board = 
+        pins::board_folder(here::here("data", "processed"))
 
-# save as
+# save imputed games
 games_imputed %>%
         pins::pin_write(board = processed_board,
                         type = 'rds',
                         name = 'games_imputed')
-

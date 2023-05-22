@@ -13,9 +13,10 @@ all_cores <- parallel::detectCores(logical = FALSE)
 doMC::registerDoMC(cores = all_cores)
 
 # parameters for user training
-username = 'GOBBluth89'
+username = 'mrbananagrabber'
 end_train_year = 2020
 valid_window = 2
+retrain_window = 1
 outcome = 'ever_owned'
 
 
@@ -41,6 +42,10 @@ user_train_setup =
 
 message("creating user recipes...")
 
+# get train and valid
+train =  user_train_setup$user_split$train
+valid = user_train_setup$user_split$valid
+
 # create user recipes
 user_recipes = 
         make_user_recipes(data = user_train_setup$user_split$train,
@@ -51,8 +56,8 @@ models_list =
         mget(grep("_class_spec",
                   names(.GlobalEnv),
                   value=TRUE)) %>%
-        # subnames
-        set_names(., gsub("_class_spec", "", names(.)))
+        # extract names
+        magrittr::set_names(., gsub("_class_spec", "", names(.)))
 
 # user wflows
 user_wflows = 
@@ -93,34 +98,50 @@ user_wflows =
 
 # tune --------------------------------------------------------------------
 
-# glmnet
-tictoc::tic("tuning glmnet...")
+# glm
+tictoc::tic("tuning glm...")
 set.seed(1999)
-glmnet_res =
+glm_res =
         user_wflows %>%
-        filter(grepl("glmnet", wflow_id)) %>%
-        workflow_map(
-                fn = 'tune_grid',
-                resamples = user_train_setup$user_train_resamples,
-                metrics = prob_metrics,
-                control = ctrl_grid,
-                grid = glmnet_grid
-        )
-tictoc::toc()
-
-# cart
-tictoc::tic("tuning cart...")
-set.seed(1999)
-cart_res =
-        user_wflows %>%
-        filter(grepl("cart", wflow_id)) %>%
+        filter(grepl("corr_glm", wflow_id)) %>%
         workflow_map(
                 fn = 'tune_grid',
                 resamples = user_train_setup$user_train_resamples,
                 metrics = prob_metrics,
                 control = ctrl_grid
+                #  ,grid = glmnet_grid
         )
 tictoc::toc()
+
+
+# glmnet
+tictoc::tic("tuning glmnet...")
+set.seed(1999)
+glmnet_res =
+        user_wflows %>%
+        filter(grepl("splines_glmnet", wflow_id)) %>%
+        workflow_map(
+                fn = 'tune_grid',
+                resamples = user_train_setup$user_train_resamples,
+                metrics = prob_metrics,
+                control = ctrl_grid
+              #  ,grid = glmnet_grid
+        )
+tictoc::toc()
+
+# # cart
+# tictoc::tic("tuning cart...")
+# set.seed(1999)
+# cart_res =
+#         user_wflows %>%
+#         filter(grepl("cart", wflow_id)) %>%
+#         workflow_map(
+#                 fn = 'tune_grid',
+#                 resamples = user_train_setup$user_train_resamples,
+#                 metrics = prob_metrics,
+#                 control = ctrl_grid
+#         )
+# tictoc::toc()
 
 # 
 # # mars
@@ -175,7 +196,7 @@ training_results  =
                          names(.GlobalEnv),
                          value=TRUE)) %>%
         bind_rows()  %>%
-        check_results()
+        check_results
 
 # training predictions
 training_preds = 
@@ -194,6 +215,7 @@ training_results %>%
                      select_best = T) %>%
         select(wflow_id, .config, .metric, mean, std_err, n, rank) %>%
         arrange(.metric, rank)
+
 
 # validation results --------------------------------------------------------------
 
@@ -214,11 +236,11 @@ valid_metrics =
         train_fits %>%
         get_metrics()
 
-#
+# #
 valid_preds %>%
         filter(wflow_id == 'trees_lightgbm') %>%
         arrange(desc(.pred_yes))
-# 
+#
 valid_preds %>%
         filter(wflow_id == 'splines_glmnet') %>%
         arrange(desc(.pred_yes))
@@ -230,7 +252,7 @@ valid_preds %>%
 # make final test split
 test_split = 
         split_collection(data = user_collection,
-                         end_train_year = end_train_year + valid_window-1,
+                         end_train_year = end_train_year + retrain_window,
                          valid_window = 4,
                          min_users = 30)
 
@@ -240,7 +262,7 @@ test_split$valid =
         filter(pred_hurdle > .25)
 
 # create test split
-test_split = 
+test_split_rsample  = 
         test_split %>%
         split_rsample()
 
@@ -254,15 +276,13 @@ final_fits =
         mutate(last_fit = 
                        map(.workflow,
                            ~ .x %>% 
-                                   last_fit(test_split,
+                                   last_fit(test_split_rsample,
                                             metrics = prob_metrics,
                                             control = ctrl_last_fit)))
-
 
 # get results so far
 final_fits %>%
         get_metrics()
-
 
 # input
 present_text = function(x,
@@ -315,92 +335,166 @@ present_text = function(x,
         
 }
 
-# get fits
-cart = 
-        final_fits %>%
-        filter(wflow_id == 'trees_cart') %>%
-        pluck("last_fit", 1) %>%
-        extract_workflow() %>%
-        extract_fit_engine()
+# # get fits
+# cart = 
+#         final_fits %>%
+#         filter(wflow_id == 'trees_cart') %>%
+#         pluck("last_fit", 1) %>%
+#         extract_workflow() %>%
+#         extract_fit_engine()
+
+# 
+# rpart.plot::rpart.plot(cart,
+#                        roundint=F)
 
 
-rpart.plot::rpart.plot(cart,
-                       roundint=F)
 
-# glmnet
-glmnet_engine = 
-        final_fits %>%
-        filter(wflow_id == 'splines_glmnet') %>%
-        pluck("last_fit", 1) %>%
-        extract_workflow() %>%
-        extract_fit_engine()
-
-glmnet_parsnip = 
+glmnet_wflow =  
         final_fits %>%
         filter(wflow_id == 'splines_glmnet') %>%
         pluck("last_fit", 1) %>%
-        extract_workflow() %>%
-        extract_fit_parsnip()
+        extract_workflow()
+        
+
+get_glmnet_objs = 
+        function(glmnet_wflow) {
+                
+                # extract engine
+                glmnet_engine = 
+                        glmnet_wflow %>%
+                        extract_fit_engine()
+                
+                # extract parsnip
+                glmnet_parsnip = 
+                        glmnet_wflow %>%
+                        extract_fit_parsnip()
+                
+                
+                # return both
+                list("engine" = glmnet_engine,
+                     "parsnip" = glmnet_parsnip)
+                
+        }
+
+glmnet_wflow %>%
+        get_glmnet_objs()
 
 # trace plot
-glmnet_engine %>%
-        tidy(return_zeroes = T) %>%
-        filter(term != '(Intercept)') %>%
-        mutate(label = case_when(
-                lambda == min(lambda) & abs(estimate) > 0.1 ~ 
-                        present_text(term))) %>%
+plot_trace_glmnet = function(glmnet_wflow) {
+        
+        # get glmnet objs
+        glmnet_objs = 
+                get_glmnet_objs(glmnet_wflow)
+        
+        # make data for plot
+        dat = 
+                glmnet_objs$engine %>%
+                tidy(return_zeroes = T) %>%
+                filter(term != '(Intercept)') %>%
+                mutate(label_left = 
+                               case_when(
+                                       lambda == min(lambda) & abs(estimate) > 0.1 ~
+                                               present_text(term))) %>%
+                group_by(term) %>%
+                mutate(label_right = 
+                               case_when(
+                                       lambda == max(lambda) & estimate > -2 ~ 
+                                               present_text(term))) %>%
+                ungroup()
+        
+        # make plot
+        dat %>%
         ggplot(aes(x=log(lambda),
                    y=estimate,
-                   label = label,
                    group = term))+
-        geom_line(alpha = 0.5,
-                  color = 'grey60')+
-        guides(color = 'none')+
-        theme_minimal()+
-        geom_vline(xintercept = log(0.0129),
-                   linetype = 'dotted')+
-        ggrepel::geom_text_repel(fontface = "bold",
-                                     size = 2,
-                                     direction = "y",
-                                     hjust =1.5,
-                                     segment.size = .7,
-                                     segment.alpha = .5,
-                                     segment.linetype = "dotted",
-                                     box.padding = .5,
-                                     segment.curvature = 0.2,
-                                     segment.ncp = 3,
-                                     segment.angle = 20)+
-        coord_cartesian(xlim = c(min(log(glmnet_engine$lambda)-2), 0))+
-        theme(panel.grid.major = element_blank())
+                geom_line(alpha = 0.5,
+                          color = 'grey60')+
+                guides(color = 'none')+
+                theme_minimal()+
+                geom_vline(xintercept = log(0.0129),
+                           linetype = 'dotted')+
+                ggrepel::geom_text_repel(
+                        aes(label = label_left),
+                        fontface = "bold",
+                        size = 2,
+                        direction = "y",
+                        hjust =1.5,
+                        segment.size = .7,
+                        segment.alpha = .5,
+                        segment.linetype = "dotted",
+                        box.padding = .5,
+                        segment.curvature = 0.2,
+                        segment.ncp = 3,
+                        segment.angle = 20)+
+                coord_cartesian(xlim = c(min(log(glmnet_objs$engine$lambda)-2), 0))+
+                theme(panel.grid.major = element_blank())+
+                geom_hline(yintercept = 0,
+                           linetype = 'dotted',
+                           alpha = 0.5)
+                # ggrepel::geom_text_repel(
+                #         aes(label = label_right),
+                #         fontface = "bold",
+                #         size = 2,
+                #         direction = "y",
+                #         hjust = -.5,
+                #         segment.size = .7,
+                #         segment.alpha = .5,
+                #         segment.linetype = "dotted",
+                #         box.padding = .5,
+                #         segment.curvature = 0.2,
+                #         segment.ncp = 3,
+                #         segment.angle = 20)
+        
+}
+
+
+plot_coef_glmnet = function(glmnet_wflow) {
+        
+        # get glmnet objs
+        glmnet_objs = 
+                get_glmnet_objs(glmnet_wflow)
+        
+        # make coef plot
+        glmnet_objs %$%
+                parsnip %>%
+                tidy() %>%
+                filter(term != '(Intercept)') %>%
+                group_by(sign = factor(case_when(estimate > 0 ~ 'positive',
+                                                 estimate < 0 ~ 'negative'),
+                                       levels = c("positive", "negative"))) %>%
+                filter(estimate !=0) %>%
+                slice_max(abs(estimate),
+                          n = 25,
+                          with_ties = F)  %>%
+                mutate(term = present_text(term)) %>%
+                ggplot(aes(x=estimate,
+                           color = estimate,
+                           y= reorder(term, estimate)))+
+                geom_point()+
+                theme_minimal()+
+                #theme(panel.grid.major = element_line(alpha = 0.5))+
+                theme(axis.text.y = element_text(size = 8))+
+                scale_color_gradient2(low = 'red',
+                                     mid = 'grey60',
+                                     high = 'dodgerblue2',
+                                     midpoint = 0,
+                                     limits = c(-0.1, 0.1),
+                                     oob = scales::squish)+
+                ylab("")+
+                geom_vline(xintercept = 0)
+                
+                # facet_wrap(sign~.,
+                #            ncol = 1,
+                #            scales = "free_y")
+        
+}
+
+# trace plot
+plot_trace_glmnet(glmnet_wflow)
 
 # coef plot
-glmnet_parsnip %>%
-        tidy() %>%
-        filter(term != '(Intercept)') %>%
-        group_by(sign = factor(case_when(estimate > 0 ~ 'positive',
-                                  estimate < 0 ~ 'negative'),
-                               levels = c("positive", "negative"))) %>%
-        filter(estimate !=0) %>%
-        slice_max(abs(estimate),
-                  n = 25,
-                  with_ties = F)  %>%
-        mutate(term = present_text(term)) %>%
-        ggplot(aes(x=estimate,
-                   fill = estimate,
-                   y= reorder(term, estimate)))+
-        geom_col()+
-        theme_minimal()+
-        theme(axis.text.y = element_text(size = 8))+
-        scale_fill_gradient2(low = 'red',
-                             mid = 'grey60',
-                             high = 'dodgerblue2',
-                             midpoint = 0,
-                             limits = c(-0.2, 0.2),
-                             oob = scales::squish)+
-        ylab("")+
-        facet_wrap(sign~.,
-                   ncol = 1,
-                   scales = "free_y")
+plot_coef_glmnet(glmnet_wflow)
+
 
 # variable importance from lightgbm
 lightgbm = 
@@ -428,6 +522,13 @@ lightgbm %>%
         theme_minimal()+
         theme(axis.text.y = element_text(size = 8))+
         ylab("")
+
+# get predictions
+final_fits %>%
+        get_predictions %>%
+        filter(wflow_id == 'splines_glmnet') %>%
+        select(yearpublished, game_id, name, .pred_yes, ever_owned) %>%
+        print(n=25)
 
 
 # get predictions

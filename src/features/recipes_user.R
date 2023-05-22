@@ -1,12 +1,115 @@
-# recipes for bgg outcomes
+# make user recipes
 
-#message("creating recipes...")
 
-### helper functions
-
+# build a predefined set of user recipes
+make_user_recipes_list = function(data,
+                              outcome) {
+        
+        outcome = enquo(outcome)
+        
+        # recipe without designers/artists/publishers/families
+        minimal_recipe = 
+                data %>%
+                # remove bgg variables      
+                select(-families, -publishers, -artists, -designers) %>%
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
+                add_preprocessing()
+        
+        # recipe with all features
+        all_recipe = 
+                data %>%
+                # remove bgg variables      
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_bgg_dummies() %>%
+                add_preprocessing() %>%
+                add_unmatched() 
+        
+        # all features recipe
+        minimal_recipe = 
+                data %>%
+                # remove bgg variables      
+                select(-families, -publishers, -artists, -designers) %>%
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
+                add_preprocessing()
+        
+                
+        # recipe without designers/artists/publishers/families
+        # add imputation and splines
+        minimal_splines_recipe = 
+                minimal_recipe %>%
+                add_splines() %>%
+                add_normalize() %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe without designers/artists/publishers/families
+        # add zero variance and checks
+        minimal_trees_recipe = 
+                minimal_recipe %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # for trees
+        # add imputation and splines
+        all_trees_recipe = 
+                all_recipe %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add imputation and splines
+        all_splines_recipe = 
+                all_recipe %>%
+                add_splines() %>%
+                add_normalize() %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add corr filter
+        all_corr_recipe = 
+                all_splines_recipe %>%
+                add_corr() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add pca
+        all_pca_recipe = 
+                all_splines_recipe %>%
+                add_pca() %>%
+                check_missing(all_predictors())
+        
+        # rm start recipes
+        rm(minimal_recipe,
+           all_recipe)
+         
+        # return all recipes
+        mget( grep("_recipe$", names(environment()),  value=TRUE)) %>%
+                # set names
+                magrittr::set_names(., gsub("_recipe", "", names(.)))
+        
+}
+        
+        
+# helper functions
 # basic recipe setup
-base_recipe_func = function(data,
-                            outcome) {
+make_user_recipe = function(data,
+                                outcome) {
         
         outcome = enquo(outcome)
         
@@ -19,7 +122,7 @@ base_recipe_func = function(data,
                                "image",
                                "thumbnail",
                                "description",
-                               # "load_ts",
+                               "load_ts",
                                "average",
                                "usersrated",
                                "log_usersrated",
@@ -69,51 +172,52 @@ base_recipe_func = function(data,
         
 }
 
-# function for extract dummies from nominal
-dummy_extract_variable = function(recipe,
-                                  variable,
-                                  threshold = 100) {
+# function for extracting dummies from nominal features
+add_dummies = function(recipe,
+                       variable,
+                       threshold = 100) {
         
-        var = enquo(variable)
+        variable = enquo(variable)
         
         recipe %>%
                 # tokenize 
-                step_dummy_extract(!!var,
+                step_dummy_extract(!!variable,
                                    sep = ", ",
                                    other = "remove_other_field",
                                    threshold = threshold) %>%
                 # remove other var
                 step_rm(contains("remove_other_field"))
         
+        
 }
 
 # standard dummy recipes
-dummy_recipe_func = function(recipe) {
+add_bgg_dummies = function(recipe) {
         
         recipe %>%
                 # include most mechanics
-                dummy_extract_variable(mechanics,
-                                       threshold = 50) %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
                 # include all categories
-                dummy_extract_variable(categories,
-                                       threshold = 1) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
                 # families at min 100
-                dummy_extract_variable(families,
-                                       threshold = 100) %>%
+                add_dummies(families,
+                            threshold = 100) %>%
                 # publishers at 50
-                dummy_extract_variable(publishers,
-                                       threshold = 50) %>%
+                add_dummies(publishers,
+                            threshold = 50) %>%
                 # designers at 25
-                dummy_extract_variable(designers,
-                                       threshold = 25) %>%
+                add_dummies(designers,
+                           threshold = 25) %>%
                 # artists min 50
-                dummy_extract_variable(artists,
-                                       threshold = 50)
+                add_dummies(artists,
+                            threshold = 50)
 }
 
 # imputation
-impute_recipe_func = function(recipe) {
-        
+add_imputation = function(recipe) {
+
         recipe %>%
                 # impute missingness in selected features with median
                 step_impute_median(playingtime,
@@ -135,16 +239,13 @@ impute_recipe_func = function(recipe) {
 }
 
 # additional preprocessing steps
-preproc_recipe_func = function(recipe) {
+add_preprocessing = function(recipe) {
         
         recipe %>%
                 # number_mechanics
                 step_mutate(number_mechanics = rowSums(dplyr::across(starts_with("mechanics")))) %>%
                 # number categories
                 step_mutate(number_categories = rowSums(dplyr::across(starts_with("categories")))) %>%
-                # specific feature for unmatched series
-                step_mutate(family_unmatched_series = dplyr::case_when(grepl("Unmatched:", name) ~ 1,
-                                                                       TRUE ~ 0)) %>%
                 # log time per player and playingtime
                 step_log(time_per_player,
                          playingtime,
@@ -166,11 +267,22 @@ preproc_recipe_func = function(recipe) {
                 # magical phrase in description
                 step_mutate(description_from_publisher = dplyr::case_when(grepl("description from publisher", tolower(description))==T ~ 1,
                                                                           TRUE ~ 0))
-} 
+}
+
+# add additional features
+# specific feature for unmatched series
+add_unmatched = function(recipe) {
+        
+        recipe %>%
+                step_mutate(family_unmatched_series = dplyr::case_when(grepl("Unmatched:", name) ~ 1,
+                                                                       TRUE ~ 0))
+        
+}
+
 
 # splines
 # add splines for nonlinear effects for linear models
-splines_recipe_func = function(recipe) {
+add_splines= function(recipe) {
         
         recipe %>%
                 #add spline for truncated yearpublished
@@ -187,147 +299,37 @@ splines_recipe_func = function(recipe) {
                         deg_free = 5)
 }
 
-
-# normalize
-normalize_recipe_func = function(recipe) {
+# normalize all numeric predictors
+add_normalize = function(recipe) {
         
         recipe %>%
                 step_normalize(all_numeric_predictors())
 }
 
-### one function to create standard recipes given outcome
-# create standard recipes for users
-make_user_recipes = function(data,
-                             outcome) {
+# add pca
+add_pca = function(recipe,
+                   threshold = .75) {
         
-        outcome = enquo(outcome)
+        recipe %>%
+                step_pca(all_numeric_predictors(),
+                         threshold = .75)
+}
+
+# add corr
+add_corr = function(recipe,
+                    threshold = 0.9) {
         
-        # basic recipe without publishers/artists/designers
-        # tokenize mechanics and categories
-        # impute missigness
-        # preprocess
-        base_impute_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categories
-                dummy_extract_variable(c(categories),
-                                       threshold = 1) %>%
-                # dummy extract mechanics
-                dummy_extract_variable(c(mechanics),
-                                       threshold = 50) %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # remove unmatched
-                step_rm(family_unmatched_series) %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
+        recipe %>%
+                step_corr(all_numeric_predictors(),
+                          threshold = 0.9)
         
-        # basic recipe without publishers/artists/designers
-        # tokenize mechanics and categories
-        # impute missigness
-        # preprocess
-        # add splines
-        base_splines_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categories
-                dummy_extract_variable(c(categories),
-                                       threshold = 1) %>%
-                # dummy extract mechanics
-                dummy_extract_variable(c(mechanics),
-                                       threshold = 50) %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # remove unmatched
-                step_rm(family_unmatched_series) %>%
-                # splines
-                splines_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
+}
+
+
+# step to remove zero variance
+add_zv = function(recipe) {
         
-        # recipe with all features
-        # dummy extract
-        # preprocessing
-        # imputation
-        all_impute_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # splines
-        all_impute_splines_recipe =
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # impute missingness
-                impute_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func() %>%
-                # splines
-                splines_recipe_func() %>%
-                # normalize
-                step_normalize(all_numeric_predictors()) %>%
-                # check missing
-                check_missing(all_predictors())
-        
-        # base with trees
-        base_trees_recipe = 
-                data %>%
-                # remove selected variables
-                select(-families, -publishers, -artists, -designers) %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categories and mechanics
-                dummy_extract_variable(c(mechanics, categories),
-                                       threshold = 1) %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        
-        # recipe with all features
-        # for trees, so less preprocessing
-        all_trees_recipe = 
-                data %>%
-                # make base recipe %>%
-                base_recipe_func(outcome = !!outcome) %>%
-                # dummy extract categorical
-                dummy_recipe_func() %>%
-                # basic preprocessing
-                preproc_recipe_func()
-        
-        recipes = list("minimal_impute" = base_impute_recipe,
-                       "minimal_trees" = base_trees_recipe,
-                       "minimal_splines" = base_splines_recipe,
-                       "all_impute" = all_impute_recipe,
-                       "all_impute_splines" = all_impute_splines_recipe,
-                       "all_trees" = all_trees_recipe)
-        
-        return(recipes)
+        recipe %>%
+                step_zv(all_numeric_predictors())
         
 }
