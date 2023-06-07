@@ -21,7 +21,7 @@ suppressPackageStartupMessages({
 source(here::here("src","data","load_local_processed_games.R"))
 
 # functions for standardized preprocessing
-source(here::here("src", "features", "preprocess_games.R"))
+source(here::here("src", "features", "make_games_features.R"))
 
 
 # models ------------------------------------------------------------------
@@ -35,6 +35,57 @@ hurdle_fit = vetiver::vetiver_pin_read(deployed_board,
 averageweight_fit = vetiver::vetiver_pin_read(deployed_board,
                                       "averageweight_vetiver")
 
+
+
+# functions ---------------------------------------------------------------
+
+
+# estimate averageweight
+estimate_averageweight = function(games,
+                        averageweight_mod) {
+        
+        games %>%
+                # apply preprocessing from fuction 
+                preprocess_games() %>%
+                # create outcome variable for hurdle model
+                mutate(users_threshold = factor(case_when(!is.na(bayesaverage) ~ 'yes',
+                                                          is.na(bayesaverage) ~ 'no'),
+                                                levels = c('no', 'yes'))) %>%
+                # predict
+                augment(x=averageweight_mod,
+                        new_data = .) %>%
+                # rename 
+                rename(est_averageweight = .pred)
+                # # predict with hurdle
+                # augment(x = hurdle_mod,
+                #         new_data = .,
+                #         type = 'prob') %>%
+                # # rename
+                # rename(pred_hurdle = .pred_yes) %>%
+                # # remove extraneous predictions
+                # select(-.pred_no,
+                #        -.pred_class)
+}
+
+# estimate probability game will get over hurdle of 100 user ratings
+estimate_hurdle = 
+        function(games,
+                 hurdle_mod) {
+                
+                games %>%
+                        # predict with hurdle
+                        augment(x = hurdle_mod,
+                                new_data = .,
+                                type = 'prob') %>%
+                        # rename pred to hurdle
+                        rename(pred_hurdle = .pred_yes) %>%
+                        # remove extraneous predictions
+                        select(-.pred_no,
+                               -.pred_class)
+                
+        }
+                
+                
 # use function to preprocess nested data
 games_imputed = games_nested %>%
         # apply preprocessing from fuction 

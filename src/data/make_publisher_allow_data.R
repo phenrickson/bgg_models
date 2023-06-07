@@ -3,8 +3,14 @@
 # package
 library(tidyverse)
 
+# connect to gcs boards
+source(here::here("src", "data", "connect_to_gcs_boards.R"))
+
 # load game publisher data from games nested
-load(here::here("data", "processed", "games_nested.Rdata"))
+games_nested = 
+        pins::pin_read(
+                board = pins::board_folder(here::here("data", "processed")),
+                name = "games_nested")
 
 # list of ids allowed to enter model for publisher
 publisher_allow_ids = c(
@@ -83,13 +89,11 @@ publisher_allow_names =
         publisher_allow_table %>%
         pull(value)
 
-# pin to gcs
-source(here::here("src", "data", "connect_to_gcs.R"))
-
-# write
-data_board %>%
-        pin_write(publisher_allow_names,
+# pin to board
+publisher_allow_names %>%
+        pin_write(board = data_board,
                   name = 'publisher_allow_names',
-                  description = 'names of publishers that can be used in modeling')
+                  description = 'names of publishers that can be used in modeling',
+                  versioned = T)
 
 
