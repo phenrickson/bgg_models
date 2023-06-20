@@ -8,7 +8,7 @@
 # functions ------------------------------------------------------------------
 
 # connect to biquery
-source(here::here("src", "data", "connect_to_bigquery.R"))
+# source(here::here("src", "data", "connect_to_bigquery.R"))
 
 # load table from bigquery
 load_table = 

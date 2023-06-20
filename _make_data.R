@@ -37,10 +37,13 @@ tar_source(here::here("src", "models", "impute_games.R"))
 # tar
 list(
         # tables from bigquery
+        # board for storing processed data
         tar_target(data_board,
                    pins::board_folder(here::here("data", "processed"))),
+        # tables to load
         tar_target(games_table, 
-                   load_table(table_name = "games")),
+                   load_table(table_name = "games"),
+                   cue = tar_cue(mode = "always")),
         tar_target(categorical_tables, 
                    load_categorical_tables(tables = c("descriptions",
                                                       "categories",
@@ -50,7 +53,8 @@ list(
                                                       "families",
                                                       "publishers",
                                                       "implementations",
-                                                      "compilations"))),
+                                                      "compilations")),
+                   cue = tar_cue(mode = "always")),
         # transform
         tar_target(games_transformed,
                    transform_games(data = games_table)),

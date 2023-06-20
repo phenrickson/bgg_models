@@ -153,9 +153,10 @@ make_user_recipe = function(data,
                                "wishlist",
                                "wishlistpriority",
                                "url", 
+                               "lastmodified",
                                "user_load_ts"),
                         new_role = "id") %>%
-                # set outcome varable
+                # set outcome variable
                 update_role(!!outcome,
                             new_role = "outcome") %>%
                 # set all others as predictors
