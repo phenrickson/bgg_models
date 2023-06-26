@@ -280,7 +280,6 @@ add_unmatched = function(recipe) {
         
 }
 
-
 # splines
 # add splines for nonlinear effects for linear models
 add_splines= function(recipe) {
@@ -298,6 +297,34 @@ add_splines= function(recipe) {
                 # spliens for averageweight
                 step_ns(est_averageweight,
                         deg_free = 5)
+}
+
+# discretize variables with cart
+add_discrete = function(recipe,
+                        outcome) {
+        
+        recipe %>%
+                embed::step_discretize_cart(
+                        yearpublished,
+                        number_mechanics,
+                        number_categories,
+                        est_averageweight,
+                        outcome = outcome,
+                        id = "cart splits")
+                # #add spline for truncated yearpublished
+                # step_ns(year,
+                #         deg_free = 5) %>%
+                # # spline for number mechanics
+                # step_ns(number_mechanics,
+                #         deg_free = 5) %>%
+                # # spline for number categories
+                # step_ns(number_categories,
+                #         deg_free = 5) %>%
+                # # spliens for averageweight
+                # step_ns(est_averageweight,
+                #         deg_free = 5)
+        
+        
 }
 
 # normalize all numeric predictors

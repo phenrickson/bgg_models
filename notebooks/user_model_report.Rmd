@@ -1,0 +1,12 @@
+---
+title: "Predicting User Collections"
+author: "Phil Henrickson"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+        username: "mrbananagrabber"
+---
+
+# What is this? {-}
+
+This notebook contains a set of analyses for analyzing **`r params$username`'s** boardgamegeek collection. The bulk of the analysis is focused on building a user-specific predictive model to predict the games that the specified user is likely to own. This enables us to ask questions like, based on the games the user currently owns, what games are a good fit for their collection? What upcoming games are they likely to purchase?

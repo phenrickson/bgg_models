@@ -20,6 +20,24 @@ load_user_collection = function(username) {
         
 }
 
+# function to create outcomes and set factors for user variables
+prep_collection = function(collection) {
+        
+        collection %>%
+                mutate(ever_owned = case_when(own == 1 | prevowned == 1 ~ 'yes',
+                                              TRUE ~ 'no'),
+                       own = case_when(own == 1 ~ 'yes',
+                                       TRUE ~ 'no'),
+                       rated = case_when(!is.na(rating) ~ 'yes',
+                                         TRUE ~ 'no'),
+                       highly_rated = case_when(rating >= 8 ~ 'yes',
+                                                TRUE ~ 'no')
+                ) %>%
+                mutate_at(vars(own, ever_owned, rated),
+                          factor, levels = c("no", "yes"))
+        
+}
+
 # join collection with bgg games
 join_bgg_games = function(collection,
                           games) {
@@ -39,25 +57,6 @@ join_bgg_games = function(collection,
                                   by = c("game_id", "name")
                         )
         }
-        
-        # function to create outcomes and set factors for user variables
-        prep_collection = function(collection) {
-                
-                collection %>%
-                        mutate(ever_owned = case_when(own == 1 | prevowned == 1 ~ 'yes',
-                                                      TRUE ~ 'no'),
-                               own = case_when(own == 1 ~ 'yes',
-                                               TRUE ~ 'no'),
-                               rated = case_when(own == 1 ~ 'yes',
-                                                 TRUE ~ 'no'),
-                               highly_rated = case_when(rating >= 8 ~ 'yes',
-                                                        TRUE ~ 'no')
-                        ) %>%
-                        mutate_at(vars(own, ever_owned, rated),
-                                  factor, levels = c("no", "yes"))
-                
-        }
-        
         
         # join games with collection
         collection_and_games = collection %>%
@@ -221,11 +220,12 @@ add_last_fit = function(wflow_results,
 }
 
 # add hurdle
-add_pred_hurdle= function(preds) {
+add_pred_hurdle= function(games,
+                          preds) {
         
         preds %>%
                 left_join(.,
-                          user_collection_and_games %>%
+                          games %>%
                                   select(game_id, name, pred_hurdle),
                           by = c("game_id", "name")
                 )
