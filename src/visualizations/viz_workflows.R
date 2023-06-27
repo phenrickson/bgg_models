@@ -167,7 +167,7 @@ glmnet_trace_plot = function(glmnet_wflow) {
                 filter(term != '(Intercept)') %>%
                 mutate(label_left =
                                case_when(
-                                       lambda == min(lambda) & abs(estimate) > 0.1 ~
+                                       lambda == min(lambda) & abs(estimate) > 0.08 ~
                                                bggUtils::present_text(term,
                                                                       minlength = 40))) %>%
                 group_by(term) %>%
@@ -191,16 +191,17 @@ glmnet_trace_plot = function(glmnet_wflow) {
                            linetype = 'dotted')+
                 ggrepel::geom_text_repel(
                         aes(label = label_left),
-                        fontface = "bold",
+             #           fontface = "bold",
                         size = 2,
                         direction = "y",
                         hjust =1.5,
-                        segment.size = .7,
+                        segment.size = .5,
                         segment.alpha = .5,
-                        segment.linetype = "dotted",
+                        segment.linetype = "dashed",
                         box.padding = .5,
                         segment.curvature = 0.2,
                         segment.ncp = 3,
+                        max.overlaps = 15,
                         segment.angle = 20)+
                 coord_cartesian(xlim = c(min(log(glmnet_objs$engine$lambda)-2), 0))+
                 theme(panel.grid.major = element_blank())+
@@ -254,11 +255,17 @@ glmnet_coef_plot = function(glmnet_wflow,
                            fill = estimate,
                            color = estimate,
                            y= tidytext::reorder_within(term, estimate, sign)))+
-                        geom_point()+
+                      #  geom_point()+
                         theme_minimal()+
                         #theme(panel.grid.major = element_line(alpha = 0.5))+
                         theme(axis.text.y = element_text(size = 8))+
                         scale_color_gradient2(low = 'red',
+                                              mid = 'grey60',
+                                              high = 'dodgerblue2',
+                                              midpoint = 0,
+                                              limits = c(-0.1, 0.1),
+                                              oob = scales::squish)+
+                        scale_fill_gradient2(low = 'red',
                                               mid = 'grey60',
                                               high = 'dodgerblue2',
                                               midpoint = 0,

@@ -8,7 +8,7 @@ my_caption = function(data = games) {
                 labs(
                         caption = paste(
                                 paste("data from boardgamegeek.com as of", max(as.Date(data$load_ts[1]))),
-                            #    paste("analysis by Phil Henrickson"),
+                                #    paste("analysis by Phil Henrickson"),
                                 paste("https://phenrickson.github.io/data-analysis-paralysis/"),
                                 sep="\n")
                 )
@@ -16,11 +16,19 @@ my_caption = function(data = games) {
         
 }
 
+get_collection_date = function() {
+        
+        get_collection() %>%
+                pull(user_load_ts) %>%
+                head(1) %>%
+                as.Date()
+        
+}
 
 # combine collection with games info for report
 get_collection = function(collection = user_output$user_collection,
-                                 info = games_info,
-                                 data = games) {
+                          info = games_info,
+                          data = games) {
         
         
         collection %>%
@@ -66,11 +74,10 @@ collection_categories_plot = function(data,
                 theme_bgg()+
                 ylab("")+
                 my_caption()+
-                ggtitle(paste("Top", 
-                              stringr::str_to_title(paste(vars, collapse = ", ")),
-                              "for",
-                              get_username(data)))+
-                theme(plot.title = element_text(size =14))+
+                # labs(title = paste("Top", stringr::str_to_title(paste(vars, collapse = ", "))),
+                #      subtitle = paste('Most frequent games in collection for', get_username()))+
+                theme(plot.title = element_text(size =12,
+                                                vjust = 2))+
                 scale_fill_brewer(palette = "Set1")+
                 guides(fill = 'none')
         
@@ -88,23 +95,29 @@ collection_owned_plot = function(data,
                 mutate(across(any_of(vars),
                               ~ case_when(.x == 1 | .x == 'yes' ~ 'yes',
                                           .x == 0 | .x == 'no' ~ 'no'))) %>%
-                mutate(unplayed = case_when(
+                mutate(rated_not_owned = case_when(
+                        rated == 'yes' & (own == 'no' & prevowned == 'no') ~ 'yes')) %>%
+                mutate(owned_not_rated = case_when(
                         (own == 'yes' | prevowned == 'yes' ) & rated == 'no' ~ 'yes')) %>%
                 pivot_longer(cols = -c(game_id)) %>%
                 filter(value == 'yes') %>%
                 group_by(name) %>%
                 summarize(n = sum(value == 'yes')) %>%
-                mutate(label = case_when(name == 'unplayed' ~ 'yes',
+                mutate(label = case_when(name == 'owned_not_rated' ~ 'yes',
                                          TRUE ~ 'no')) %>%
+                mutate(name = stringr::str_replace_all(name, "_", " "),
+                       name = stringr::str_to_title(name),
+                       name = stringr::str_replace(name, "Prevowned", "Previously Owned"),
+                       name = stringr::str_replace(name, "Wanttoplay", "Want to Play")) %>%
                 ggplot(aes(x=n,
                            fill = label,
                            label = n,
                            y = reorder(name, n)))+
                 geom_col()+
-                geom_text(hjust = -0.1)+
+                geom_text(hjust = -0.05)+
                 theme_bgg()+
                 ggtitle(paste(get_username(data), "'s Collection", sep=""),
-                        subtitle = str_wrap('Unplayed games are games the user has owned but not rated, potentially representing a shelf of shame. In this event, these games are highlighted in red in order to (potentially) make the user feel bad about themselves.',120))+
+                        subtitle = str_wrap('Highlighted in red are games the user has owned but not rated, potentially representing games the user has purchased but not played (aka, shelf of shame).',120))+
                 my_caption()+
                 scale_fill_manual(values = c("grey60", "firebrick3"))+
                 guides(fill = "none")+
@@ -117,12 +130,207 @@ collection_owned_plot = function(data,
         
 }
 
+
 # get_collection() %>%
 #         collection_owned_plot()
 
+set_gt_tab_options = function(gt) {
+        
+        gt %>%
+                tab_options(table.font.size = 12,
+                            container.height = 800,
+                            container.overflow.x = T,
+                            container.overflow.y = T)
+}
+
+set_gt_widths = function(gt) {
+        
+        gt %>%
+                cols_width(
+                        "image" ~ px(150),
+                        "game" ~ px(100),
+                        "description" ~ px(400),
+                        #    ends_with("r") ~ px(100),
+                        everything() ~ px(50)
+                )
+}
+
+set_gt_theme = function(gt) {
+        
+        gt %>%
+                gtExtras::gt_theme_espn()
+}
+
+
+prep_playercounts = function(data) {
+        
+        data %>%
+                mutate(across(c("playercount_best", "playercount_rec"),
+                              ~ gsub(pattern = paste(as.character(seq(9, 100, by = 1)), collapse = "|"),
+                                     replacement = "8+",
+                                     x = .x))) %>%
+                rowwise() %>%
+                mutate(across(c("playercount_best", "playercount_rec"),
+                              ~ str_split(.x, ",", ) %>%
+                                      unlist() %>%
+                                      unique() %>%
+                                      sort() %>%
+                                      paste(collapse = ",")))
+}
+
+prep_collection_table = function(collection = get_collection() %>%
+                                         filter(own == 'yes'),
+                                 game_data = games_info,
+                                 description_length = 300) {
+        
+        collection  %>%
+                select(username, game_id, name, rating) %>%
+                left_join(.,
+                          game_data %>%
+                                  select(game_id, playercounts, bgg_info, images, descriptions),
+                          by = join_by(game_id)) %>%
+                unnest(c(playercounts, bgg_info, images, descriptions)) %>%
+                mutate(link = make_bgg_link(game_id)) %>%
+                prep_playercounts() %>%
+                mutate(playercount_rec = 
+                               case_when(is.na(playercount_rec) ~ playercount_best,
+                                         TRUE ~ playercount_rec)) %>%
+                mutate(playingtime = case_when(playingtime < 15 ~ '<15',
+                                               playingtime < 30 ~ '<30',
+                                               playingtime >= 30 & playingtime <= 60 ~ '30-60',
+                                               playingtime > 60 & playingtime <= 120 ~ '61-120',
+                                               playingtime > 121 & playingtime <= 180 ~ '121-180',
+                                               playingtime > 180 ~ '180+',
+                                               TRUE ~ as.character(playingtime))) %>%
+                mutate(id = game_id,
+                       game = name,
+                       published = yearpublished,
+                       `best        player count` = playercount_best,
+                       `recommended player count` = playercount_rec,
+                       `playing time` = case_when(is.na(playingtime)  ~ NA_character_,
+                                                  TRUE ~ paste(playingtime, "minutes")),
+                       image = thumbnail,
+                       description =  stringr::str_trunc(description,
+                                                         description_length),
+                       rating,
+                       link = make_bgg_link(game_id),
+                       .keep = 'none') %>%
+                # make link
+                mutate(game = map2(game,
+                                   link,
+                                   ~ gt_hyperlink(.x, .y)))
+}
+
+
+# build gt table for colleciton
+make_collection_gt_table = function(collection_table) {
+        
+        collection_table %>%
+                gt() %>%
+                cols_hide(columns = c(published, id, link)) %>%
+                gt_img_rows(columns = image, height = 100) %>%
+                cols_move(
+                        columns = c("game",
+                                    "description",
+                                    "playing time", 
+                                    "best        player count", 
+                                    "recommended player count", 
+                                    "rating"),
+                        after = "image"
+                ) %>%
+                cols_align(
+                        columns = c("image", 
+                                    "playing time",
+                                    "best        player count",
+                                    "recommended player count", 
+                                    "rating"),
+                        align = "center"
+                ) %>%
+                cols_align(
+                        columns = c("game", "description"),
+                        align = "left"
+                ) %>%
+                sub_missing(
+                        columns = everything(),
+                        rows = everything(),
+                        missing_text = "---"
+                )
+        
+}
+
+make_image_link = function(link,
+                           height = 52) {
+        
+        paste0('<img src =',
+               link,
+               ' height=',
+               paste(height, sep=""),
+               '>',
+               '</img>')
+        
+}
+
+make_collection_datable = function(collection_table,
+                                   page_length = 15) {
+        
+        
+        rating = seq(3, 13)
+        
+        color = 'dodgerblue2'
+        
+        my_color_ramp = colorRampPalette(c("white", color))
+        
+        max_color = my_color_ramp(length(rating)-3)[length(rating)-3]
+        
+        collection_table %>%
+                mutate(Published = as.integer(published),
+                       Image = make_image_link(image),
+                       # Image = paste0('<img src =',
+                       #                image,
+                       #                ' height="52"></img>'),
+                       Game = game,
+                       Best = `best        player count`,
+                       Recommended = `recommended player count`,
+                       Time = `playing time`,
+                       Rating = rating,
+                       .keep = 'none') %>%
+                DT::datatable(escape=F,
+                              rownames = F,
+                              extensions = c('Responsive'),
+                              #  caption = "Games",
+                              class = list(stripe =F),
+                              filter = list(position = 'top'),
+                              options = list(pageLength = page_length,
+                                             initComplete = htmlwidgets::JS(
+                                                     "function(settings, json) {",
+                                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
+                                                     "}"),
+                                             scrollX=F,
+                                             columnDefs = list(
+                                                     list(className = 'dt-center',
+                                                          visible=T,
+                                                          targets=c("Image",
+                                                                    "Published",
+                                                                    "Best",
+                                                                    "Recommended",
+                                                                    "Rating")
+                                                     )
+                                             )
+                              )
+                ) %>%
+                DT::formatStyle(
+                        columns = "Rating",
+                        backgroundColor = 
+                                DT::styleInterval(
+                                        cuts = rating,
+                                        values = my_color_ramp(length(rating)+1)
+                                )
+                )
+}
+
 # table
 make_top_n_table = function(preds,
-                            collection,
+                            collection = get_collection(),
                             workflow,
                             top_n = 10,
                             years = seq(2010, 2021),
@@ -141,36 +349,55 @@ make_top_n_table = function(preds,
                           n = top_n,
                           with_ties = F) %>%
                 arrange(desc(.pred_yes)) %>%
-                mutate(rank = row_number()) %>%
-                select(game_id, name, any_of(outcome), rank, yearpublished)  %>%
+                mutate(Rank = row_number()) %>%
+                select(game_id, name, any_of(outcome), Rank, yearpublished)  %>%
                 ungroup()
         
-        highlight = preds %>%
-                filter(!!rlang::sym(outcome) == event_class) %>%
+        highlight_own = 
+                collection %>%
+                filter(own == 'yes') %>% 
+                # mutate(link = make_bgg_link(game_id)) %>%
+                # mutate(name = map2(name,
+                #                    link,
+                #                    ~ gt_hyperlink(.x, .y))) %>%
                 pull(name)
         
+        highlight_ever_owned = 
+                collection %>%
+                filter(ever_owned == 'yes') %>%
+                # mutate(link = make_bgg_link(game_id)) %>%
+                # mutate(name = map2(name,
+                #                    link,
+                #                    ~ gt_hyperlink(.x, .y))) %>%
+                pull(name)
+        
+        
         table = preds %>%
-                select(name, yearpublished, rank) %>%
-                pivot_wider(id_cols = c("rank"),
+                # mutate(link = make_bgg_link(game_id),
+                #        link = glue::glue("[{name}]({link})"),
+                #        name =  map(link, gt::md)) %>%
+                select(name, yearpublished, Rank) %>%
+                pivot_wider(id_cols = c("Rank"),
                             names_from = c("yearpublished"),
                             values_from = c("name"),
                             values_fn = list)
-        
-        table %>%
-                select(rank, sort(names(.))) %>%
-                unnest(cols = names(.)) %>%
-                gt::gt() %>%
-                gt::tab_options(table.font.size = 10) %>%
-                gt::cols_align(align = c("center")) %>%
-                gt::data_color(
-                        columns = everything(),
-                        method = "factor",
-                        na_color = "white",
-                        autocolor_text = T,
-                        fn = function(x) case_when(x %in% highlight ~ 'dodgerblue2',
-                                                   TRUE ~ 'white')
-                )
-        
+
+table %>%
+        select(Rank, sort(names(.))) %>%
+        unnest(cols = names(.)) %>%
+        gt::gt() %>%
+        gt::tab_options(table.font.size = 10) %>%
+        gt::cols_align(align = c("center")) %>%
+        # add color for own
+        gt::data_color(
+                columns = everything(),
+                method = "factor",
+                na_color = "white",
+                autocolor_text = T,
+                fn = function(x) case_when(x %in% highlight_own ~ 'dodgerblue2',
+                                           x %in% highlight_ever_owned ~ 'skyblue1',
+                                           TRUE ~ 'white')
+        )
 }
 
 # make_top_n_table(
@@ -192,8 +419,8 @@ get_tidy_outcome = function(x) {
 
 # make prob outcome
 get_prob_outcome = function(x) {
-
-                paste0("Pr(", x, ")")
+        
+        paste0("Pr(", x, ")")
         
 }
 
@@ -208,14 +435,24 @@ make_hyperlink = function(myurl,
         paste('<a href="',myurl,'">',mytext,'</a>')
 }
 
+make_web_image =
+        function(x, height=100) {
+                
+                web_image(url = x,
+                          height = px(height) 
+                ) 
+                
+        }
+
 
 # make tables with game picture and description
-make_game_gt_table = function(predictions,
-                              outcome,
-                              game_data = games,
-                              top_n = 10,
-                              description_length = 400,
-                              ...) {
+make_predictions_gt_table = function(predictions,
+                                     outcome,
+                                     info = games_info,
+                                     game_data = games,
+                                     top_n = 10,
+                                     description_length = 400,
+                                     ...) {
         
         require(gt)
         require(gtExtras)
@@ -233,21 +470,24 @@ make_game_gt_table = function(predictions,
                                   filter = T,
                                   ...) {
                 
+                game_image = 
+                        data %>%
+                        left_join(., info %>%
+                                          select(game_id, images) %>%
+                                          unnest(images) %>%
+                                          select(game_id, thumbnail) %>%
+                                          rename(image = thumbnail),
+                                  by = c("game_id"))
+                
                 if (filter == T) {
                         
-                        data %>%
-                                left_join(., game_data %>%
-                                                  select(game_id, image),
-                                          by = c("game_id")) %>%
+                        game_image %>%
                                 filter(!is.na(image))
                         
                 } 
                 else {
                         
-                        data %>%
-                                left_join(., game_data %>%
-                                                  select(game_id, image),
-                                          by = c("game_id"))
+                        game_image
                 }
                 
                 
@@ -332,21 +572,28 @@ make_game_gt_table = function(predictions,
                         columns = c("rank", "image", "game", "description"),
                         after = "rank"
                 ) %>%
-                gtExtras::gt_theme_espn() %>%
-                tab_options(table.font.size = 12)
+                set_gt_theme() %>%
+                set_gt_tab_options() %>%
+                cols_width(
+                        "image" ~ px(150),
+                        "game" ~ px(100),
+                        "description" ~ px(400),
+                        #    ends_with("r") ~ px(100),
+                        everything() ~ px(50)
+                )
         
 }
 
-# new and upcoming
+# # new and upcoming
 # bind_rows(
 #         user_output$valid_predictions,
 #         user_output$upcoming_predictions %>%
-#                 filter(yearpublished > 2023)) %>%
+#                 filter(yearpublished > user_output$end_train_year + valid_window)) %>%
 #         filter(wflow_id == 'all_trees_lightgbm') %>%
 #         make_game_gt_table(
-#                 outcome = 'own',
+#                 outcome = 'own',d
 #                 top_n = 25,
-#                 description_length = 500
+#                 description_length = 400
 #         ) %>%
 #         gt::tab_header(
 #                 title = paste("Top (Newer) Games for",
@@ -373,6 +620,7 @@ make_game_gt_table = function(predictions,
 make_games_datatable = function(data,
                                 caption = 'Top Games',
                                 outcome = user_output$outcome,
+                                pagelength = 15,
                                 ...) {
         
         
@@ -388,23 +636,24 @@ make_games_datatable = function(data,
                 DT::datatable(escape=F,
                               rownames = F,
                               extensions = c('Responsive'),
-                            #  caption = "Games",
+                              #  caption = "Games",
                               class = list(stripe =F),
                               filter = list(position = 'top'),
-                              options = list(pageLength = 25,
+                              options = list(pageLength = pagelength,
                                              initComplete = htmlwidgets::JS(
                                                      "function(settings, json) {",
-                                                     paste0("$(this.api().table().container()).css({'font-size': '", '8pt', "'});"),
+                                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
                                                      "}"),
                                              scrollX=F,
                                              columnDefs = list(
                                                      list(className = 'dt-center',
                                                           visible=T,
                                                           targets=c("Rank",
+                                                                    #"Image",
                                                                     "Published",
                                                                     get_prob_outcome(get_tidy_outcome(outcome)),
                                                                     get_tidy_outcome(outcome)
-                                                                    ))))
+                                                          ))))
                 ) %>%
                 DT::formatStyle(
                         columns = get_prob_outcome(get_tidy_outcome(user_output$outcome)),
@@ -416,7 +665,7 @@ make_games_datatable = function(data,
                 ) %>%
                 DT::formatStyle(
                         'Own',
-                       valueColumns = 'Own',
+                        valueColumns = 'Own',
                         backgroundColor = DT::styleEqual(levels = c('yes','no'),
                                                          c(max_color,
                                                            'white')))
@@ -426,14 +675,23 @@ make_games_datatable = function(data,
 
 
 prep_games_datatable = function(predictions,
+                                info = games_info,
                                 outcome = user_output$outcome) {
         
         predictions %>%
+                left_join(.,
+                          info %>%
+                                  select(game_id, images) %>%
+                                  unnest(images) %>%
+                                  select(game_id, thumbnail),
+                          by = join_by(game_id)) %>%
+             #   mutate(image = make_image_link(thumbnail)) %>%
                 mutate(name = make_hyperlink(make_bgg_link(game_id), mytext = name)) %>%
                 arrange(desc(.pred_yes)) %>%
                 mutate(rank = row_number()) %>%
                 mutate(Rank = rank,
-                       Published = yearpublished,
+                       Published = as.integer(yearpublished),
+                  #     Image = image,
                        Name = name,
                        !!rlang::sym(get_prob_outcome(get_tidy_outcome(outcome))) := formatC(.pred_yes, digits=3, format="f"),
                        !!rlang::sym(get_tidy_outcome(outcome)) := !!rlang::sym(outcome),
@@ -485,6 +743,23 @@ make_separation_plot = function(predictions,
                 }
 }
 
+add_gt_wflow_color = function(gt) {
+        
+        
+        gt %>%
+                gt::data_color(
+                        columns = wflow_id,
+                        target_columns = everything(),
+                        method = "factor",
+                        na_color = "white",
+                        autocolor_text = T,
+                        fn = function(x) case_when(x== 'glmnet' ~ '#000000',
+                                                   x== 'lightgbm' ~ "#E69F00",
+                                                   TRUE ~ 'white')
+                )
+}
+
+
 # user_output$training_predictions %>%
 #         make_separation_plot(truth = 'own')
 
@@ -504,7 +779,8 @@ make_roc_plot = function(predictions,
                 autoplot(size = 1.04,
                          color = wflow_id)+
                 theme_bgg()+
-                scale_color_brewer(palette = "Set1")
+                ggthemes::scale_color_colorblind()
+        
 }
 
 # user_output$training_predictions %>%
@@ -512,8 +788,8 @@ make_roc_plot = function(predictions,
 
 # make pr curve
 make_pr_curve_plot = function(predictions,
-                         truth,
-                         event_level = 'yes') {
+                              truth,
+                              event_level = 'yes') {
         
         predictions %>%
                 mutate(wflow_id = tidy_wflow_id(wflow_id)) %>%
@@ -526,7 +802,7 @@ make_pr_curve_plot = function(predictions,
                 autoplot(size = 1.04,
                          color = wflow_id)+
                 theme_bgg()+
-                scale_color_brewer(palette = "Set1")
+                ggthemes::scale_color_colorblind()
 }
 
 # user_output$training_predictions %>%
@@ -535,7 +811,7 @@ make_pr_curve_plot = function(predictions,
 
 # evaluate threshold
 # eval_threshold_plot = function(
-#                 predictions,
+                #                 predictions,
 #                 thresholds = seq(0, 1, by = 0.05),
 #                 truth,
 #                 event_level = 'yes') {
@@ -937,7 +1213,7 @@ lightgbm_interpret_plot = function(interpret,
                 mutate(Feature_Label = case_when(
                         Feature != 'All Other Features' ~ paste(bggUtils::present_text(Feature, minlength=20), "=", round(Value, 2)),
                         TRUE ~ Feature))
-
+        
         plot_data %>%
                 left_join(.,
                           interpret %>%
@@ -954,34 +1230,34 @@ lightgbm_interpret_plot = function(interpret,
                                        paste("Pr(Own):", round(.pred_yes, 3)),
                                        paste("Own:", !!rlang::sym(outcome)),
                                        sep = "\n")) %>%
-        ggplot(aes(x = Contribution,
-                   fill = Contribution,
-                   y = tidytext::reorder_within(Feature_Label, Contribution, .id)))+
-        geom_col()+
-        facet_wrap(~Facet_Label,
-                   scales = "free_y")+
-        tidytext::scale_y_reordered()+
-        ylab("")+
-        bggUtils::theme_bgg()+
-        scale_fill_gradient2(low = 'red',
-                             mid = 'grey60',
-                             high = 'dodgerblue2',
-                             midpoint = 0,
-                             limits = c(-0.5, 0.5),
-                             oob = scales::squish)+
-        guides(fill = 'none')+
-        theme(strip.text = element_text(hjust = 0))+
-        #  ggtitle(str_wrap("Displaying Shapley values to identify which features were the most influential in reaching an individual prediction. Features that increase a prediction are positive (in blue) while features that decrease a prediction are negative (in red)"))+
-        theme(plot.title = element_text(hjust = 0,
-                                        size = 16),
-              strip.text.x = element_text(size = 10),
-              plot.subtitle = element_text(hjust = 0,
-                                           size = 10))+
-       # my_caption+
-        xlab("")+
-        ylab("")+
-        theme(panel.grid.major = element_blank())
-
+                ggplot(aes(x = Contribution,
+                           fill = Contribution,
+                           y = tidytext::reorder_within(Feature_Label, Contribution, .id)))+
+                geom_col()+
+                facet_wrap(~Facet_Label,
+                           scales = "free_y")+
+                tidytext::scale_y_reordered()+
+                ylab("")+
+                bggUtils::theme_bgg()+
+                scale_fill_gradient2(low = 'red',
+                                     mid = 'grey60',
+                                     high = 'dodgerblue2',
+                                     midpoint = 0,
+                                     limits = c(-0.5, 0.5),
+                                     oob = scales::squish)+
+                guides(fill = 'none')+
+                theme(strip.text = element_text(hjust = 0))+
+                #  ggtitle(str_wrap("Displaying Shapley values to identify which features were the most influential in reaching an individual prediction. Features that increase a prediction are positive (in blue) while features that decrease a prediction are negative (in red)"))+
+                theme(plot.title = element_text(hjust = 0,
+                                                size = 16),
+                      strip.text.x = element_text(size = 10),
+                      plot.subtitle = element_text(hjust = 0,
+                                                   size = 10))+
+                # my_caption+
+                xlab("")+
+                ylab("")+
+                theme(panel.grid.major = element_blank())
+        
 }
 
 

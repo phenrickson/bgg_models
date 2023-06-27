@@ -20,10 +20,18 @@ suppressPackageStartupMessages({
         # vetiver
         library(vetiver)
         
+        # tables
+        library(gt)
+        library(gtExtras) 
+        library(DT)
+        
 })
 
 
 # setup -------------------------------------------------------------------
+
+# functions used for preprocessing
+source(here::here("src", "features", "preprocess_games.R"))
 
 # recipes for user models
 source(here::here("src", "features", "recipes_user.R"))
@@ -34,8 +42,9 @@ source(here::here("src", "models", "train_user_models.R"))
 # functions for visualizing workflows
 source(here::here("src", "visualizations", "viz_workflows.R"))
 
-# functions used for preprocessing
-source(here::here("src", "features", "preprocess_games.R"))
+# functions for user report
+source(here::here("src", "reports", "user_collection_report.R"))
+
 
 
 # data --------------------------------------------------------------------
@@ -65,7 +74,9 @@ doMC::registerDoMC(cores = all_cores)
 # inputs -------------------------------------------------------------------------
 
 # parameters for user training
-# username = 'GOBBluth89'
+#username = 'mrbananagrabber'
+username = 'GOBBluth89'
+valid_window = 2
 # end_train_year = 2020
 # valid_window = 2
 # retrain_window = 1
@@ -245,10 +256,34 @@ train_user_model = function(user_collection,
         
 }
 
+# build user markdown report
+build_user_report = function(username,
+                             results = user_results,
+                             workflows) {
+        
+        build_report_name = function(username,
+                                     ...) {
+                
+                paste(username, results$outcome, results$end_train_year, sep = "_")
+        }
+        
+        
+        # build markdown report
+        # build markdown report
+        rmarkdown::render(
+                input = here::here("notebooks", "user_model_report.Rmd"),
+                output_dir = here::here("reports", "users"),
+                output_file = build_report_name(username),
+                params = list(bgg_username = username),
+                #    output_file = output_file,
+                envir = parent.frame()
+        )
+        
+}
 
 # run function for user
 user_collection = 
-        load_user_collection(username = 'mrbananagrabber')
+        load_user_collection(username = username)
 
 set.seed(1999)
 user_output = 
@@ -256,7 +291,7 @@ user_output =
                          bgg_games = games,
                          outcome = 'own',
                          end_train_year = 2021,
-                         valid_window = 2,
+                         valid_window = valid_window,
                          retrain_window = 0,
                          tune_metric = 'mn_log_loss')
 
@@ -264,116 +299,6 @@ user_output =
 user_workflows = user_output$workflows
 user_results = user_output[-which(names(user_output) == "workflows")]
 
-# build markdown report
-
-
-# # pin results
-# user_results %>%
-#         pins::pin_write(
-#                 board = pins::board_folder(here::here("models",
-#                                                       "users")),
-#                 name = paste(collection$username[1],
-#                              user_results$end_train_year,
-#                              user_results$outcome, sep="_"),
-#                 versioned = T)
-
-# # use vetiver to save glmnet workflow
-# vetiver_glmnet = 
-#         workflows %>%
-#         filter(grepl("glmnet", wflow_id)) %>%
-#         pluck(".workflow", 1) %>%
-#         vetiver_model(
-#                 model = .,
-#                 model_name = paste(results$username, 
-#                                    results$outcome, 
-#                                    "glmnet", sep = "_"),
-#                 metadata = list("training_metrics" =
-#                                         results$training_metrics %>%
-#                                         filter(grepl("glmnet", wflow_id)),
-#                                 "valid_metrics" = 
-#                                         results$valid_metrics %>%
-#                                         filter(grepl("glmnet", wflow_id))),
-#                 versioned = T)
-
-# # pin workflow
-# vetiver_glmnet %>%
-# vetiver::vetiver_pin_write(
-#         board = pins::board_folder(here::here("models", "users")))
-# 
-# 
-# # save lightgm workflow via saveRDS
-# lightgbm_wflow = workflows %>%
-#         filter(grepl("lightghbm", wflow_id)) %>%
-#         pluck(".workflow", 1)
-
-# lightgbm::saveRDS.lgb.Booster()
-# 
-# # pin results
-# results %>%
-#         pins::pin_write(
-#                 board = pins::board_folder(here::here("models",
-#                                                       "users")),
-#                 name = paste(results$username, 
-#                              results$end_train_year,
-#                              results$outcome, sep="_"),
-#                 versioned = T)
-# 
-# # bundle workflows
-# bundled_workflows = bundle::bundle(workflows)
-
-# filepath
-# filepath = paste0(
-#         here::here("models/users",
-#                    paste(results$username,
-#                          results$end_train_year,
-#                          results$outcome,
-#                          "workflows", sep = "_")),
-#         ".rds")
-
-# # save with saveRDS
-# tictoc::tic()
-# saveRDS(bundled_workflows,
-#         compress = F,
-#         file = filepath)
-# tictoc::toc()
-
-# 
-# # pin bundled workflows
-# bundled_workflows %>%
-#         pins::pin_write(
-#                 board = pins::board_folder(here::here("models",
-#                                                       "users")),
-#                 name = paste(results$username, 
-#                              results$outcome,
-#                              "workflows", 
-#                              sep="_"),
-#                 versioned = T)
-# 
-# # # save workflows
-# # bundled_workflows = bundle::bundle(workflows)
-# # saveRDS(bundled_workflows,
-# #         file = here::here("")
-# 
-# 
-# # # save workflows with vetiver
-# # library(vetiver)
-# # 
-# # v <- vetiver_model(
-# #         crash_wf_model, 
-# #         "traffic-crash-model", 
-# #         metadata = list(metrics = crash_metrics %>% 
-# #                                 dplyr::select(-.config),
-# #                         predictions = 
-# # )
-# 
-# # 
-# # readr::write_rds(
-# #         
-# # )
-# save(workflows,
-#      file = 
-#              paste0(here::here("models", 
-#                                "users",
-#                                paste(username,end_train_year, outcome, sep="_")),
-#                     ".rds"))
-# 
+# build user markdown report
+username %>%
+        build_user_report(results = user_results)
