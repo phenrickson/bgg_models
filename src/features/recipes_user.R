@@ -1,10 +1,115 @@
-# recipes for bgg outcomes
+# make user recipes
 
-#message("creating recipes...")
 
+# build a predefined set of user recipes
+make_user_recipes_list = function(data,
+                              outcome) {
+        
+        outcome = enquo(outcome)
+        
+        # recipe without designers/artists/publishers/families
+        minimal_recipe = 
+                data %>%
+                # remove bgg variables      
+                select(-families, -publishers, -artists, -designers) %>%
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
+                add_preprocessing()
+        
+        # recipe with all features
+        all_recipe = 
+                data %>%
+                # remove bgg variables      
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_bgg_dummies() %>%
+                add_preprocessing() %>%
+                add_unmatched() 
+        
+        # all features recipe
+        minimal_recipe = 
+                data %>%
+                # remove bgg variables      
+                select(-families, -publishers, -artists, -designers) %>%
+                # build recipe
+                make_user_recipe(outcome = !!outcome) %>%
+                add_imputation() %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
+                add_preprocessing()
+        
+                
+        # recipe without designers/artists/publishers/families
+        # add imputation and splines
+        minimal_splines_recipe = 
+                minimal_recipe %>%
+                add_splines() %>%
+                add_normalize() %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe without designers/artists/publishers/families
+        # add zero variance and checks
+        minimal_trees_recipe = 
+                minimal_recipe %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # for trees
+        # add imputation and splines
+        all_trees_recipe = 
+                all_recipe %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add imputation and splines
+        all_splines_recipe = 
+                all_recipe %>%
+                add_splines() %>%
+                add_normalize() %>%
+                add_zv() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add corr filter
+        all_corr_recipe = 
+                all_splines_recipe %>%
+                add_corr() %>%
+                check_missing(all_predictors())
+        
+        # recipe with all features
+        # add pca
+        all_pca_recipe = 
+                all_splines_recipe %>%
+                add_pca() %>%
+                check_missing(all_predictors())
+        
+        # rm start recipes
+        rm(minimal_recipe,
+           all_recipe)
+         
+        # return all recipes
+        mget( grep("_recipe$", names(environment()),  value=TRUE)) %>%
+                # set names
+                magrittr::set_names(., gsub("_recipe", "", names(.)))
+        
+}
+        
+        
+# helper functions
 # basic recipe setup
-base_recipe_func = function(data,
-                            outcome) {
+make_user_recipe = function(data,
+                                outcome) {
         
         outcome = enquo(outcome)
         
@@ -17,7 +122,7 @@ base_recipe_func = function(data,
                                "image",
                                "thumbnail",
                                "description",
-                               # "load_ts",
+                               "load_ts",
                                "average",
                                "usersrated",
                                "log_usersrated",
@@ -29,6 +134,7 @@ base_recipe_func = function(data,
                                "wanting",
                                "wishing",
                                "users_threshold",
+                               "pred_hurdle",
                                "averageweight",
                                "bayesaverage",
                                "username", 
@@ -37,6 +143,7 @@ base_recipe_func = function(data,
                                "own",
                                "ever_owned",
                                "rated",
+                               "highly_rated",
                                "preordered",
                                "prevowned",
                                "fortrade",
@@ -46,9 +153,10 @@ base_recipe_func = function(data,
                                "wishlist",
                                "wishlistpriority",
                                "url", 
+                               "lastmodified",
                                "user_load_ts"),
                         new_role = "id") %>%
-                # set outcome varable
+                # set outcome variable
                 update_role(!!outcome,
                             new_role = "outcome") %>%
                 # set all others as predictors
@@ -65,90 +173,52 @@ base_recipe_func = function(data,
         
 }
 
-# function for extract dummies from nominal
-dummy_extract_variable = function(recipe,
-                                  variable,
-                                  threshold = 100) {
+# function for extracting dummies from nominal features
+add_dummies = function(recipe,
+                       variable,
+                       threshold = 100) {
         
-        var = enquo(variable)
+        variable = enquo(variable)
         
         recipe %>%
                 # tokenize 
-                step_dummy_extract(!!var,
+                step_dummy_extract(!!variable,
                                    sep = ", ",
                                    other = "remove_other_field",
                                    threshold = threshold) %>%
                 # remove other var
                 step_rm(contains("remove_other_field"))
         
+        
 }
 
-
 # standard dummy recipes
-dummy_recipe_func = function(recipe) {
+add_bgg_dummies = function(recipe) {
         
         recipe %>%
                 # include most mechanics
-                dummy_extract_variable(mechanics,
-                                       threshold = 50) %>%
+                add_dummies(mechanics,
+                            threshold = 50) %>%
                 # include all categories
-                dummy_extract_variable(categories,
-                                       threshold = 1) %>%
+                add_dummies(categories,
+                            threshold = 1) %>%
                 # families at min 100
-                dummy_extract_variable(families,
-                                       threshold = 100) %>%
+                add_dummies(families,
+                            threshold = 100) %>%
                 # publishers at 50
-                dummy_extract_variable(publishers,
-                                       threshold = 50) %>%
+                add_dummies(publishers,
+                            threshold = 50) %>%
                 # designers at 25
-                dummy_extract_variable(designers,
-                                       threshold = 25) %>%
+                add_dummies(designers,
+                           threshold = 25) %>%
                 # artists min 50
-                dummy_extract_variable(artists,
-                                       threshold = 50)
-}
-
-# function for tokenizing specific variable with minimum number of times 
-tokenize_variable = function(recipe,
-                             variable,
-                             max_tokens = 500,
-                             min_times = 100) {
-        
-        variable = enquo(variable)
-        
-        recipe %>%
-                # tokenize 
-                step_tokenize(!!variable) %>%
-                # token filter mechanics and categories with min n of 50
-                step_tokenfilter(!!variable,
-                                 max_tokens = max_tokens,
-                                 min_times = min_times) %>%
-                step_tf(!!variable,
-                        prefix = "d")
-        
-}
-
-# standard tokenization approach i'll use
-tokenize_recipe_func = function(recipe) {
-        
-        recipe %>%
-                # include all mechanics and categories
-                tokenize_variable(c(mechanics, categories),
-                                  min_times = 0) %>%
-                # families at min 100
-                tokenize_variable(families,
-                                  min_times = 100) %>%
-                # publishers and designers min 10
-                tokenize_variable(c(publishers, designers),
-                                  min_times = 10) %>%
-                # artists min 25
-                tokenize_variable(artists,
-                                  min_times = 25)
+                add_dummies(artists,
+                            threshold = 50)
 }
 
 # imputation
-impute_recipe_func = function(recipe) {
-        
+add_imputation = function(recipe) {
+
         recipe %>%
                 # impute missingness in selected features with median
                 step_impute_median(playingtime,
@@ -170,16 +240,13 @@ impute_recipe_func = function(recipe) {
 }
 
 # additional preprocessing steps
-preproc_recipe_func = function(recipe) {
+add_preprocessing = function(recipe) {
         
         recipe %>%
                 # number_mechanics
                 step_mutate(number_mechanics = rowSums(dplyr::across(starts_with("mechanics")))) %>%
                 # number categories
                 step_mutate(number_categories = rowSums(dplyr::across(starts_with("categories")))) %>%
-                # specific feature for unmatched series
-                step_mutate(family_unmatched_series = dplyr::case_when(grepl("Unmatched:", name) ~ 1,
-                                                                       TRUE ~ 0)) %>%
                 # log time per player and playingtime
                 step_log(time_per_player,
                          playingtime,
@@ -201,12 +268,21 @@ preproc_recipe_func = function(recipe) {
                 # magical phrase in description
                 step_mutate(description_from_publisher = dplyr::case_when(grepl("description from publisher", tolower(description))==T ~ 1,
                                                                           TRUE ~ 0))
-} 
+}
 
+# add additional features
+# specific feature for unmatched series
+add_unmatched = function(recipe) {
+        
+        recipe %>%
+                step_mutate(family_unmatched_series = dplyr::case_when(grepl("Unmatched:", name) ~ 1,
+                                                                       TRUE ~ 0))
+        
+}
 
 # splines
 # add splines for nonlinear effects for linear models
-splines_recipe_func = function(recipe) {
+add_splines= function(recipe) {
         
         recipe %>%
                 #add spline for truncated yearpublished
@@ -223,10 +299,65 @@ splines_recipe_func = function(recipe) {
                         deg_free = 5)
 }
 
+# discretize variables with cart
+add_discrete = function(recipe,
+                        outcome) {
+        
+        recipe %>%
+                embed::step_discretize_cart(
+                        yearpublished,
+                        number_mechanics,
+                        number_categories,
+                        est_averageweight,
+                        outcome = outcome,
+                        id = "cart splits")
+                # #add spline for truncated yearpublished
+                # step_ns(year,
+                #         deg_free = 5) %>%
+                # # spline for number mechanics
+                # step_ns(number_mechanics,
+                #         deg_free = 5) %>%
+                # # spline for number categories
+                # step_ns(number_categories,
+                #         deg_free = 5) %>%
+                # # spliens for averageweight
+                # step_ns(est_averageweight,
+                #         deg_free = 5)
+        
+        
+}
 
-# normalize
-normalize_recipe_func = function(recipe) {
+# normalize all numeric predictors
+add_normalize = function(recipe) {
         
         recipe %>%
                 step_normalize(all_numeric_predictors())
+}
+
+# add pca
+add_pca = function(recipe,
+                   threshold = .75) {
+        
+        recipe %>%
+                step_pca(all_numeric_predictors(),
+                         threshold = .75)
+}
+
+# add corr
+add_corr = function(recipe,
+                    threshold = 0.9) {
+        
+        recipe %>%
+                step_corr(all_numeric_predictors(),
+                          threshold = 0.9)
+        
+}
+
+
+# step to remove zero variance
+add_zv = function(recipe) {
+        
+        recipe %>%
+                step_zv(all_numeric_predictors())
+        
 }
