@@ -1249,7 +1249,7 @@ lightgbm_interpret_plot = function(interpret,
                 theme(strip.text = element_text(hjust = 0))+
                 #  ggtitle(str_wrap("Displaying Shapley values to identify which features were the most influential in reaching an individual prediction. Features that increase a prediction are positive (in blue) while features that decrease a prediction are negative (in red)"))+
                 theme(plot.title = element_text(hjust = 0,
-                                                size = 16),
+                                                size = 10),
                       strip.text.x = element_text(size = 10),
                       plot.subtitle = element_text(hjust = 0,
                                                    size = 10))+
@@ -1283,3 +1283,75 @@ lightgbm_interpret_plot = function(interpret,
 #      print)
 #
 # cowplot::plot_grid(plotlist=plots)
+
+
+make_effects_plot = function(estimates,
+                             category = 'designer') {
+        
+        if (category == 'category') {
+                category_var = 'categories'
+        } else if (category == 'family') {
+                category_var = 'families'
+        } else {
+                category_var = paste0(category, 's')
+        }
+        
+        estimates %>%
+                filter(grepl(paste0("^", category_var), term)) %>%
+                mutate(estimate = round(estimate, 3)) %>%
+                filter(estimate != 0) %>%
+                filter(!grepl("number_mechanics_ns", term)) %>%
+                mutate(term = gsub(paste0("^", category_var, "_"), "", term)) %>%
+                # term = gsub("_", " ", term),
+                # term = str_to_title(term)) %>%
+                select(term, estimate) %>%
+                arrange(desc(estimate)) %>%
+                left_join(.,
+                          games_info %>%
+                                  select(game_id, any_of(category_var)) %>%
+                                  unnest(!!category_var) %>%
+                                  mutate(id,
+                                         value,
+                                         term = bggUtils::clean_text(value),
+                                         type,
+                                         .keep = 'none') %>%
+                                  distinct(),
+                          by = join_by(term)) %>%
+                filter(!is.na(id)) %>%
+                group_by(sign = case_when(estimate > 0 ~ 'positive',
+                                          estimate < 0 ~ 'negative')) %>%
+                slice_max(abs(estimate),
+                          n = 13,
+                          with_ties = F) %>%
+                ungroup() %>%
+                mutate(label = category_var) %>%
+                mutate(value = abbreviate(value, minlength = 30)) %>%
+                ggplot(aes(x=estimate,
+                           fill = estimate,
+                           y=reorder(value, estimate)))+
+                geom_col()+
+                scale_fill_gradient2(low = 'red',
+                                     mid = 'grey60',
+                                     high = 'dodgerblue2',
+                                     midpoint = 0,
+                                     limits = c(-0.1, 0.1),
+                                     oob = scales::squish)+
+                ylab("")+
+                geom_vline(xintercept = 0,
+                           alpha = 0.5)+
+                theme_bgg()+
+                theme(legend.title = element_text())+
+                guides(fill = guide_colorbar(barheight = 0.5,
+                                             barwidth = 15,
+                                             title.position = 'top'))+
+                guides(fill = 'none')+
+                facet_wrap(paste(str_to_title(category), 
+                                 "Effects")~.)+
+                theme(plot.title = element_text(hjust = 0,
+                                                size = 12,
+                                                vjust = 2),
+                      plot.subtitle = element_text(hjust = 0,
+                                                   size = 10),
+                      strip.text.x = element_text(size = 10))
+        
+}

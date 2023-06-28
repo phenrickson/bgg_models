@@ -10,7 +10,7 @@ params:
 
 # What is this? {-}
 
-This notebook contains a set of analyses for analyzing **`r get_username()'s** BoardGameGeek collection. The bulk of the analysis is focused on building a user-specific predictive model to predict the games that the specified user is likely to add to their collection. 
+This notebook contains a set of analyses for analyzing **`r get_username()`'s** BoardGameGeek collection. The bulk of the analysis is focused on building a user-specific predictive model to predict the games that the specified user is likely to add to their collection. 
 
 By analyzing a user's collection and training a predictive model, I am able to answer questions such as:
 
@@ -139,140 +139,66 @@ suppressWarnings({
 
 This type of model enables me to I can examine the effects of specific features on a user's collection. For instance, what is a user's favorite designer? Least favorite mechanic? The following plots indicate specific effects for different kinds of features.
 
-```{r examine }
+```{r examine effects, fig.height = 8}
 
-make_effects_plot = function(estimates,
-                              category = 'designer') {
-        
-        if (category == 'category') {
-                category_var = 'categories'
-        } else if (category == 'family') {
-                category_var = 'families'
-        } else {
-                category_var = paste0(category, 's')
-        }
-        
-        estimates %>%
-                filter(grepl(paste0("^", category_var), term)) %>%
-                mutate(estimate = round(estimate, 3)) %>%
-                filter(estimate != 0) %>%
-                filter(!grepl("number_mechanics_ns", term)) %>%
-                mutate(term = gsub(paste0("^", category_var, "_"), "", term)) %>%
-                # term = gsub("_", " ", term),
-                # term = str_to_title(term)) %>%
-                select(term, estimate) %>%
-                arrange(desc(estimate)) %>%
-                left_join(.,
-                          games_info %>%
-                                  select(game_id, any_of(category_var)) %>%
-                                  unnest(!!category_var) %>%
-                                  mutate(id,
-                                         value,
-                                         term = bggUtils::clean_text(value),
-                                         type,
-                                         .keep = 'none') %>%
-                                  distinct(),
-                          by = join_by(term)) %>%
-                filter(!is.na(id)) %>%
-                group_by(sign = case_when(estimate > 0 ~ 'positive',
-                                          estimate < 0 ~ 'negative')) %>%
-                slice_max(abs(estimate),
-                          n = 13,
-                          with_ties = F) %>%
-                ungroup() %>%
-                mutate(label = category_var) %>%
-                mutate(value = abbreviate(value, minlength = 30)) %>%
-                ggplot(aes(x=estimate,
-                           fill = estimate,
-                           y=reorder(value, estimate)))+
-                geom_col()+
-                scale_fill_gradient2(low = 'red',
-                                     mid = 'grey60',
-                                     high = 'dodgerblue2',
-                                     midpoint = 0,
-                                     limits = c(-0.1, 0.1),
-                                     oob = scales::squish)+
-                ylab("")+
-                geom_vline(xintercept = 0,
-                           alpha = 0.5)+
-                theme_bgg()+
-                theme(legend.title = element_text())+
-                guides(fill = guide_colorbar(barheight = 0.5,
-                                              barwidth = 15,
-                                              title.position = 'top'))+
-                guides(fill = 'none')+
-                facet_wrap(paste(str_to_title(category), 
-                                 "Effects")~.)+
-                theme(plot.title = element_text(hjust = 0,
-                                        size = 12,
-                                        vjust = 2),
-                      plot.subtitle = element_text(hjust = 0,
-                                           size = 10),
-                      strip.text.x = element_text(size = 10))
-                # labs(subtitle = 
-                #              str_wrap("Coefficients from a penalized (ridge) logistic regression for games owned by specified user. Predictors centered and scaled."))
-        
+effects_plots = 
+        map(c("designer", "mechanic", "publisher", "category"),
+            ~ user_workflows %>%
+                    get_workflow(model = "glmnet") %>%
+                    extract_fit_parsnip() %>%
+                    tidy() %>%
+                    make_effects_plot(category = .x)+
+                    xlim(coef_range[1],
+                         coef_range[2])
+        )
 
-                # mutate(link = paste0('https://boardgamegeek.com/boardgame',
-                #                      category,
-                #                      '/',
-                #                      id),
-                #      #  link= glue::glue("[{value}]({link})"),
-                #        feature = map2(value,
-                #                       link,
-                #                       ~ gt_hyperlink(.x, .y))) %>%
-                # mutate(type,
-                #        feature,
-                #        estimate,
-                #        .keep = 'none') %>%
-                # select(type, feature, estimate)
-}
-
-# designers
-user_workflows %>%
-        get_workflow(model = "glmnet") %>%
-        extract_fit_parsnip() %>%
-        tidy() %>%
-        make_effects_plot(category = 'designer')+
-        xlim(coef_range[1],
-             coef_range[2])
-
-# mechanics
-user_workflows %>%
-        get_workflow(model = "glmnet") %>%
-        extract_fit_parsnip() %>%
-        tidy() %>%
-        make_effects_plot(category = 'mechanic') +
-        xlim(coef_range[1],
-             coef_range[2])
-
-# publisher
-user_workflows %>%
-        get_workflow(model = "glmnet") %>%
-        extract_fit_parsnip() %>%
-        tidy() %>%
-        make_effects_plot(category = 'publisher') +
-        xlim(coef_range[1],
-             coef_range[2])
-
-# categories
-user_workflows %>%
-        get_workflow(model = "glmnet") %>%
-        extract_fit_parsnip() %>%
-        tidy() %>%
-        make_effects_plot(category = 'category') +
-        xlim(coef_range[1],
-             coef_range[2])
+# combine
+cowplot::plot_grid(plotlist=effects_plots)
 
 
+# # designers
+# user_workflows %>%
+#         get_workflow(model = "glmnet") %>%
+#         extract_fit_parsnip() %>%
+#         tidy() %>%
+#         make_effects_plot(category = 'designer')+
+#         xlim(coef_range[1],
+#              coef_range[2])
+# 
+# # mechanics
+# user_workflows %>%
+#         get_workflow(model = "glmnet") %>%
+#         extract_fit_parsnip() %>%
+#         tidy() %>%
+#         make_effects_plot(category = 'mechanic') +
+#         xlim(coef_range[1],
+#              coef_range[2])
+# 
+# # publisher
+# user_workflows %>%
+#         get_workflow(model = "glmnet") %>%
+#         extract_fit_parsnip() %>%
+#         tidy() %>%
+#         make_effects_plot(category = 'publisher') +
+#         xlim(coef_range[1],
+#              coef_range[2])
+# 
+# # categories
+# user_workflows %>%
+#         get_workflow(model = "glmnet") %>%
+#         extract_fit_parsnip() %>%
+#         tidy() %>%
+#         make_effects_plot(category = 'category') +
+#         xlim(coef_range[1],
+#              coef_range[2])
 
 ```
 
-## Variable Importance
+## Feature Importance
 
-In addition to training a logistic regression, I trained another type of model using boosted trees (LightGBM) which tends to be 
+In addition to training a logistic regression, I trained another type of model using boosted trees (LightGBM), a flexible nonparametric method that is well suited for prediction. 
 
-Features that are important in predicting a user's collection will appear towards the top of cover, frequency, and/or gain.
+Which features were most used by this model? Features that are important in predicting a user's collection will appear towards the top of cover, frequency, and/or gain.
 
 ```{r lightgbm variable importance, fig.height = 8}
 
@@ -344,7 +270,7 @@ user_results$training_predictions %>%
 
 ```
 
-## Top Games in Resampling
+## Top Games in Training
 
 ```{r}
 
@@ -398,9 +324,9 @@ older_games %>%
 
 ## Calibration 
 
-How well calibrated are the models?
+What do the model's predicted probabilties mean? Or, put another way, how well *calibrated* are the model's predictions?
 
-If the model assigns a probability of 5%, how often does the outcome actually occur? A well calibrated model is one in which the predicted probabilities reflect the probabilities we would observe in the actual data. We can assess the calibration of a model by grouping its predictions into bins and assessing how often we observe the outcome versus how often our model expects to observe the outcome.
+If the model assigns a probability of 5%, how often does the outcome actually occur? A well calibrated model is one in which the predicted probabilities reflect the probabilities we would observe in the actual data. We can assess the calibration of a model by grouping its predictions into bins and assessing how often we observe the outcome versus how often each model expects to observe the outcome.
 
 A model that is well calibrated will closely follow the dashed line - its expected probabilities match that of the observed probabilities. A model that consistently underestimates the probability of the event will be over this dashed line, be a while a model that overestimates the probability will be under the dashed line.
 
@@ -430,7 +356,35 @@ I first assessed the models based on their performance via resampling on the tra
 
 But how well does my modeling approach do in predicting *new* games? To test this, I assessed the performance of the model (which was trained on games published through `r user_results$end_train_year`) on games published in `r paste(user_results$end_train_year  +1, user_results$end_train_year + valid_window, sep = "-")`.
 
-How well did the model do?
+How well did the model do? The following table shows the model's predictions for games in the validation set.
+
+```{r valid predictions}
+
+user_results$valid_predictions %>%
+        prep_games_datatable() %>%
+        make_games_datatable()
+
+# # new and upcoming
+# older_games %>%
+#         make_predictions_gt_table(
+#                 outcome = user_results$outcome,
+#                 top_n = 10,
+#                 description_length = 400
+#         ) %>%
+#         gt::tab_header(
+#                 title = paste("Top (Older) Games for",
+#                               get_username()),
+#                 subtitle = paste("Rankings based on predictive model trained on user's collection using games released through",
+#                                  user_output$end_train_year)
+#         ) %>%
+#         set_gt_tab_options() %>%
+#         gt::tab_options(
+#                 table.font.size = 10
+#         )
+
+```
+
+As before, I can then assess the performance of the model.
 
 ```{r validation metrics}
 
@@ -455,9 +409,15 @@ user_results$valid_predictions %>%
 
 # Predictions
 
-What did the model predict?
+What new and upcoming games does the model predict for **`r get_username()`**?
 
-## Upcoming Games
+```{r set top n}
+
+top_games = 15
+        
+```
+
+The following table displays the top `r top_games` games published after `r user_results$end_train_year` with the highest probability of entering the user's collection.
 
 ```{r}
 
@@ -468,24 +428,21 @@ newer_games =
                         filter(yearpublished > user_output$end_train_year + valid_window)) %>%
         filter(wflow_id == 'all_trees_lightgbm')
 
-# new and upcoming
-n = 15
-
 newer_games %>%
         make_predictions_gt_table(
                 outcome = 'own',
-                top_n = n,
+                top_n = top_games,
                 description_length = 400
         ) %>%
         gt::tab_header(
-                title = paste("Top", n, "(Newer) Games for",
+                title = paste("Top", top_games, "(Newer) Games for",
                               get_username()),
                 subtitle = paste("Rankings based on predictive model trained on user's collection using games released through",
                                  user_output$end_train_year)
         ) %>%
         set_gt_tab_options() %>%
         gt::tab_options(
-                table.font.size = 10
+                table.font.size = 12
         )
 
 ```
@@ -495,7 +452,7 @@ newer_games %>%
 
 Why did the model predict these games? 
 
-```{r shap, warning =F, message =F, fig.height = 8}
+```{r shap, warning =F, message =F, fig.height = 6}
 
 # select top 6 games for 2023
 ids =
@@ -505,27 +462,85 @@ ids =
         pull(game_id)
 
 # make plots
-plots = map(ids,
-            ~ get_game_data(game_data = user_output$user_collection %>%
-                                    join_bgg_games(games),
-                            id = .x) %>%
-                    lightgbm_interpret(game_data = .,
-                                       outcome = user_output$outcome) %>%
-                    lightgbm_interpret_plot(outcome = user_output$outcome,
-                                            n_features = 15))
+explain_plots = map(ids,
+                    ~ get_game_data(game_data = user_output$user_collection %>%
+                                            join_bgg_games(games),
+                                    id = .x) %>%
+                            lightgbm_interpret(game_data = .,
+                                               outcome = user_output$outcome) %>%
+                            lightgbm_interpret_plot(outcome = user_output$outcome,
+                                                    n_features = 15)+
+                            theme(plot.title = element_text(hjust = 0,
+                                                            size = 8,
+                                                            vjust = 2),
+                                  plot.subtitle = element_text(hjust = 0,
+                                                               size = 8),
+                                  strip.text.x = element_text(size = 8))
+)
 
-cowplot::plot_grid(plotlist=plots)
+# walk(explain_plots,
+#      plot)
+
+# # game plots
+# library(cowplot)
+# library(magick)
+# 
+# game_plots = map2(.x = games_info %>%
+#                           select(game_id, name, bgg_info, images) %>%
+#                           unnest(c(bgg_info, images)),
+#                   .y = c(12),
+#                   ~ cowplot::ggdraw())
+
+
+# 
+# 
+#                           cowplot::draw_image(.x %>%
+#                                                       filter(game_id .y) %>%
+#                                                       pull(image)))
+# 
+# 
+#                           cowplot::draw_label(.x %>%
+#                                                       filter(game_id == .y) %>%
+#                                                       mutate(label = paste0(name,
+#                                                                             "(",
+#                                                                             yearpublished,
+#                                                                             ")")) %>%
+#                                                       pull(label)))
+# )
+#                   # hjust = 0.5,
+#                   # size = 14,
+#                   # fontfamily = 'mono',
+#                   # fontface = 'bold',
+#                   # x = 0.4,
+#                   # y = 0.15)
+# 
+# cowplot::ggdraw() + draw_image(, 
+#                            scale = 0.5, 
+#                            x=-0.1)+
+#         draw_label(teams_raw %>%
+#                           filter(TEAM == params$team) %>%                 
+#                           mutate(name = paste(TEAM, "\n", TEAM_MASCOT)) %>%
+#                           pull(name),
+#                   hjust = 0.5,
+#                   size = 14,
+#                   fontfamily = 'mono',
+#                   fontface = 'bold',
+#                   color = muted(team_color),
+#                   x = 0.4,
+#                   y = 0.15)
+#                          
+# 
+cowplot::plot_grid(plotlist=explain_plots)
 
 ```
 
-## All Games
+## Upcoming Games
 
-Finally, I combine the model's estimates from training and upcoming games into one table. 
+Finally, I can examine predictions for all newer and upcoming games.
 
 ```{r new and upcoming games datatable, warning = F, message=F}
 
-bind_rows(older_games,
-          newer_games) %>%
+newer_games %>%
         prep_games_datatable() %>%
         make_games_datatable()
 

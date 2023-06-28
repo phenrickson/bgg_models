@@ -74,8 +74,7 @@ doMC::registerDoMC(cores = all_cores)
 # inputs -------------------------------------------------------------------------
 
 # parameters for user training
-#username = 'mrbananagrabber'
-username = 'GOBBluth89'
+username = 'mrbananagrabber'
 valid_window = 2
 # end_train_year = 2020
 # valid_window = 2
@@ -233,6 +232,8 @@ train_user_model = function(user_collection,
                      outcome,
              "end_train_year" = 
                      end_train_year,
+             "valid_window" = 
+                     valid_window,
              "user_collection" =
                      user_collection,
              "training_predictions" =
