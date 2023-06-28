@@ -148,8 +148,8 @@ effects_plots =
                     extract_fit_parsnip() %>%
                     tidy() %>%
                     make_effects_plot(category = .x)+
-                    xlim(coef_range[1],
-                         coef_range[2])
+                    xlim(coef_range[1]-0.01,
+                         coef_range[2]+0.01)
         )
 
 # combine
@@ -232,7 +232,7 @@ An easy way to examine the performance of classification model is to view a sepa
 
 I plot the predicted probabilities from the model for every game (from resampling) from lowest to highest. We then overlay a blue line for any game that the user does own. A good classifier is one that is able to *separate* the blue (games owned by the user) from the white (games not owned by the user), with most of the blue occurring at the highest probabilities (right side of the chart).
 
-```{r separation plots, fig.height = 8}
+```{r separation plots, fig.height = 6}
 
 
 user_results$training_predictions %>%
@@ -259,7 +259,7 @@ user_results$training_metrics %>%
         gt() %>%
         add_gt_wflow_color() %>%
         set_gt_tab_options() %>%
-        tab_options(container.height = 200)
+        tab_options(container.height = 150)
 
 ```
 

@@ -71,16 +71,8 @@ all_cores <- parallel::detectCores(logical = FALSE)
 doMC::registerDoMC(cores = all_cores)
 
 
-# inputs -------------------------------------------------------------------------
 
-# parameters for user training
-username = 'mrbananagrabber'
-valid_window = 2
-# end_train_year = 2020
-# valid_window = 2
-# retrain_window = 1
-# outcome = 'ever_owned'
-# tune_metric = 'mn_log_loss'
+# functions ---------------------------------------------------------------
 
 # function to run everything
 train_user_model = function(user_collection,
@@ -282,6 +274,17 @@ build_user_report = function(username,
         
 }
 
+# inputs -------------------------------------------------------------------------
+
+# parameters for user training
+username = 'mrbananagrabber'
+valid_window = 2
+# end_train_year = 2020
+# valid_window = 2
+# retrain_window = 1
+# outcome = 'ever_owned'
+# tune_metric = 'mn_log_loss'
+
 # run function for user
 user_collection = 
         load_user_collection(username = username)
@@ -303,3 +306,10 @@ user_results = user_output[-which(names(user_output) == "workflows")]
 # build user markdown report
 username %>%
         build_user_report(results = user_results)
+
+# push to github pages
+# 
+# system(command, intern = FALSE,
+#        ignore.stdout = FALSE, ignore.stderr = FALSE,
+#        wait = TRUE, input = NULL, show.output.on.console = TRUE,
+#        minimized = FALSE, invisible = TRUE, timeout = 0)
