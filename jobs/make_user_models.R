@@ -252,7 +252,7 @@ train_user_model = function(user_collection,
 # build user markdown report
 build_user_report = function(username,
                              results = user_results,
-                             workflows) {
+                             workflows = user_workflows) {
         
         build_report_name = function(username,
                                      ...) {
@@ -277,7 +277,7 @@ build_user_report = function(username,
 # inputs -------------------------------------------------------------------------
 
 # parameters for user training
-username = 'mrbananagrabber'
+username = 'Gyges'
 valid_window = 2
 # end_train_year = 2020
 # valid_window = 2
@@ -295,7 +295,7 @@ user_output =
                          bgg_games = games,
                          outcome = 'own',
                          end_train_year = 2021,
-                         valid_window = valid_window,
+                         valid_window = 2,
                          retrain_window = 0,
                          tune_metric = 'mn_log_loss')
 
@@ -305,7 +305,8 @@ user_results = user_output[-which(names(user_output) == "workflows")]
 
 # build user markdown report
 username %>%
-        build_user_report(results = user_results)
+        build_user_report(results = user_results,
+                          workflows = user_workflows)
 
 # push to github pages
 # 

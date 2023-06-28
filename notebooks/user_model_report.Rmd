@@ -57,7 +57,7 @@ get_collection() %>%
         collection_categories_plot()
 ```
 
-## Collection Table
+## Games in Collection
 
 What games does **`r params$bgg_username`** currently have in their collection? The following table can be used to examine games the user owns, along with some helpful information for selecting the right game for a game night!
 
@@ -238,7 +238,7 @@ I plot the predicted probabilities from the model for every game (from resamplin
 user_results$training_predictions %>%
         make_separation_plot(truth = user_results$outcome)+
         labs(title = paste("How well did the models do?"),
-             subtitle = str_wrap("Displaying cross validated probabilities for all games in the training set from least likely to most likely. Vertical blue lines indicate game was actually in the user's collection.", 125))+
+             subtitle = str_wrap("Displaying cross validated probabilities for all games in the training set from least likely to most likely. Vertical blue lines indicate game was actually in the user's collection.", 100))+
         theme(plot.title = element_text(hjust = 0,
                                         size = 12,
                                         vjust = 2),
@@ -272,10 +272,12 @@ user_results$training_predictions %>%
 
 ## Top Games in Training
 
+Another way of looking at what the model learned is to see its predictions on the training set. The models are trained on games published before `r user_results$end_train_year`; of these games, what did the model like for the user?
+
 ```{r}
 
 older_games = 
-        user_output$training_predictions %>%
+        user_results$training_predictions %>%
         filter(wflow_id == 'all_trees_lightgbm')
 
 # new and upcoming
@@ -289,7 +291,7 @@ older_games %>%
                 title = paste("Top (Older) Games for",
                               get_username()),
                 subtitle = paste("Rankings based on predictive model trained on user's collection using games released through",
-                                 user_output$end_train_year)
+                                 user_results$end_train_year)
         ) %>%
         set_gt_tab_options() %>%
         gt::tab_options(
@@ -298,22 +300,26 @@ older_games %>%
 
 ```
 
-Top 10 games most likely to be owned by the user in the last 10 years of the training set, highlighting in blue games that are currently in the user's collection and light blue for games that the user previously owned.
+<br>
+
+I'll plot the top 10 games most likely to be owned by the user in the last 10 years of the training set.
+
+Games highlighted in blue are currently in the user's collection; games highlighted in light blue are games that the user previously owned.
 
 ```{r top n table training}
 
 older_games %>%
         make_top_n_table(
                 workflow = 'all_trees_lightgbm',
-                outcome = user_output$outcome,
-                years = seq(user_output$end_train_year -10,
-                            user_output$end_train_year),
+                outcome = user_results$outcome,
+                years = seq(user_results$end_train_year -10,
+                            user_results$end_train_year),
                 top_n = 10
         ) %>%
         gt::tab_header(
                 title = paste("Top Games by Year for",
                               get_username()),
-                subtitle = paste("Rankings based on predictive model trained on user's collection using games released through", user_output$end_train_year)
+                subtitle = paste("Rankings based on predictive model trained on user's collection using games released through", user_results$end_train_year)
         ) %>%
         set_gt_theme() %>%
         set_gt_tab_options() %>%
@@ -321,6 +327,19 @@ older_games %>%
         tab_options(container.height = 600)
 
 ```
+
+<br>
+
+The following table shows the model's predictions for games in the training set. 
+
+```{r training predictions}
+
+user_results$training_predictions %>%
+        prep_games_datatable() %>%
+        make_games_datatable()
+
+```
+
 
 ## Calibration 
 
@@ -332,12 +351,12 @@ A model that is well calibrated will closely follow the dashed line - its expect
 
 ```{r}
 
-wflows = user_output$training_predictions %>%
+wflows = user_results$training_predictions %>%
         pull(wflow_id) %>%
         unique()
 
 calib_plots = map(wflows,
-                  ~ user_output$training_predictions %>%
+                  ~ user_results$training_predictions %>%
                           filter(wflow_id == .x) %>%
                           mutate(wflow_id = tidy_wflow_id(wflow_id)) %>%
                           probably::cal_plot_breaks(
@@ -354,7 +373,7 @@ cowplot::plot_grid(plotlist=calib_plots)
 
 I first assessed the models based on their performance via resampling on the training set. 
 
-But how well does my modeling approach do in predicting *new* games? To test this, I assessed the performance of the model (which was trained on games published through `r user_results$end_train_year`) on games published in `r paste(user_results$end_train_year  +1, user_results$end_train_year + valid_window, sep = "-")`.
+But how well does my modeling approach do in predicting *new* games? To test this, I assessed the performance of the model (which was trained on games published through `r user_results$end_train_year`) on games published in `r paste(user_results$end_train_year  +1, user_results$end_train_year + user_results$valid_window, sep = "-")`.
 
 How well did the model do? The following table shows the model's predictions for games in the validation set.
 
@@ -375,7 +394,7 @@ user_results$valid_predictions %>%
 #                 title = paste("Top (Older) Games for",
 #                               get_username()),
 #                 subtitle = paste("Rankings based on predictive model trained on user's collection using games released through",
-#                                  user_output$end_train_year)
+#                                  user_results$end_train_year)
 #         ) %>%
 #         set_gt_tab_options() %>%
 #         gt::tab_options(
@@ -423,9 +442,9 @@ The following table displays the top `r top_games` games published after `r user
 
 newer_games = 
         bind_rows(
-                user_output$valid_predictions,
-                user_output$upcoming_predictions %>%
-                        filter(yearpublished > user_output$end_train_year + valid_window)) %>%
+                user_results$valid_predictions,
+                user_results$upcoming_predictions %>%
+                        filter(yearpublished > user_results$end_train_year + user_results$valid_window)) %>%
         filter(wflow_id == 'all_trees_lightgbm')
 
 newer_games %>%
@@ -438,7 +457,7 @@ newer_games %>%
                 title = paste("Top", top_games, "(Newer) Games for",
                               get_username()),
                 subtitle = paste("Rankings based on predictive model trained on user's collection using games released through",
-                                 user_output$end_train_year)
+                                 user_results$end_train_year)
         ) %>%
         set_gt_tab_options() %>%
         gt::tab_options(
@@ -456,19 +475,19 @@ Why did the model predict these games?
 
 # select top 6 games for 2023
 ids =
-        user_output$upcoming_predictions %>%
+        user_results$upcoming_predictions %>%
         filter(grepl("lightgbm", wflow_id)) %>%
         head(4) %>%
         pull(game_id)
 
 # make plots
 explain_plots = map(ids,
-                    ~ get_game_data(game_data = user_output$user_collection %>%
+                    ~ get_game_data(game_data = user_results$user_collection %>%
                                             join_bgg_games(games),
                                     id = .x) %>%
                             lightgbm_interpret(game_data = .,
-                                               outcome = user_output$outcome) %>%
-                            lightgbm_interpret_plot(outcome = user_output$outcome,
+                                               outcome = user_results$outcome) %>%
+                            lightgbm_interpret_plot(outcome = user_results$outcome,
                                                     n_features = 15)+
                             theme(plot.title = element_text(hjust = 0,
                                                             size = 8,

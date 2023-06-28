@@ -7,7 +7,7 @@ set_knitr_options = function() {
                               warning = F,
                               dev="png",
                               fig.align = 'center',
-                              out.width = '80%')
+                              out.width = '85%')
         
         # options for displaying
         options(knitr.duplicate.label = "allow",
