@@ -1,57 +1,5 @@
-# input
-present_text = function(x) {
-        
-        suppressWarnings({
-                x %>%
-                        str_replace_all("_", " ") %>%
-                        str_to_title() %>%
-                        str_replace("Minage", "Min Age") %>%
-                        str_replace("Minplayers", "Min Players") %>%
-                        str_replace("Maxplayers", "Max Players") %>%
-                        str_replace("Minplaytime", "Min Play Time") %>%
-                        str_replace("Maxplaytime", "Max Play Time") %>%
-                        str_replace("Playingtime", "Play Time") %>%
-                        str_replace("Usa", "USA") %>%
-                        str_replace("Averageweight", "Average Weight") %>%
-                        str_replace("Usersrated", "Users Rated") %>%
-                        str_replace("Rockpaperscissors", "Rock Paper Scissors") %>%
-                        str_replace("Collectible Collectible", "Collectible") %>%
-                        str_replace("Murdermystery", "Murder Mystery") %>%
-                        str_replace("World War Ii", "World War II") %>%
-                        str_replace("Gemscrystals", "Gems & Crystals") %>%
-                        str_replace("Gmt", "GMT") %>%
-                        str_replace("Cmon", "CMON") %>%
-                        str_replace("Zman", "ZMan") %>%
-                        str_replace("Movies Tv", "Movies TV") %>%
-                        str_replace("Auctionbidding", "Auction Bidding") %>%
-                        str_replace("Postnapoleonic", "Post Napoleonic") %>%
-                        str_replace("Paperandpencil", "Paper And Pencil") %>%
-                        str_replace("Digital Hybrid Appwebsite Required", "Digital Hybrid App") %>%
-                        str_replace("Components 3 Dimensional", "Components") %>%
-                        str_replace("3d", "3D") %>%
-                        str_replace("Usa", "USA") %>%
-                        str_replace("3D", "3D Components") %>%
-                        str_replace("Wizkids I", "WizKids") %>%
-                        str_replace("Decision Kids I", "Decision Kids") %>%
-                        str_replace("^Families", "Fam:") %>%
-                        str_replace("^Mechanics", "Mech:") %>%
-                        str_replace("^Categories", "Cat:") %>%
-                        str_replace("^Publishers", "Pub:") %>%
-                        str_replace("^Designers", "Des:") %>%
-                        str_replace("^Artists", "Art:") %>%
-                        abbreviate(minlength = 30)
-        })
-        # str_replace("Selfpublished", "Self-Published") %>%
-        # str_replace("Gamewright", "GameWright") %>%
-        # str_replace("Eaglegryphon", "Eagle-Gryphon") %>%
-        # str_replace("Scoreandreset", "Score and Reset")
-        
-}
 
-# present outcomes
-
-
-# function to compute shapley values for new data
+# function to compute shapley values for new data given a workflow
 shap_explain = function(workflow,
                         newdata,
                         ids = c("game_id", "name", "yearpublished")) {
@@ -242,56 +190,37 @@ shap_explain = function(workflow,
 }
 
 
-# predict
-games_upcoming_est = 
-        games_upcoming %>%
-        impute_averageweight(averageweight_mod = averageweight_fit)
+# # predict
+# games_upcoming_est = 
+#         games_upcoming %>%
+#         impute_averageweight(averageweight_mod = averageweight_fit)
 
 # test function
 # foo = shap_explain(average_fit,
 #              newdata = games_upcoming_est %>%
 #                      sample_n(1))
 
-bar = map(seq(1990, 2020),
-          ~ usersrated_fit %>%
-                  augment(
-                          games_upcoming_est %>%
-                                  mutate(yearpublished = .x) %>%
-                                  filter(name == 'Cascadia')) %>%
-                  select(game_id, name, yearpublished, .pred)) %>%
-        bind_rows()
+# bar = map(seq(1990, 2020),
+#           ~ usersrated_fit %>%
+#                   augment(
+#                           games_upcoming_est %>%
+#                                   mutate(yearpublished = .x) %>%
+#                                   filter(name == 'Cascadia')) %>%
+#                   select(game_id, name, yearpublished, .pred)) %>%
+#         bind_rows()
+# 
+# bar %>%
+#         ggplot(aes(x=yearpublished,
+#                    y=exp(.pred)))+
+#         geom_point()+
+#         theme_bw()
 
-bar %>%
-        ggplot(aes(x=yearpublished,
-                   y=exp(.pred)))+
-        geom_point()+
-        theme_bw()
 
-
+# prepare data for shapley plot
 shap_prep_plot = function(shap) {
         
         suppressWarnings({
-                
-                suppressMessages({})
-                
-                # amend name of outcome
-                # averageweight
-                if (shap$newdata_pred$outcome == 'averageweight') {
-                        
-                        shap$newdata_pred$outcome = 'Average Weight'
-                }
-                
-                # average
-                if (shap$newdata_pred$outcome == 'average') {
-                        
-                        shap$newdata_pred$outcome = 'Average Rating'
-                }
-                
-                # user ratings
-                if (shap$newdata_pred$outcome == 'log_usersrated') {
-                        
-                        shap$newdata_pred$outcome = 'User Ratings'
-                        
+
                         shap$newdata_pred =
                                 shap$newdata_pred %>%
                                 mutate(.actual = case_when(is.infinite(.actual) ~ 0,
@@ -304,8 +233,6 @@ shap_prep_plot = function(shap) {
                         #        .actual = plyr::round_any(exp(.pred), 100))
                         
                 }
-                
-        }
         
         )
         
@@ -315,35 +242,22 @@ shap_prep_plot = function(shap) {
 
 # make shot plot for a category
 shap_explain_plot = function(shap,
-                             year = T) {
+                             top_features = 25) {
         
         # prep for plot
         shap = shap_prep_plot(shap)
         
-        
-        if (year == T) { 
-                
-                shap_slice =  shap %$%
-                        shap_explained %>%
-                        mutate(feature_value = present_text(feature_value)) %>%
-                        slice_max(n = 25, 
-                                  order_by = abs(contribution),
-                                  with_ties = F)
-                
-        } else if (year == F) {
-                shap_slice =  shap %$%
-                        shap_explained %>%
-                        filter(feature != 'year') %>%
-                        mutate(feature_value = present_text(feature_value)) %>%
-                        slice_max(n = 25, 
-                                  order_by = abs(contribution),
-                                  with_ties = F)
-        }
+        # slice top n features
+        shap_slice =  shap %$%
+                shap_explained %>%
+                mutate(feature_value = bggUtils::present_text(feature_value)) %>%
+                slice_max(n = top_features, 
+                          order_by = abs(contribution),
+                          with_ties = F)
         
         # make plot
         shap_slice %>%
                 {
-                        
                         ggplot(.,
                                aes(x=contribution,
                                    fill = contribution,
@@ -383,26 +297,26 @@ shap_explain_plot = function(shap,
                 }
 }
 
-# make grid
-shap_explain(usersrated_fit,
-             newdata = games_upcoming_est %>%
-                     mutate(yearpublished = 2000) %>%
-                  #   filter(grepl('Oathsworn', name)) %>%
-                     # filter(game_id == 361640)) %>%
-                     sample_n(1)) %>%
-        shap_explain_plot(year = F)
-
-# test functoin on notable game
-shap_explain(average_fit,
-             newdata = games_upcoming_est %>%
-                     # filter(game_id == 361640)) %>%
-                     sample_n(1)) %>%
-        shap_explain_plot(year = F)
-
-shap_explain(average_fit,
-             newdata = games_upcoming_est %>%
-                     # filter(game_id == 361640)) %>%
-                     sample_n(1)) %>%
-        shap_explain_plot(year = F)
+# # make grid
+# shap_explain(usersrated_fit,
+#              newdata = games_upcoming_est %>%
+#                      mutate(yearpublished = 2000) %>%
+#                   #   filter(grepl('Oathsworn', name)) %>%
+#                      # filter(game_id == 361640)) %>%
+#                      sample_n(1)) %>%
+#         shap_explain_plot(year = F)
+# 
+# # test functoin on notable game
+# shap_explain(average_fit,
+#              newdata = games_upcoming_est %>%
+#                      # filter(game_id == 361640)) %>%
+#                      sample_n(1)) %>%
+#         shap_explain_plot(year = F)
+# 
+# shap_explain(average_fit,
+#              newdata = games_upcoming_est %>%
+#                      # filter(game_id == 361640)) %>%
+#                      sample_n(1)) %>%
+#         shap_explain_plot(year = F)
 
 
