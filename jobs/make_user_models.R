@@ -250,40 +250,70 @@ train_user_model = function(user_collection,
 }
 
 # build user markdown report
-build_user_report = function(username,
-                             user_results,
-                             user_workflows,
+build_user_report = function(user_output,
                              ...) {
         
+        # get username
+        username = get_username(user_output$user_collection)
+        
+        # make report name
         build_report_name = function(username,
                                      ...) {
                 
-                paste(username, user_results$outcome, user_results$end_train_year, sep = "_")
+                paste(username, user_output$outcome, user_output$end_train_year, sep = "_")
         }
         
+        # assign output to global environment for markdown
+        user_output <<- user_output
         
-        # build markdown report
         # build markdown report
         rmarkdown::render(
                 input = here::here("notebooks", "user_model_report.Rmd"),
                 output_dir = here::here("reports", "users"),
                 output_file = build_report_name(username),
-                params = list(bgg_username = username),
-                envir = parent.frame()
+                params = list(bgg_username = username)
         )
         
 }
 
+
 # run ---------------------------------------------------------------------
 
-# parameters for user training
-username = 'mrbananagrabber'
+# run for one username
+'mrbananagrabber' %>%
+        # load user collection from bgg api
+        load_user_collection(username = .) %>%
+        # train model for user
+        train_user_model(user_collection = .,
+                         bgg_games = games,
+                         outcome = 'own',
+                         end_train_year = 2021,
+                         valid_window = 2,
+                         retrain_window = 0,
+                         tune_metric = 'mn_log_loss') %>%
+        # build markdown report
+        build_user_report(user_output = .)
 
-# run function for user
-user_collection =
-        load_user_collection(username = username)
+# run over multiple
+usernames = c('mrbananagrabber',
+              'GOBBluth89')
 
-set.seed(1999)
+# via map
+map(usernames,
+    ~ .x %>%
+            load_user_collection(username = .) %>%
+            train_user_model(user_collection = .,
+                             bgg_games = games,
+                             outcome = 'own',
+                             end_train_year = 2021,
+                             valid_window = 2,
+                             retrain_window = 0,
+                             tune_metric = 'mn_log_loss') %>%
+            build_user_report(user_output = .)
+)
+
+
+
 user_output =
         train_user_model(user_collection = user_collection,
                          bgg_games = games,
@@ -293,14 +323,13 @@ user_output =
                          retrain_window = 0,
                          tune_metric = 'mn_log_loss')
 
-# save results
-user_workflows = user_output$workflows
-user_results = user_output[-which(names(user_output) == "workflows")]
-
 # build user markdown report
-username %>%
-        build_user_report(user_results,
-                          user_workflows)
+foo %>%
+        build_user_report(user_output = .)
+
+foo %>%
+        build_user_report(user_output = .)
+
 # 
 # # push to github pages
 # # 
@@ -308,3 +337,31 @@ username %>%
 # #        ignore.stdout = FALSE, ignore.stderr = FALSE,
 # #        wait = TRUE, input = NULL, show.output.on.console = TRUE,
 # #        minimized = FALSE, invisible = TRUE, timeout = 0)
+
+
+
+build_user_model = function(username,
+                            games,
+                            games_info,
+                            ...) {
+        
+        # run function for user
+        user_collection =
+                load_user_collection(username = username)
+        
+        # train model
+        set.seed(1999)
+        user_output =
+                train_user_model(user_collection = user_collection,
+                                 bgg_games = games,
+                                 outcome = 'own',
+                                 end_train_year = 2021,
+                                 valid_window = 2,
+                                 retrain_window = 0,
+                                 tune_metric = 'mn_log_loss')
+        
+        # build user markdown report
+        user_output %>%
+                build_user_report(user_output = .)
+        
+}
