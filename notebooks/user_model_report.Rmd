@@ -20,15 +20,6 @@ By analyzing a user's collection and training a predictive model, I am able to a
 
 - What new and upcoming games should they check out?
 
-```{r}
-
-# # define workflows and results from function
-# user_workflows = user_output$workflows
-# user_output = user_output[-which(names(user_output) == "workflows")]
-
-```
-
-
 ```{r knitr setup, include =F}
 
 source(here::here("src", "reports", "knitr_settings.R"))
