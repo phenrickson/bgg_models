@@ -236,6 +236,7 @@ I plot the predicted probabilities from the model for every game (from resamplin
 
 
 user_results$training_predictions %>%
+        filter(wflow_id == 'all_trees_lightgbm') %>%
         make_separation_plot(truth = user_results$outcome)+
         labs(title = paste("How well did the models do?"),
              subtitle = str_wrap("Displaying cross validated probabilities for all games in the training set from least likely to most likely. Vertical blue lines indicate game was actually in the user's collection.", 100))+
@@ -334,7 +335,7 @@ The following table shows the model's predictions for games in the training set.
 
 ```{r training predictions}
 
-user_results$training_predictions %>%
+older_games %>%
         prep_games_datatable() %>%
         make_games_datatable()
 
@@ -380,6 +381,7 @@ How well did the model do? The following table shows the model's predictions for
 ```{r valid predictions}
 
 user_results$valid_predictions %>%
+        filter(wflow_id == 'all_trees_lightgbm') %>%
         prep_games_datatable() %>%
         make_games_datatable()
 

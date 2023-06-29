@@ -62,7 +62,7 @@ games_info =
                 name = "games"
         )
 
-# parallel backend --------------------------------------------------------
+# register parallel backend --------------------------------------------------------
 
 
 # # set parallel backend
@@ -71,17 +71,17 @@ all_cores <- parallel::detectCores(logical = FALSE)
 doMC::registerDoMC(cores = all_cores)
 
 
-
 # functions ---------------------------------------------------------------
 
 # function to run everything
 train_user_model = function(user_collection,
-                            outcome,
+                            outcome = 'own',
                             bgg_games = games,
-                            end_train_year,
-                            valid_window,
-                            retrain_window,
-                            tune_metric) {
+                            end_train_year = 2021,
+                            valid_window = 2,
+                            retrain_window = 0,
+                            tune_metric = 'mn_log_loss',
+                            ...) {
         
         # get user and games
         user_collection_and_games = 
@@ -251,13 +251,14 @@ train_user_model = function(user_collection,
 
 # build user markdown report
 build_user_report = function(username,
-                             results = user_results,
-                             workflows = user_workflows) {
+                             user_results,
+                             user_workflows,
+                             ...) {
         
         build_report_name = function(username,
                                      ...) {
                 
-                paste(username, results$outcome, results$end_train_year, sep = "_")
+                paste(username, user_results$outcome, user_results$end_train_year, sep = "_")
         }
         
         
@@ -268,29 +269,22 @@ build_user_report = function(username,
                 output_dir = here::here("reports", "users"),
                 output_file = build_report_name(username),
                 params = list(bgg_username = username),
-                #    output_file = output_file,
                 envir = parent.frame()
         )
         
 }
 
-# inputs -------------------------------------------------------------------------
+# run ---------------------------------------------------------------------
 
 # parameters for user training
-username = 'Gyges'
-valid_window = 2
-# end_train_year = 2020
-# valid_window = 2
-# retrain_window = 1
-# outcome = 'ever_owned'
-# tune_metric = 'mn_log_loss'
+username = 'mrbananagrabber'
 
 # run function for user
-user_collection = 
+user_collection =
         load_user_collection(username = username)
 
 set.seed(1999)
-user_output = 
+user_output =
         train_user_model(user_collection = user_collection,
                          bgg_games = games,
                          outcome = 'own',
@@ -305,12 +299,12 @@ user_results = user_output[-which(names(user_output) == "workflows")]
 
 # build user markdown report
 username %>%
-        build_user_report(results = user_results,
-                          workflows = user_workflows)
-
-# push to github pages
+        build_user_report(user_results,
+                          user_workflows)
 # 
-# system(command, intern = FALSE,
-#        ignore.stdout = FALSE, ignore.stderr = FALSE,
-#        wait = TRUE, input = NULL, show.output.on.console = TRUE,
-#        minimized = FALSE, invisible = TRUE, timeout = 0)
+# # push to github pages
+# # 
+# # system(command, intern = FALSE,
+# #        ignore.stdout = FALSE, ignore.stderr = FALSE,
+# #        wait = TRUE, input = NULL, show.output.on.console = TRUE,
+# #        minimized = FALSE, invisible = TRUE, timeout = 0)
