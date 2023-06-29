@@ -16,6 +16,11 @@ my_caption = function(data = games) {
         
 }
 
+get_workflows = function() {
+        
+        user_output$workflows
+}
+
 get_collection_date = function() {
         
         get_collection() %>%
@@ -25,8 +30,15 @@ get_collection_date = function() {
         
 }
 
+extract_collection = function() {
+        
+        user_output$user_collection
+        
+}
+
+
 # combine collection with games info for report
-get_collection = function(collection = user_results$user_collection,
+get_collection = function(collection = extract_collection(),
                           info = games_info,
                           data = games) {
         
@@ -38,9 +50,6 @@ get_collection = function(collection = user_results$user_collection,
                 filter(game_id %in% games$game_id)
         
 }
-
-# # not run
-# get_collection()
 
 # helper function to get username
 get_username = function(data = get_collection()) {
@@ -82,9 +91,6 @@ collection_categories_plot = function(data,
                 guides(fill = 'none')
         
 }
-
-# get_collection() %>%
-#         collection_categories_plot()
 
 # plot owned status
 collection_owned_plot = function(data,
@@ -132,9 +138,7 @@ collection_owned_plot = function(data,
 }
 
 
-# get_collection() %>%
-#         collection_owned_plot()
-
+# set options for gt tables
 set_gt_tab_options = function(gt) {
         
         gt %>%
@@ -163,6 +167,7 @@ set_gt_theme = function(gt) {
 }
 
 
+# prep playercounts for table
 prep_playercounts = function(data) {
         
         data %>%
@@ -620,7 +625,7 @@ make_predictions_gt_table = function(predictions,
 
 make_games_datatable = function(data,
                                 caption = 'Top Games',
-                                outcome = user_results$outcome,
+                                outcome = user_output$outcome,
                                 pagelength = 15,
                                 ...) {
         
@@ -677,7 +682,7 @@ make_games_datatable = function(data,
 
 prep_games_datatable = function(predictions,
                                 info = games_info,
-                                outcome = user_results$outcome) {
+                                outcome = user_output$outcome) {
         
         predictions %>%
                 left_join(.,
@@ -1115,7 +1120,7 @@ get_workflow_predictors = function(workflow) {
 
 
 # interpret
-lightgbm_interpret = function(workflow = user_workflows %>%
+lightgbm_interpret = function(workflow = user_output$workflows %>%
                                       get_workflow(model = 'lightgbm'),
                               game_data,
                               outcome,
