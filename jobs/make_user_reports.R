@@ -305,9 +305,9 @@ map(usernames,
             train_user_model(user_collection = .,
                              bgg_games = games,
                              outcome = 'own',
-                             end_train_year = 2021,
+                             end_train_year = 2020,
                              valid_window = 2,
-                             retrain_window = 0,
+                             retrain_window = 1,
                              tune_metric = 'mn_log_loss') %>%
             build_user_report(user_output = .)
 )
