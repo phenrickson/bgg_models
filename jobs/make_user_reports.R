@@ -278,21 +278,21 @@ build_user_report = function(user_output,
 
 
 # run ---------------------------------------------------------------------
-
-# run for one username
-'mrbananagrabber' %>%
-        # load user collection from bgg api
-        load_user_collection(username = .) %>%
-        # train model for user
-        train_user_model(user_collection = .,
-                         bgg_games = games,
-                         outcome = 'own',
-                         end_train_year = 2021,
-                         valid_window = 2,
-                         retrain_window = 0,
-                         tune_metric = 'mn_log_loss') %>%
-        # build markdown report
-        build_user_report(user_output = .)
+# 
+# # run for one username
+# 'mrbananagrabber' %>%
+#         # load user collection from bgg api
+#         load_user_collection(username = .) %>%
+#         # train model for user
+#         train_user_model(user_collection = .,
+#                          bgg_games = games,
+#                          outcome = 'own',
+#                          end_train_year = 2021,
+#                          valid_window = 2,
+#                          retrain_window = 0,
+#                          tune_metric = 'mn_log_loss') %>%
+#         # build markdown report
+#         build_user_report(user_output = .)
 
 # run over multiple
 usernames = c('mrbananagrabber',
@@ -305,9 +305,9 @@ map(usernames,
             train_user_model(user_collection = .,
                              bgg_games = games,
                              outcome = 'own',
-                             end_train_year = 2020,
+                             end_train_year = 2021,
                              valid_window = 2,
-                             retrain_window = 1,
+                             retrain_window = 0,
                              tune_metric = 'mn_log_loss') %>%
             build_user_report(user_output = .)
 )
