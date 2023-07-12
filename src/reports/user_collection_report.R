@@ -175,6 +175,12 @@ prep_playercounts = function(data) {
                               ~ gsub(pattern = paste(as.character(seq(9, 100, by = 1)), collapse = "|"),
                                      replacement = "8+",
                                      x = .x))) %>%
+                mutate(playercount_rec = case_when(
+                        !is.na(playercount_best) & !is.na(playercount_rec) ~ 
+                                paste(playercount_best, playercount_rec, sep = ","),
+                        !is.na(playercount_best) & is.na(playercount_rec) ~
+                                                                 playercount_best,
+                        TRUE ~ playercount_rec)) %>%
                 rowwise() %>%
                 mutate(across(c("playercount_best", "playercount_rec"),
                               ~ str_split(.x, ",", ) %>%
@@ -193,9 +199,9 @@ prep_collection_table = function(collection = get_collection() %>%
                 select(username, game_id, name, rating) %>%
                 left_join(.,
                           game_data %>%
-                                  select(game_id, playercounts, bgg_info, images, descriptions),
+                                  select(game_id, playercounts, bgg_outcomes, bgg_info, images, descriptions),
                           by = join_by(game_id)) %>%
-                unnest(c(playercounts, bgg_info, images, descriptions)) %>%
+                unnest(c(playercounts, bgg_info, bgg_outcomes, images, descriptions)) %>%
                 mutate(link = make_bgg_link(game_id)) %>%
                 prep_playercounts() %>%
                 mutate(playercount_rec = 
@@ -215,6 +221,7 @@ prep_collection_table = function(collection = get_collection() %>%
                        `recommended player count` = playercount_rec,
                        `playing time` = case_when(is.na(playingtime)  ~ NA_character_,
                                                   TRUE ~ paste(playingtime, "minutes")),
+                       complexity = round(averageweight, 2),
                        image = thumbnail,
                        description =  stringr::str_trunc(description,
                                                          description_length),
@@ -232,6 +239,7 @@ prep_collection_table = function(collection = get_collection() %>%
 make_collection_gt_table = function(collection_table) {
         
         collection_table %>%
+                select(-contains("complexity")) %>%
                 gt() %>%
                 cols_hide(columns = c(published, id, link)) %>%
                 gt_img_rows(columns = image, height = 100) %>%
@@ -281,10 +289,15 @@ make_collection_datable = function(collection_table,
         
         
         rating = seq(3, 13)
+        complexity = seq(0.5, 5.5, by = 0.1)
         
         color = 'dodgerblue2'
+        low_color = 'deepskyblue1'
+        high_color = 'orange'
         
         my_color_ramp = colorRampPalette(c("white", color))
+        
+        complexity_color_ramp = colorRampPalette(c(low_color, "white", high_color))
         
         max_color = my_color_ramp(length(rating)-3)[length(rating)-3]
         
@@ -298,6 +311,7 @@ make_collection_datable = function(collection_table,
                        Best = `best        player count`,
                        Recommended = `recommended player count`,
                        Time = `playing time`,
+                       Complexity = complexity,
                        Rating = rating,
                        .keep = 'none') %>%
                 DT::datatable(escape=F,
@@ -319,6 +333,7 @@ make_collection_datable = function(collection_table,
                                                                     "Published",
                                                                     "Best",
                                                                     "Recommended",
+                                                                    "Complexity",
                                                                     "Rating")
                                                      )
                                              )
@@ -330,6 +345,14 @@ make_collection_datable = function(collection_table,
                                 DT::styleInterval(
                                         cuts = rating,
                                         values = my_color_ramp(length(rating)+1)
+                                )
+                ) %>%
+                DT::formatStyle(
+                        columns = "Complexity",
+                        backgroundColor = 
+                                DT::styleInterval(
+                                        cuts = complexity,
+                                        values = complexity_color_ramp(length(complexity)+1)
                                 )
                 )
 }

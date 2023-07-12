@@ -31,9 +31,7 @@ theme_bgg = theme_bgg() +
 
 ```
 
-# Data
-
-## Outcomes
+# Collection
 
 How many games has `r get_username()` owned/rated/played?
 
@@ -46,7 +44,7 @@ get_collection() %>%
         theme(plot.title = element_text(vjust=2))
 ```
 
-## Collection
+## Types of Games
 
 What types of game does `r get_username()` own? I can look at the most frequent types of categories, mechanics, designers, and artists that appear in a user's collection.
 
