@@ -228,6 +228,8 @@ train_user_model = function(user_collection,
                      valid_window,
              "user_collection" =
                      user_collection,
+             "training_split" = 
+                     user_train_split,
              "training_predictions" =
                      training_predictions %>%
                      mutate(type = 'resamples'),
@@ -240,6 +242,8 @@ train_user_model = function(user_collection,
              "valid_metrics" =
                      valid_metrics %>%
                      mutate(type = 'valid'),
+             "final_split" = 
+                     user_final_split,
              "workflows" =
                      user_workflows,
              "upcoming_predictions" =
@@ -293,21 +297,21 @@ build_user_report = function(user_output,
 #                          tune_metric = 'mn_log_loss') %>%
 #         # build markdown report
 #         build_user_report(user_output = .)
-
-# run over multiple
-usernames = c('mrbananagrabber',
-              'GOBBluth89')
-
-# via map
-map(usernames,
-    ~ .x %>%
-            load_user_collection(username = .) %>%
-            train_user_model(user_collection = .,
-                             bgg_games = games,
-                             outcome = 'own',
-                             end_train_year = 2021,
-                             valid_window = 2,
-                             retrain_window = 0,
-                             tune_metric = 'mn_log_loss') %>%
-            build_user_report(user_output = .)
-)
+# 
+# # run over multiple
+# usernames = c('mrbananagrabber',
+#               'GOBBluth89')
+# 
+# # via map
+# map(usernames,
+#     ~ .x %>%
+#             load_user_collection(username = .) %>%
+#             train_user_model(user_collection = .,
+#                              bgg_games = games,
+#                              outcome = 'own',
+#                              end_train_year = 2021,
+#                              valid_window = 2,
+#                              retrain_window = 0,
+#                              tune_metric = 'mn_log_loss') %>%
+#             build_user_report(user_output = .)
+# )
