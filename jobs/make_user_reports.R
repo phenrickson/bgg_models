@@ -294,20 +294,20 @@ build_user_report = function(user_output,
 #         # build markdown report
 #         build_user_report(user_output = .)
 
-# run over multiple
-usernames = c('mrbananagrabber',
-              'GOBBluth89')
-
-# via map
-map(usernames,
-    ~ .x %>%
-            load_user_collection(username = .) %>%
-            train_user_model(user_collection = .,
-                             bgg_games = games,
-                             outcome = 'own',
-                             end_train_year = 2021,
-                             valid_window = 2,
-                             retrain_window = 0,
-                             tune_metric = 'mn_log_loss') %>%
-            build_user_report(user_output = .)
-)
+# # run over multiple
+# usernames = c('mrbananagrabber',
+#               'GOBBluth89')
+# 
+# # via map
+# map(usernames,
+#     ~ .x %>%
+#             load_user_collection(username = .) %>%
+#             train_user_model(user_collection = .,
+#                              bgg_games = games,
+#                              outcome = 'own',
+#                              end_train_year = 2021,
+#                              valid_window = 2,
+#                              retrain_window = 0,
+#                              tune_metric = 'mn_log_loss') %>%
+#             build_user_report(user_output = .)
+# )
