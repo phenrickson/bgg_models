@@ -98,7 +98,7 @@ list(
         tar_target(gcs_pin_games, 
                    pins::pin_write(x = games,
                                    board = gcs_board,
-                                   name = "games",
+                                   name = "games_info",
                                    versioned = T,
                                    tags = "data")),
         tar_target(gcs_pin_games_imputed,
