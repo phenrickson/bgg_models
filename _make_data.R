@@ -37,9 +37,11 @@ tar_source(here::here("src", "models", "impute_games.R"))
 # tar
 list(
         # tables from bigquery
-        # board for storing processed data
+        # boards for storing processed data
         tar_target(data_board,
                    pins::board_folder(here::here("data", "processed"))),
+        tar_target(gcs_board,
+                   get_gcs_board("data")),
         # tables to load
         tar_target(games_table, 
                    load_table(table_name = "games"),
@@ -79,17 +81,31 @@ list(
                            impute_hurdle(
                                    games = .,
                                    model = hurdle_mod)),
-        # pin
-        tar_target(pin_games, 
+        # pin to data board
+        tar_target(local_pin_games, 
                    pins::pin_write(x = games,
                                    board = data_board,
                                    name = "games",
                                    versioned = T,
                                    tags = "data")),
-        tar_target(pin_games_imputed,
+        tar_target(local_pin_games_imputed,
                    pins::pin_write(x = games_imputed,
                                    board = data_board,
                                    name = "games_imputed",
                                    versioned = T,
+                                   tags = c("data", "averageweight", "hurdle"))),
+        # pin to gcs board
+        tar_target(gcs_pin_games, 
+                   pins::pin_write(x = games,
+                                   board = gcs_board,
+                                   name = "games",
+                                   versioned = T,
+                                   tags = "data")),
+        tar_target(gcs_pin_games_imputed,
+                   pins::pin_write(x = games_imputed,
+                                   board = gcs_board,
+                                   name = "games_imputed",
+                                   versioned = T,
                                    tags = c("data", "averageweight", "hurdle")))
+        
 )
