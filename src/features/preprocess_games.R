@@ -267,6 +267,17 @@ get_allow_games_publishers = function(data) {
 }
 
 
+add_users_threshold = function(data) {
+        
+        data %>%
+        # make outcome variable for hurdle
+        mutate(users_threshold = factor(case_when(!is.na(bayesaverage) ~ 'yes',
+                                                  is.na(bayesaverage) ~ 'no'),
+                                        levels = c('no', 'yes')))
+}
+                
+
+
 
 # not run
 # foo = games_nested %>%

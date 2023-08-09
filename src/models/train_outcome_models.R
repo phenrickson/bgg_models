@@ -63,12 +63,12 @@ suppressMessages({
 # data --------------------------------------------------------------------
 
 
-# run script to load games
-source(here::here("src","data","load_games_data.R"))
+# # run script to load games
+# source(here::here("src","data","load_games_data.R"))
 
 message("preprocessing games for modeling...")
 
-# script with functions for standardized preprocessing
+# script with functions for preprocessing games
 source(here::here("src", "data", "preprocess_games.R"))
 
 # use function to preprocess nested data
@@ -76,9 +76,7 @@ games_processed = games_nested %>%
         # apply preprocessing from fuction 
         preprocess_games() %>%
         # create outcome variable for hurdle model
-        mutate(users_threshold = factor(case_when(!is.na(bayesaverage) ~ 'yes',
-                                                  is.na(bayesaverage) ~ 'no'),
-                                        levels = c('no', 'yes')))
+        add_users_threshold()
 
 
 # data splitting -----------------------------------------------------------
@@ -247,7 +245,6 @@ tune_grid_wflows = function(wflows,
         wflows %>%
                 workflow_map(
                         "tune_grid",
-                        grid = 10,
                         control = ctrl,
                         resamples = resamples,
                         metrics = reg_metrics
@@ -256,7 +253,8 @@ tune_grid_wflows = function(wflows,
 
 # create function for tuning a workflow set via race
 tune_race_wflows = function(wflows,
-                            resamples) {
+                            resamples,
+                            ...) {
         
         wflows %>%
                 workflow_map(
