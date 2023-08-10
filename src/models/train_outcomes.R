@@ -456,6 +456,23 @@ predict_usersrated = function(data,
         
 }
 
+predict_hurdle = 
+        function(data,
+                 workflow) {
+                
+                workflow %>%
+                        # predict with hurdle
+                        augment(data,
+                                type = 'prob') %>%
+                        # rename pred to hurdle
+                        rename(pred_hurdle = .pred_yes) %>%
+                        # remove extraneous predictions
+                        select(-.pred_no,
+                               -.pred_class)
+                
+        }
+
+
 simulate_outcomes = function(data,
                              averageweight_fit,
                              average_fit,

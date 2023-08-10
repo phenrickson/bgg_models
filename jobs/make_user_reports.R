@@ -74,7 +74,7 @@ doMC::registerDoMC(cores = all_cores)
 # 
 # run for one username
 user_output = 
-        'mrbananagrabber' %>%
+        'GOBBluth89' %>%
         # load user collection from bgg api
         load_user_collection(username = .) %>%
         # train model for user

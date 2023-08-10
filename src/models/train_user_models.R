@@ -174,7 +174,7 @@ train_user_model = function(user_collection,
              "upcoming_predictions" =
                      upcoming_predictions,
              "games_load_ts" = 
-                     games$load_ts[1])
+                     bgg_games$load_ts[1])
         
 }
 
@@ -569,7 +569,7 @@ build_tuning_grid = function(model_spec,
 
 # classification tuning grids
 ctrl_grid = function() {
-        control_grid(
+        tune::control_grid(
                 save_pred = TRUE,
                 allow_par = T,
                 parallel_over = "everything",
@@ -582,7 +582,7 @@ ctrl_grid = function() {
 # control for last_fit
 ctrl_last_fit = function() {
         
-        control_last_fit(verbose = T,
+        tune::control_last_fit(verbose = T,
                          event_level = 'second',
                          allow_par = T)
         

@@ -32,20 +32,26 @@ tar_source(here::here("src", "data", "connect_to_bigquery.R"))
 tar_source(here::here("src", "data", "connect_to_gcs_boards.R"))
 tar_source(here::here("src", "data", "load_games.R"))
 tar_source(here::here("src", "features", "preprocess_games.R"))
-tar_source(here::here("src", "models", "impute_games.R"))
+#tar_source(here::here("src", "models", "impute_games.R"))
+tar_source(here::here("src", "models", "train_outcomes.R"))
 
-# tar
+# load and process games
 list(
         # tables from bigquery
         # boards for storing processed data
         tar_target(data_board,
                    pins::board_folder(here::here("data", "processed"))),
+        # board for deployed models
+        tar_target(deployed_board,
+                   get_gcs_board(board = "deployed")),
+        # board for saving data to gcs
         tar_target(gcs_board,
                    get_gcs_board("data")),
         # tables to load
         tar_target(games_table, 
                    load_table(table_name = "games"),
-                   cue = tar_cue(mode = "always")),
+                  # cue = tar_cue(mode = "always")),
+        ),
         tar_target(categorical_tables, 
                    load_categorical_tables(tables = c("descriptions",
                                                       "categories",
@@ -56,31 +62,75 @@ list(
                                                       "publishers",
                                                       "implementations",
                                                       "compilations")),
-                   cue = tar_cue(mode = "always")),
+        ),
+                 #  cue = tar_cue(mode = "always")),
         # transform
+        # apply standardized transformations
         tar_target(games_transformed,
                    transform_games(data = games_table)),
+        # join transformed with categorical tables
         tar_target(games, 
-                   left_join(games_transformed, categorical_tables, by = c("game_id"))),
+                   left_join(games_transformed, categorical_tables, by = c("game_id")
+                   )
+        ),
+        tar_target(
+                name = games_processed,
+                command = 
+                        games%>%
+                        # apply preprocessing from function
+                        preprocess_games() %>%
+                        # add outcome for hurdle model
+                        add_users_threshold()
+        ),
         # models
-        tar_target(deployed_board,
-                   get_gcs_board(board = "deployed")),
         tar_target(hurdle_mod,
                    vetiver::vetiver_pin_read(deployed_board,
                                              "hurdle_vetiver")),
         tar_target(averageweight_mod,
                    vetiver::vetiver_pin_read(deployed_board,
-                                             "averageweight_vetiver")),
-        # impute
-        tar_target(games_imputed,
-                   games %>%
-                           preprocess_games(data = .) %>%
-                           impute_averageweight(
-                                   games = .,
-                                   model = averageweight_mod) %>%
-                           impute_hurdle(
-                                   games = .,
-                                   model = hurdle_mod)),
+                                             "vetiver_averageweight_")),
+        tar_target(average_mod,
+                   vetiver::vetiver_pin_read(deployed_board,
+                                             "vetiver_average_")),
+        tar_target(usersrated_mod,
+                   vetiver::vetiver_pin_read(deployed_board,
+                                             "vetiver_usersrated")),
+        # get model end train year
+        tar_target(
+                name = end_train_year,
+                command = 
+                        average_mod$metadata$user$end_train_year),
+        # impute averageweight
+        tar_target(
+                name = games_imputed,
+                command = 
+                        games_processed %>%
+                        impute_averageweight(
+                                data = .,
+                                fit = averageweight_mod
+                        ) %>%
+                        predict_hurdle(
+                                workflow = hurdle_mod
+                        )
+        ),
+        # estimate outcomes
+        # # predictions
+        tar_target(
+                name = games_predicted,
+                command =
+                        games_imputed %>%
+                        mutate(bayesaverage = replace_na(bayesaverage, 5.5)) %>%
+                        predict_average(
+                                workflow = average_mod
+                        ) %>%
+                        predict_usersrated(
+                                workflow = usersrated_mod
+                        ) %>%
+                        calculate_bayesaverage() %>%
+                        mutate(.pred_averageweight = est_averageweight) %>%
+                        mutate(type = case_when(yearpublished <= end_train_year ~ 'training',
+                                                yearpublished > end_train_year ~ 'upcoming'))
+        ),
         # pin to data board
         tar_target(local_pin_games, 
                    pins::pin_write(x = games,
@@ -94,6 +144,12 @@ list(
                                    name = "games_imputed",
                                    versioned = T,
                                    tags = c("data", "averageweight", "hurdle"))),
+        tar_target(local_pin_games_predicted,
+                   pins::pin_write(x = games_predicted,
+                                   board = data_board,
+                                   name = "games_predicted",
+                                   versioned = T,
+                                   tags = c("data", "averageweight", "average", "usersrated", "bayesaverage"))),
         # pin to gcs board
         tar_target(gcs_pin_games, 
                    pins::pin_write(x = games,
@@ -106,6 +162,12 @@ list(
                                    board = gcs_board,
                                    name = "games_imputed",
                                    versioned = T,
-                                   tags = c("data", "averageweight", "hurdle")))
+                                   tags = c("data", "averageweight", "hurdle"))),
+           tar_target(gcs_pin_games_predicted,
+                   pins::pin_write(x = games_predicted,
+                                   board = gcs_board,
+                                   name = "games_predicted",
+                                   versioned = T,
+                                   tags = c("data", "averageweight", "average", "usersrated", "bayesaverage")))
         
 )
