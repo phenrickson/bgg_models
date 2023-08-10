@@ -1,3 +1,9 @@
+# 
+bgg_outcomes = function() {
+        
+        c("average", "averageweight", "bayesaverage", "averageweight")
+}
+
 # simulate from a linear model
 predict_sim = function(fit,
                        new_data,
@@ -90,16 +96,20 @@ train_outcome_model = function(data,
                                      spline_vars = splines)
         
         # make workflows
-        workflows = 
+        workflows =
                 workflow_set(
-                        preproc = 
+                        preproc =
                                 recipes,
-                        models = 
+                        models =
                                 models,
                 ) %>%
                 # remove ids based on pattern
                 filter(!grepl(remove_wflow_ids, wflow_id))
         
+        message(paste0("tuning workflows:", 
+                      paste(workflows$wflow_id, sep = "\n"))
+        )
+
         # tune
         tuning_results =
                 workflows %>%
@@ -107,39 +117,39 @@ train_outcome_model = function(data,
                         method = tune_method,
                         resamples = resamples,
                 )
-        
+
         # get tuning metrics across all
         tuning_metrics =
                 tuning_results %>%
                 rank_results(select_best = T)
-        
+
         # get best fit
         train_fit =
                 tuning_results %>%
                 fit_best()
-        
+
         # predict validation
         valid_preds = train_fit %>%
                 augment(valid)
-        
+
         # assess
         valid_metrics =
                 valid_preds %>%
                 metrics(
                         truth = {{outcome}},
                         estimate = .pred)
-        
+
         # predict other
         other_preds =
                 train_fit %>%
                 augment(other)
-        
+
         # get final fit
         final_fit =
                 train_fit %>%
                 fit(bind_rows(train,
                               valid))
-        
+
         # return results
         list(
                 "tuning_results" = tuning_results,

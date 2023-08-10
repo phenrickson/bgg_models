@@ -1298,6 +1298,18 @@
       ],
       "Hash": "ba4be138fe47eac3e16a6deaa4da106e"
     },
+    "future.callr": {
+      "Package": "future.callr",
+      "Version": "0.8.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "callr",
+        "future"
+      ],
+      "Hash": "e76426c4a99a1798a9376c6fe9070a68"
+    },
     "gargle": {
       "Package": "gargle",
       "Version": "1.3.0",
@@ -3294,6 +3306,29 @@
         "cpp11"
       ],
       "Hash": "90b28393209827327de889f49935140a"
+    },
+    "tarchetypes": {
+      "Package": "tarchetypes",
+      "Version": "0.7.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "digest",
+        "dplyr",
+        "fs",
+        "furrr",
+        "future",
+        "future.callr",
+        "rlang",
+        "targets",
+        "tibble",
+        "tidyselect",
+        "utils",
+        "vctrs",
+        "withr"
+      ],
+      "Hash": "60b64e0f5f75bb1860d21145cedf9255"
     },
     "targets": {
       "Package": "targets",
