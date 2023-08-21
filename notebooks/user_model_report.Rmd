@@ -90,7 +90,8 @@ To answer this, I can examine the **coefficients** from a model logistic regress
 
 ```{r coef plot, fig.height = 8}
 
-coef_plot = user_output$workflows %>%
+coef_plot = 
+        user_output$workflows %>%
         get_workflow(model = "glmnet") %>%
         glmnet_coef_plot()+
         geom_col(color = 'white') +

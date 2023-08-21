@@ -1,3 +1,0 @@
-main:
-  script: _make_data.R
-  store: _make_data

@@ -1,6 +1,34 @@
 
 # collection --------------------------------------------------------------
 
+# build user markdown report
+build_user_report = function(user_output,
+                             ...) {
+        
+        # get username
+        username = get_username(user_output$user_collection)
+        
+        # make report name
+        build_report_name = function(username,
+                                     ...) {
+                
+                paste(username, user_output$outcome, user_output$end_train_year, sep = "_")
+        }
+        
+        # assign output to global environment for markdown
+        user_output <<- user_output
+        
+        # build markdown report
+        rmarkdown::render(
+                input = here::here("notebooks", "user_model_report.Rmd"),
+                output_dir = here::here("reports", "users"),
+                output_file = build_report_name(username),
+                params = list(bgg_username = username)
+        )
+        
+}
+
+
 # create caption for visualizations
 my_caption = function(data = games) {
         
@@ -387,23 +415,23 @@ make_top_n_table = function(preds,
                             names_from = c("yearpublished"),
                             values_from = c("name"),
                             values_fn = list)
-
-table %>%
-        select(Rank, sort(names(.))) %>%
-        unnest(cols = names(.)) %>%
-        gt::gt() %>%
-        gt::tab_options(table.font.size = 10) %>%
-        gt::cols_align(align = c("center")) %>%
-        # add color for own
-        gt::data_color(
-                columns = everything(),
-                method = "factor",
-                na_color = "white",
-                autocolor_text = T,
-                fn = function(x) case_when(x %in% highlight_own ~ 'dodgerblue2',
-                                           x %in% highlight_ever_owned ~ 'skyblue1',
-                                           TRUE ~ 'white')
-        )
+        
+        table %>%
+                select(Rank, sort(names(.))) %>%
+                unnest(cols = names(.)) %>%
+                gt::gt() %>%
+                gt::tab_options(table.font.size = 10) %>%
+                gt::cols_align(align = c("center")) %>%
+                # add color for own
+                gt::data_color(
+                        columns = everything(),
+                        method = "factor",
+                        na_color = "white",
+                        autocolor_text = T,
+                        fn = function(x) case_when(x %in% highlight_own ~ 'dodgerblue2',
+                                                   x %in% highlight_ever_owned ~ 'skyblue1',
+                                                   TRUE ~ 'white')
+                )
 }
 
 # make_top_n_table(
@@ -655,7 +683,7 @@ make_games_datatable = function(data,
                                                      list(className = 'dt-center',
                                                           visible=T,
                                                           targets=c("Rank",
-                                                        #            "Image",
+                                                                    #            "Image",
                                                                     "Published",
                                                                     get_prob_outcome(get_tidy_outcome(outcome)),
                                                                     get_tidy_outcome(outcome)
@@ -689,15 +717,18 @@ prep_games_datatable = function(predictions,
                           info %>%
                                   select(game_id, images) %>%
                                   unnest(images) %>%
-                                  select(game_id, thumbnail),
+                                  select(game_id, thumbnail) %>%
+                                  rename(image = thumbnail),
                           by = join_by(game_id)) %>%
-            #    mutate(image = make_image_link(thumbnail)) %>%
+                # remove games without images
+                filter(!is.na(image)) %>%
+                #    mutate(image = make_image_link(thumbnail)) %>%
                 mutate(name = make_hyperlink(make_bgg_link(game_id), mytext = name)) %>%
                 arrange(desc(.pred_yes)) %>%
                 mutate(rank = row_number()) %>%
                 mutate(Rank = rank,
-                       Published = as.integer(yearpublished),
-                  #     Image = image,
+                       Published = as.factor(as.integer(yearpublished)),
+                       #     Image = image,
                        Name = name,
                        !!rlang::sym(get_prob_outcome(get_tidy_outcome(outcome))) := formatC(.pred_yes, digits=3, format="f"),
                        !!rlang::sym(get_tidy_outcome(outcome)) := !!rlang::sym(outcome),

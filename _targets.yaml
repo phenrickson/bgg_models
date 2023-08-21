@@ -1,0 +1,9 @@
+project_data:
+  script: _make_data.R
+  store: _make_data
+project_outcomes:
+  script: _train_outcomes.R
+  store: _train_outcomes
+project_reports:
+  script: _make_reports.R
+  store: _make_reports
