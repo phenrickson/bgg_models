@@ -7,4 +7,4 @@ targets::tar_make()
 targets::tar_glimpse()
 
 # network
-tar_visnetwork()
+targets::tar_visnetwork()

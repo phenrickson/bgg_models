@@ -74,7 +74,7 @@ doMC::registerDoMC(cores = all_cores)
 # 
 # run for one username
 user_output = 
-        'GOBBluth89' %>%
+        'ZeeGarcia' %>%
         # load user collection from bgg api
         load_user_collection(username = .) %>%
         # train model for user
@@ -94,6 +94,13 @@ user_output %>%
 # run over multiple
 usernames = c('mrbananagrabber',
               'GOBBluth89')
+
+usernames = c('Gyges',
+              'rahdo',
+              'VWValker',
+              'aboardgamebarrage',
+              'ZeeGarcia',
+              'J_3MBG')
 
 # via map
 map(usernames,

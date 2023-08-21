@@ -1,6 +1,3 @@
-# what: functions for training user models
-
-
 # function to run everything
 train_user_model = function(user_collection,
                             outcome = 'own',

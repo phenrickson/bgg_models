@@ -5,6 +5,7 @@
 
 # Load packages required to define the pipeline:
 library(targets)
+library(tarchetypes)
 
 # library(tarchetypes) # Load other packages as needed. # nolint
 
@@ -50,7 +51,10 @@ list(
         # tables to load
         tar_target(games_table, 
                    load_table(table_name = "games"),
-                  # cue = tar_cue(mode = "always")),
+                   cue = tar_cue_age(
+                           name = games_table,
+                           age = as.difftime(7, units = "days")
+                   )
         ),
         tar_target(categorical_tables, 
                    load_categorical_tables(tables = c("descriptions",
@@ -62,6 +66,10 @@ list(
                                                       "publishers",
                                                       "implementations",
                                                       "compilations")),
+                   cue = tar_cue_age(
+                           name = categorical_tables,
+                           age = as.difftime(7, units = "days")
+                   )
         ),
                  #  cue = tar_cue(mode = "always")),
         # transform

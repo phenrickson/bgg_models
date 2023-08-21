@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|4749e74464d8849e|||||||||||||||
+.Random.seed|object|55d47c14c34c0438|||||||||||||||
 add_best_tune|function|84b7da94ffd670b1|||||||||||||||
 add_bgg_dummies|function|3ce13c0c269725b6|||||||||||||||
 add_corr|function|a9069c23b2926eb7|||||||||||||||
@@ -36,12 +36,13 @@ collection_categories_plot|function|6b7c0610b9b762ab|||||||||||||||
 collection_owned_plot|function|be0a08627e079928|||||||||||||||
 ctrl_grid|function|8d523d88c83efc6d|||||||||||||||
 ctrl_last_fit|function|1c36dde8cef8b681|||||||||||||||
-data_board|stem|ed35da60a16334c9|5a55810e59f82924|94e5662fbc4504db|-443891927||t19579.6380071223s|3280407603f78daf|233|rds|local|vector|||1.898||
+data_board|stem|ed35da60a16334c9|74ac3a8fe5f50565|f24e9115ef2a065e|-443891927||t19585.8190850002s|3280407603f78daf|233|rds|local|vector|||1.898||
+end_train_year|stem|428ec7507e32b8ff|3c1e5e2b7c4da54d|ef46db3751d8e999|660618931||t19590.5761434387s|6efc4bfe9d27bd5a|46|qs|local|vector|||0||
 extract_collection|function|470a1f13778852da|||||||||||||||
 filter_min_users|function|12f526899feec537|||||||||||||||
 find_max_year|function|0728f363675e8173|||||||||||||||
-games|stem|35d0c357c4f073e8|8d756ef17c981664|59c45f5be4a72e19|-1959807711||t19579.6381236878s|4a0fdbe351c6d520|57632074|rds|local|vector|||3.661||
-games_info|stem|e892040062be0b0b|97698aa795066733|59c45f5be4a72e19|-1296408703||t19579.638371062s|a19d34d8de5ef4c7|66876893|rds|local|vector|||9.816||
+games|stem|70025f8f324d2db9|32882614985e8c64|d89100b31836d10c|-1959807711||t19590.5879369411s|57052921622946e1|56762637|qs|local|vector|||2.967||
+games_info|stem|99ca0da2fa907175|97698aa795066733|59c45f5be4a72e19|-1296408703||t19590.5881017577s|f8f60d74956bab3d|60464285|qs|local|vector|||11.379||
 gcs_bucket|function|faa69fdd01b33815|||||||||||||||
 get_allow_games_publishers|function|1cff02703031fa60|||||||||||||||
 get_collection|function|e31dd2ca8af6ed4c|||||||||||||||
@@ -83,7 +84,9 @@ make_user_recipes_list|function|7b7574db2a7255e3|||||||||||||||
 make_user_split|function|ec07acf939ce5b9d|||||||||||||||
 make_user_train_resamples|function|851983b6359d4e65|||||||||||||||
 make_web_image|function|f2d99a293ce1b03e|||||||||||||||
+model_specs|stem|32ced54081df7467|894c9a1b42f539b9|ef46db3751d8e999|2083541303||t19590.5878822204s|b820b0556822e1c9|45|qs|local|vector|||2.084||
 my_caption|function|9e281f8e7c1c41b4|||||||||||||||
+outcome|stem|77e97945632b358d|6da52ad04dd44a97|ef46db3751d8e999|2021572777||t19590.5761427062s|506f9f6b3747f807|42|qs|local|vector|||2.395||
 prep_collection|function|5688d12eef3b3e70|||||||||||||||
 prep_collection_table|function|18eba6635d3d8f0a|||||||||||||||
 prep_games_datatable|function|67f0299628debafc|||||||||||||||
@@ -96,10 +99,23 @@ set_gt_theme|function|877197e414cb8d23|||||||||||||||
 set_gt_widths|function|38e6b0ae126c736a|||||||||||||||
 tidy_wflow_id|function|04aa420cfaa666a5|||||||||||||||
 train_user_model|function|089cc6db23ef9b19|||||||||||||||
+train_user_results|function|435a1d733a018cd2|||||||||||||||
 trim_predictions|function|2ae2fa82254e3de0|||||||||||||||
+tune_user_model|function|11facdc479d0a1b7|||||||||||||||
 tune_user_wflows|function|6ae43eac9ccd4a0c|||||||||||||||
-user_collection_GOBBluth89|stem|e1cb6e5e5caa3010|98cf6f1e5cfc3c85|9ae963f8a79da2ac|-1681113902||t19579.7192230203s|904df93157f57fa2|4280|rds|local|vector|||2.845||
-user_collection_Gyges|stem||d050ac6c05f5878d|9ae963f8a79da2ac|-662700875||t19579.7241145709s||0|rds|local|vector|||63.353||HTTP 429 Too Many Requests.
-user_collection_mrbananagrabber|stem|04a79db4d386af48|f37939f089d288a6|9ae963f8a79da2ac|-366057700||t19579.7192157101s|c1431da71210364a|5768|rds|local|vector|||2.895||
-user_output_mrbananagrabber|stem||3c3ba07ef58606b5|e20ced140fbf730c|-1109586584||t19579.6676981733s||0|rds|local|vector|||216.408||object games not found
-usernames|object|7296eee8b0a0518f|||||||||||||||
+user_collection_and_games_Gyges|stem|dcc10ca51c881784|5a55e1d9d7de1906|ee477dfa672b3a33|-1332849756||t19590.5727812173s|32ff5d939886123c|57771936|rds|local|vector|||2.815||
+user_collection_and_games_mrbananagrabber|stem|806af696eb7d36bc|58b016c2e06eae10|df507a830b5c105c|-1368849735||t19590.5881227137s|cd001a4fc6dc3412|56794297|qs|local|vector|||0.709||
+user_collection_Gyges|stem|57422dc3b73a2086|dd464a091ac421f5|46d1f85019edb987|-662700875||t19585.8247530259s|8b14f3b65c8fdd10|89958|rds|local|vector|||384.246||
+user_collection_mrbananagrabber|stem|f569c92fea9a7603|d501a28b2b3aa3e9|46d1f85019edb987|-366057700||t19590.5878899479s|ebd621d71b90c5fd|5459|qs|local|vector|||0.658||
+user_output_GOBBluth89|stem|6f0716085715d3c3|148b68378efc896f|adf1a154e8c3019a|1443824412||t19579.8430603215s|d6e1b9303d47b2ed|2705987688|rds|local|vector|||78.572||
+user_output_mrbananagrabber|stem|2f1b2f4fc3c3f1ae|b6032335502d5cd7|fe77a5e1b47675d2|-1109586584||t19579.8339577469s|e6a1d62504c876bf|2707373585|rds|local|vector|||88.846||
+user_output_Quinns|stem|88d8f8a4ba0f443e|aa49c46bcbd5e269|65d7f92c2de90081|-893192489||t19579.8385144039s|fa2439a104caf958|2709319171|rds|local|vector|||80.27||
+user_report_mrbananagrabber|stem||6bbaa8e9c704be0d|d2fda510fb795f5b|-1776650562||t19579.8976116436s||0|rds|local|vector|||250.09||object games_info not found
+user_results_Gyges|stem|93fbfa631432301c|dc00ce62fa6dec5d|6e5aaf69e6b0eed8|-443564100||t19585.8359596724s|d27d3fcbde2531bd|3588630949|rds|local|vector|||195.112||
+user_results_mrbananagrabber|stem|46ad0e41b005aafa|01bfc35de6faa32e|412c46968c077b0b|1921930128||t19590.5923427766s|f8d11c1c3ae3817c|1594230886|qs|local|vector|||0.551||
+user_train_resamples_mrbananagrabber|stem|cae2acbca8002255|6f8e458dd05efbc6|2a348b23e319209a|-2025946181||t19590.5881415553s|17a7cce6cd0148af|67315978|qs|local|vector|||0.022||
+user_train_split_Gyges|stem|438520fda6d6ed97|a13f080bd4c764fb|6e23f283d8489e81|-66070365||t19590.5730215203s|fbe0f1155f55028f|19051240|rds|local|vector|||0.028||
+user_train_split_mrbananagrabber|stem|52027073644d0cfb|2924cef340b7238c|fd2ec832887db59b|124814446||t19590.5881273067s|85ba9559439eab04|18687748|qs|local|vector|||0.027||
+user_wflows_mrbananagrabber|stem|6eea4c88f5118e60|561906db9c535b18|cbed1bcac6075798|-1843692864||t19580.0403879111s|e566cc93afe70ded|1678049282|rds|local|vector|||59.676||
+usernames|object|e555a94932b5d652|||||||||||||||
+valid_window|stem|63a7351492323401|794b13eddf1090d6|ef46db3751d8e999|2070830851||t19590.5878899883s|6efc4bfe9d27bd5a|46|qs|local|vector|||0||
