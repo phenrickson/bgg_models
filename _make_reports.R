@@ -53,8 +53,12 @@ tar_source(here::here("src", "visualizations", "viz_workflows.R"))
 # functions for user report
 tar_source(here::here("src", "reports", "user_collection_report.R"))
 
+# rmarkdown settings
+source(here::here("src", "reports", "knitr_settings.R"))
+
 # # usernames to run dynamic branches
 usernames = data.frame(usernames = c("mrbananagrabber"))
+
 # "Gyges"))
 # "GOBBluth89",
 # "Quinns"))
@@ -64,7 +68,7 @@ future::plan(future::multisession, workers = 4)
 set.seed(1999)
 list(
         # connect to gcs
-        # data
+        # data board
         tar_target(
                 name = data_board,
                 format = "rds",
@@ -74,6 +78,7 @@ list(
                                 prefix = paste0('data', "/"),
                                 versioned = T)
         ),
+        # retreive data from pins
         # imputed games for model training
         tar_target(
                 name = games,
@@ -86,14 +91,15 @@ list(
                 name = games_info,
                 command =
                         pin_read(data_board,
-                                 name = "games_info")
+                                 name = "games_info"),
         ),
         # parameters
         tar_plan(
                 end_train_year = 2020,
                 valid_window = 2,
+                retrain_window = 2,
                 outcome = 'own',
-                model_specs = 'glmnet',
+                model_specs = c('glmnet', 'lightgbm')
         ),
         # run over usernames
         tar_map(
@@ -105,52 +111,30 @@ list(
                                 usernames %>%
                                 load_user_collection()
                 ),
-                # build objects for user models
-                tar_plan(
-                        # get user and games
-                        user_collection_and_games = 
+                # train user model
+                tar_target(
+                        name = user_results,
+                        command = 
                                 user_collection %>%
-                                join_bgg_games(games = games),
-                        # create splits for train/validtion
-                        user_train_split =
-                                user_collection_and_games %>%
-                                make_user_split(end_train_year = end_train_year,
-                                                valid_window = valid_window),
-                        # make user resamples
-                        user_train_resamples = 
-                                user_train_split %>%
-                                make_user_train_resamples(outcome = any_of(outcome)),
-                        # # tune user wflows
-                        tar_target(
-                                name = user_results,
-                                command = 
-                                        {
-                                                # make user wflows
-                                                user_wflows =
-                                                        workflow_set(
-                                                                preproc =
-                                                                        # get training data from split
-                                                                        user_train_split %>%
-                                                                        analysis() %>%
-                                                                        # build recipes for outcome
-                                                                        make_user_recipes_list(outcome = any_of(outcome)),
-                                                                models =
-                                                                        # build model specifications from selection
-                                                                        build_model_spec_list(model_specs),
-                                                                cross = T
-                                                        ) %>%
-                                                        # filter to only specified workflows
-                                                        filter(grepl("all_splines_glmnet|all_trees_lightgbm|all_trees_cart", wflow_id)) %>%
-                                                        # add tuning grids by model
-                                                        # add glmnet grids 
-                                                        add_tuning_grid(wflows = .,
-                                                                        wflow_models = "glmnet") %>%
-                                                        # add lightgbm grid
-                                                        add_tuning_grid(wflows = .,
-                                                                        wflow_models = "lightgbm")
-                                                
-                                        }
-                        )
+                                train_user_model(user_collection = .,
+                                                 bgg_games = games,
+                                                 outcome = outcome,
+                                                 end_train_year = end_train_year,
+                                                 valid_window = valid_window,
+                                                 retrain_window = retrain_window,
+                                                 model_specs = model_specs,
+                                                 tune_metric = 'mn_log_loss',
+                                                 save_workflow = F)
+                ),
+                # render user report
+                tar_render(
+                        name = user_report,
+                        path = here::here("notebooks", "test.Rmd"),
+                        params = list(username = usernames,
+                                      collection = user_collection,
+                                      results = user_results),
+                        output_dir = here::here("reports"),
+                        output_file = paste(usernames, outcome, end_train_year, sep = "_")
                 )
         )
 )

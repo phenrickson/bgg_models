@@ -7,6 +7,7 @@ train_user_model = function(user_collection,
                             retrain_window = 0,
                             model_specs = c('glmnet'),
                             tune_metric = 'mn_log_loss',
+                            save_workflow = F,
                             ...) {
         
         # get user and games
@@ -46,12 +47,9 @@ train_user_model = function(user_collection,
         # add tuning grids by model
         user_wflows = 
                 user_wflows %>%
-                # add glmnet grids 
+                # add tuning grids by model
                 add_tuning_grid(wflows = .,
-                                wflow_models = "glmnet") %>%
-                # add lightgbm grid
-                add_tuning_grid(wflows = .,
-                                wflow_models = "lightgbm")
+                                wflow_models = model_specs)
         
         # select ids to tune
         wflow_ids =  user_wflows %>% 
@@ -69,23 +67,241 @@ train_user_model = function(user_collection,
                                  metrics = prob_metrics(),
                                  control = ctrl_grid())
         
-        # # workflow plot
-        # workflow_plot = 
-        #         user_wflows_results %>%
-        #         autoplot()+
-        #         theme_minimal()
-        # 
-        # # collect tuning parameters
-        # tuning_plots = 
-        #         user_wflows_results %>%
-        #         mutate(tuning_plot = map2(result,
-        #                                  wflow_id,
-        #                                  ~ autoplot(.x)+
-        #                                          ggtitle(.y))) %>%
-        #         pull(tuning_plot)
-        
         # collect predictions
         training_predictions = 
+                user_wflows_results %>%
+                collect_predictions(select_best = T,
+                                    metric = tune_metric) %>%
+                add_game_ids(games = analysis(user_train_split))
+        
+        # collect metrics
+        training_metrics =
+                user_wflows_results %>%
+                rank_results(select_best = T,
+                             rank_metric = tune_metric) %>%
+                arrange(.metric, rank)
+        
+        # fit on train and assess on valid
+        tictoc::tic("fitting models on training set...")
+        training_fits = 
+                user_wflows_results %>%
+                add_best_tune(metric = tune_metric) %>%
+                add_last_fit(split = user_train_split,
+                             metrics = prob_metrics())
+        tictoc::toc()
+        
+        # get predictions for validation set
+        valid_predictions =
+                training_fits %>%
+                collect_last_fit_predictions() %>%
+                add_pred_hurdle(games = bgg_games)
+        
+        # get metrics for validation set
+        valid_metrics =
+                training_fits %>%
+                collect_last_fit_metrics()
+        
+        # get thresholds for classification
+        tictoc::tic("fitting final models...")
+        # final split
+        user_final_split =
+                user_collection_and_games %>%
+                make_user_split(end_train_year = end_train_year+retrain_window,
+                                valid_window = 10)
+        tictoc::toc()
+        
+        # finalize
+        user_final_fits =
+                user_wflows_results %>%
+                add_best_tune(metric = tune_metric) %>%
+                add_last_fit(split = user_final_split,
+                             metrics = prob_metrics())
+        
+        # get workflows
+        user_workflows =
+                user_final_fits %>%
+                select(wflow_id, last_fit) %>%
+                unnest(last_fit) %>%
+                select(wflow_id, .workflow)
+        
+        # upcoming predictions
+        upcoming_predictions =
+                user_final_fits %>%
+                collect_last_fit_predictions() %>%
+                add_pred_hurdle(games = bgg_games)
+        
+        # output results
+        results =
+                list("outcome" =
+                             outcome,
+                     "end_train_year" =
+                             end_train_year,
+                     "valid_window" =
+                             valid_window,
+                     "user_collection" =
+                             user_collection,
+                     "training_predictions" =
+                             training_predictions %>%
+                             mutate(type = 'resamples'),
+                     "training_metrics" =
+                             training_metrics %>%
+                             mutate(type = 'resamples'),
+                     "valid_predictions" =
+                             valid_predictions %>%
+                             mutate(type = 'valid'),
+                     "valid_metrics" =
+                             valid_metrics %>%
+                             mutate(type = 'valid'),
+                     "upcoming_predictions" =
+                             upcoming_predictions %>%
+                             mutate(type = 'upcoming'),
+                     "workflows" =
+                             user_workflows,
+                     "games_load_ts" =
+                             bgg_games$load_ts[1]
+                )
+        
+        if (save_workflow == T) {
+                
+                c(results,
+                  list("workflows" = user_workflows)
+                )
+        }
+        
+        # # workflow results
+        if ("glmnet" %in% model_specs) {
+                tictoc::tic("extracting glmnet results...")
+                glmnet_results =
+                        list(
+                                "glmnet_coefs" =
+                                        user_workflows %>%
+                                        get_workflow(model = "glmnet") %>%
+                                        extract_fit_parsnip() %>%
+                                        tidy(),
+                                "glmnet_coefs_path" =
+                                        user_workflows %>%
+                                        get_workflow(model = "glmnet") %>%
+                                        extract_fit_engine() %>%
+                                        tidy(return_zeroes = T)
+                        )
+                tictoc::toc()
+        } else {
+                glmnet_results = vector()
+        }
+
+
+        if ("lightgbm" %in% model_specs) {
+
+                tictoc::tic("extracting lightgbm results...")
+
+                lightgbm_results =
+                        list(
+                                "lightgbm_vip" =
+                                        # variable importance
+                                        user_workflows %>%
+                                        get_workflow(model = "lightgbm") %>%
+                                        lightgbm_vip(),
+                                "lightgbm_shap" =
+                                        get_game_data(
+                                                game_data =
+                                                        user_collection %>%
+                                                        join_bgg_games(bgg_games),
+                                                id =
+                                                        map_df(
+                                                                list(training_predictions,
+                                                                     valid_predictions,
+                                                                     upcoming_predictions),
+                                                                ~ .x %>%
+                                                                        filter(grepl("lightgbm", wflow_id)) %>%
+                                                                        arrange(desc(.pred_yes)) %>%
+                                                                        head(15)
+                                                        ) %>%
+                                                        pull(game_id),
+                                        ) %>%
+                                        lightgbm_interpret(workflow = user_workflows %>%
+                                                                   get_workflow(model = 'lightgbm'),
+                                                           game_data = .,
+                                                           outcome = outcome)
+                        )
+                tictoc::toc()
+        } else {
+                lightgbm_results = vector()
+        }
+
+
+        out = c(results,
+                    glmnet_results,
+                    lightgbm_results)
+
+        out
+
+}
+
+tune_user_models = function(user_collection,
+                            outcome = 'own',
+                            games = games,
+                            end_train_year = 2021,
+                            valid_window = 2,
+                            model_specs = c('glmnet'),
+                            tune_wflow_ids = c("all_splines_glmnet|all_trees_lightgbm"),
+                            tune_metric = 'mn_log_loss',
+                            ...) {
+        
+        # get user and games
+        user_collection_and_games = 
+                user_collection %>%
+                join_bgg_games(games = games)
+        
+        # create splits for train/validation
+        user_train_split =
+                user_collection_and_games %>%
+                make_user_split(end_train_year = end_train_year,
+                                valid_window = valid_window)
+        
+        # make user resamples
+        # set seed here
+        set.seed(1999)
+        user_train_resamples =
+                user_train_split %>%
+                make_user_train_resamples(outcome = any_of(outcome))
+        
+        # make user recipes
+        user_recipes =
+                user_train_split %>%
+                analysis() %>%
+                make_user_recipes_list(outcome = any_of(outcome))
+        
+        # make user wflows
+        user_wflows =
+                workflow_set(
+                        preproc =
+                                user_recipes,
+                        models =
+                                build_model_spec_list(model_specs),
+                        cross = T
+                ) %>%
+                # add tuning grids by model
+                add_tuning_grid(wflows = .,
+                                wflow_models = model_specs) %>%
+                # filter to only wflows specified for tuning
+                filter(grepl(tune_wflow_ids, wflow_id))
+        
+        # select ids to tune
+        wflow_ids =  user_wflows %>%
+                pull(wflow_id)
+        
+        message(paste("workflows:", "\n", paste(wflow_ids, collapse = "\n"), sep = ""), sep = "")
+        
+        # tune user wflows
+        user_wflows_results =
+                user_wflows %>%
+                tune_user_wflows(ids = wflow_ids,
+                                 resamples = user_train_resamples,
+                                 metrics = prob_metrics(),
+                                 control = ctrl_grid())
+        
+        # collect predictions
+        training_predictions =
                 user_wflows_results %>%
                 collect_predictions(select_best = T,
                                     metric = tune_metric) %>%
@@ -105,55 +321,18 @@ train_user_model = function(user_collection,
                 add_last_fit(split = user_train_split,
                              metrics = prob_metrics())
         
-        # get predictions for validation set
-        valid_predictions = 
+        # # get predictions for validation set
+        valid_predictions =
                 training_fits %>%
                 collect_last_fit_predictions() %>%
-                add_pred_hurdle(games = bgg_games)
+                add_pred_hurdle(games = games)
         
-        
-        # get metrics for validation set
-        valid_metrics = 
+        # # get metrics for validation set
+        valid_metrics =
                 training_fits %>%
                 collect_last_fit_metrics()
         
-        # get thresholds for classification
-        
-        # final split
-        user_final_split = 
-                user_collection_and_games %>%
-                make_user_split(end_train_year = end_train_year+retrain_window,
-                                valid_window = 5)
-        
-        # finalize
-        user_final_fits = 
-                user_wflows_results %>%
-                add_best_tune(metric = tune_metric) %>%
-                add_last_fit(split = user_final_split,
-                             metrics = prob_metrics())
-        
-        # get workflows
-        user_workflows = 
-                user_final_fits %>%
-                select(wflow_id, last_fit) %>%
-                unnest(last_fit) %>%
-                select(wflow_id, .workflow)
-        
-        # upcoming predictions
-        upcoming_predictions =
-                user_final_fits %>%
-                collect_last_fit_predictions() %>%
-                add_pred_hurdle(games = bgg_games)
-        
-        # output results
-        list("outcome" = 
-                     outcome,
-             "end_train_year" = 
-                     end_train_year,
-             "valid_window" = 
-                     valid_window,
-             "user_collection" =
-                     user_collection,
+        list("tuning_results" = user_wflows_results,
              "training_predictions" =
                      training_predictions %>%
                      mutate(type = 'resamples'),
@@ -166,14 +345,235 @@ train_user_model = function(user_collection,
              "valid_metrics" =
                      valid_metrics %>%
                      mutate(type = 'valid'),
-             "workflows" =
-                     user_workflows,
-             "upcoming_predictions" =
-                     upcoming_predictions,
-             "games_load_ts" = 
-                     bgg_games$load_ts[1])
+             "user_collection" = user_collection)
         
 }
+
+
+extract_user_results = function(tuning_results,
+                                retrain_window = 1,
+                                ...) {
+        
+        # extract objects
+        tuned_user_wflows = tuning_results$tuning_results
+        user_collection = tuning_results$user_collection
+        
+        # user collection and games
+        user_collection_and_games = 
+                user_collection %>% 
+                join_bgg_games(games = games)
+        
+        # extract template for tuning
+        template = 
+                tuned_user_wflows %>%
+                pluck("info", 1) %>%
+                pluck("workflow", 1) %>% 
+                extract_preprocessor() %$% 
+                template
+        
+        # last year used in training
+        end_train_year = 
+                max(template$yearpublished, na.rm = T)
+        
+        # collect predictions
+        training_predictions = 
+                tuned_user_wflows %>%
+                collect_predictions(select_best = T,
+                                    metric = tune_metric) %>%
+                add_game_ids(games = template)   
+        
+        # collect metrics
+        training_metrics =
+                tuned_user_wflows %>%
+                rank_results(select_best = T,
+                             rank_metric = tune_metric) %>%
+                arrange(.metric, rank)
+        
+        # fit on train and assess on valid
+        training_fits = 
+                tuned_user_wflows %>%
+                add_best_tune(metric = tune_metric) %>%
+                add_last_fit(split = user_train_split,
+                             metrics = prob_metrics())
+        
+        # get predictions for validation set
+        valid_predictions = 
+                training_fits %>%
+                collect_last_fit_predictions() %>%
+                add_pred_hurdle(games = games)
+        
+        # get metrics for validation set
+        valid_metrics = 
+                training_fits %>%
+                collect_last_fit_metrics()
+        
+        # final split
+        user_final_split = 
+                user_collection_and_games %>%
+                make_user_split(end_train_year = end_train_year+retrain_window,
+                                valid_window = 10)
+        
+        # finalize models
+        final_fits = 
+                tuned_user_wflows %>%
+                add_best_tune(metric = tune_metric) %>%
+                add_last_fit(split = user_final_split,
+                             metrics = prob_metrics())
+        
+        # get workflows
+        final_workflows = 
+                final_fits %>%
+                select(wflow_id, last_fit) %>%
+                unnest(last_fit) %>%
+                select(wflow_id, .workflow)
+        
+        # upcoming predictions
+        upcoming_predictions =
+                final_fits %>%
+                collect_last_fit_predictions() %>%
+                add_pred_hurdle(games = games)
+        
+        results =
+                list("end_train_year" = 
+                             end_train_year,
+                     "valid_window" = 
+                             valid_window,
+                     "user_collection" =
+                             user_collection,
+                     "training_predictions" =
+                             training_predictions %>%
+                             mutate(type = 'resamples'),
+                     "training_metrics" =
+                             training_metrics %>%
+                             mutate(type = 'resamples'),
+                     "valid_predictions" =
+                             valid_predictions %>%
+                             mutate(type = 'valid'),
+                     "valid_metrics" =
+                             valid_metrics %>%
+                             mutate(type = 'valid'),
+                     "upcoming_predictions" = 
+                             upcoming_predictions)
+        
+}
+
+#         
+#         # # workflow plot
+#         # workflow_plot = 
+#         #         user_wflows_results %>%
+#         #         autoplot()+
+#         #         theme_minimal()
+#         # 
+#         # # collect tuning parameters
+#         # tuning_plots = 
+#         #         user_wflows_results %>%
+#         #         mutate(tuning_plot = map2(result,
+#         #                                  wflow_id,
+#         #                                  ~ autoplot(.x)+
+#         #                                          ggtitle(.y))) %>%
+#         #         pull(tuning_plot)
+#         
+#         # collect predictions
+#         training_predictions = 
+#                 user_wflows_results %>%
+#                 collect_predictions(select_best = T,
+#                                     metric = tune_metric) %>%
+#                 add_game_ids(games = analysis(user_train_split))
+#         
+#         # collect metrics
+#         training_metrics =
+#                 user_wflows_results %>%
+#                 rank_results(select_best = T,
+#                              rank_metric = tune_metric) %>%
+#                 arrange(.metric, rank)
+#         
+#         # fit on train and assess on valid
+#         training_fits = 
+#                 user_wflows_results %>%
+#                 add_best_tune(metric = tune_metric) %>%
+#                 add_last_fit(split = user_train_split,
+#                              metrics = prob_metrics())
+#         
+#         # get predictions for validation set
+#         valid_predictions = 
+#                 training_fits %>%
+#                 collect_last_fit_predictions() %>%
+#                 add_pred_hurdle(games = bgg_games)
+#         
+#         # get metrics for validation set
+#         valid_metrics = 
+#                 training_fits %>%
+#                 collect_last_fit_metrics()
+#         
+#         # get thresholds for classification
+#         
+#         # final split
+#         user_final_split = 
+#                 user_collection_and_games %>%
+#                 make_user_split(end_train_year = end_train_year+retrain_window,
+#                                 valid_window = 5)
+#         
+#         # finalize
+#         user_final_fits = 
+#                 user_wflows_results %>%
+#                 add_best_tune(metric = tune_metric) %>%
+#                 add_last_fit(split = user_final_split,
+#                              metrics = prob_metrics())
+#         
+#         # get workflows
+#         user_workflows = 
+#                 user_final_fits %>%
+#                 select(wflow_id, last_fit) %>%
+#                 unnest(last_fit) %>%
+#                 select(wflow_id, .workflow)
+#         
+#         # upcoming predictions
+#         upcoming_predictions =
+#                 user_final_fits %>%
+#                 collect_last_fit_predictions() %>%
+#                 add_pred_hurdle(games = bgg_games)
+#         
+#         # output results
+#         results =
+#                 list("outcome" = 
+#                              outcome,
+#                      "end_train_year" = 
+#                              end_train_year,
+#                      "valid_window" = 
+#                              valid_window,
+#                      "user_collection" =
+#                              user_collection,
+#                      "training_predictions" =
+#                              training_predictions %>%
+#                              mutate(type = 'resamples'),
+#                      "training_metrics" =
+#                              training_metrics %>%
+#                              mutate(type = 'resamples'),
+#                      "valid_predictions" =
+#                              valid_predictions %>%
+#                              mutate(type = 'valid'),
+#                      "valid_metrics" =
+#                              valid_metrics %>%
+#                              mutate(type = 'valid'))
+#         
+#         # # workflow results
+#         # if ("glmnet" %in% model_specs) {
+#         #         
+#         #         train_coefs = 
+#         #         
+#         #         user_output$workflows %>%
+#         #                 get_workflow(model = "glmnet") 
+#         # }
+#         #      
+#         #      "workflows" =
+#         #              user_workflows,
+#         #      "upcoming_predictions" =
+#         #              upcoming_predictions,
+#         #      "games_load_ts" = 
+#         #              bgg_games$load_ts[1],
+#         #      "train_coefs" = 
+#         
+# }
 
 
 # load user colleciton
@@ -360,14 +760,20 @@ trim_predictions = function(res) {
 add_tuning_grid = function(wflows,
                            wflow_models) {
         
-        wflows %>%
-                option_add(id = wflows %>% 
-                                   filter(grepl(wflow_models, wflow_id)) %>% 
-                                   pull(wflow_id),
-                           grid = build_tuning_grid(
-                                   build_model_spec(wflow_models)
-                           )
-                )
+        for(i in 1:length(wflow_models)) {
+                
+                wflows = wflows %>%
+                        option_add(id = wflows %>% 
+                                           filter(grepl(wflow_models[i], wflow_id)) %>% 
+                                           pull(wflow_id),
+                                   grid = build_tuning_grid(
+                                           build_model_spec(wflow_models[i])
+                                   )
+                        )
+        }
+        
+        wflows
+        
 }
 
 # get best tune for workflows
@@ -522,21 +928,21 @@ build_model_spec = function(model_engine,
 }
 
 build_model_spec_list = function(model_engine,
-                             engine_mode = 'classification') {
+                                 engine_mode = 'classification') {
         
-       specs = map(model_engine,
-           ~ build_model_spec(.x))
-       
-       names(specs) = model_engine
-       
-       specs
+        specs = map(model_engine,
+                    ~ build_model_spec(.x))
+        
+        names(specs) = model_engine
+        
+        specs
         
 }
 
 
 # tuning grids for classification models
 build_tuning_grid = function(model_spec,
-                        tuning_size = 5) {
+                             tuning_size = 5) {
         
         if (model_spec$engine == 'lightgbm') {
                 
@@ -580,8 +986,8 @@ ctrl_grid = function() {
 ctrl_last_fit = function() {
         
         tune::control_last_fit(verbose = T,
-                         event_level = 'second',
-                         allow_par = T)
+                               event_level = 'second',
+                               allow_par = T)
         
 }
 

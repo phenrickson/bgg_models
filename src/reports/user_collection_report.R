@@ -1,6 +1,14 @@
 
 # collection --------------------------------------------------------------
 
+
+# make report name
+build_report_name = function(username,
+                             ...) {
+        
+        paste(username, outcome, end_train_year, sep = "_")
+}
+
 # build user markdown report
 build_user_report = function(user_output,
                              ...) {
@@ -88,6 +96,7 @@ get_username = function(data = get_collection()) {
 
 # plot collection
 collection_categories_plot = function(data,
+                                      username,
                                       vars = c("designers", "mechanics", "artists", "categories")) {
         
         map_df(vars,
@@ -151,7 +160,7 @@ collection_owned_plot = function(data,
                 geom_text(hjust = -0.05,
                           size = 2.5)+
                 theme_bgg()+
-                ggtitle(paste(get_username(data), "'s Collection", sep=""),
+                ggtitle(paste(username, "'s Collection", sep=""),
                         subtitle = str_wrap('Highlighted in red are games the user has owned but not rated, potentially representing games the user has purchased but not played (aka, shelf of shame).',110))+
                 my_caption()+
                 scale_fill_manual(values = c("grey60", "firebrick3"))+
