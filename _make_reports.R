@@ -56,12 +56,10 @@ tar_source(here::here("src", "reports", "user_collection_report.R"))
 # rmarkdown settings
 source(here::here("src", "reports", "knitr_settings.R"))
 
-# # usernames to run dynamic branches
-usernames = data.frame(usernames = c("mrbananagrabber"))
-
-# "Gyges"))
-# "GOBBluth89",
-# "Quinns"))
+# read in usernames from googlesheet
+usernames = 
+        googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1trnDLTr9M00VSFwTRukfXRLgqpM0WSfdSkFvq9dDwNw/edit#gid=0",
+                                  sheet = "usernames")
 
 future::plan(future::multisession, workers = 4)
 
@@ -109,34 +107,36 @@ list(
                         name = user_collection,
                         command = 
                                 usernames %>%
-                                load_user_collection()
-                ),
-                # train user model
-                tar_target(
-                        name = user_results,
-                        command = 
-                                user_collection %>%
-                                train_user_model(user_collection = .,
-                                                 bgg_games = games,
-                                                 outcome = outcome,
-                                                 end_train_year = end_train_year,
-                                                 valid_window = valid_window,
-                                                 retrain_window = retrain_window,
-                                                 model_specs = model_specs,
-                                                 tune_metric = 'mn_log_loss',
-                                                 save_workflow = F)
-                ),
-                # render user report
-                tar_render(
-                        name = user_report,
-                        path = here::here("notebooks", "test.Rmd"),
-                        params = list(username = usernames,
-                                      collection = user_collection,
-                                      results = user_results),
-                        output_dir = here::here("reports"),
-                        output_file = paste(usernames, outcome, end_train_year, sep = "_")
+                                load_user_collection(),
+                        error = "null"
                 )
         )
+        #         # train user model
+        #         tar_target(
+        #                 name = user_results,
+        #                 command = 
+        #                         user_collection %>%
+        #                         train_user_model(user_collection = .,
+        #                                          bgg_games = games,
+        #                                          outcome = outcome,
+        #                                          end_train_year = end_train_year,
+        #                                          valid_window = valid_window,
+        #                                          retrain_window = retrain_window,
+        #                                          model_specs = model_specs,
+        #                                          tune_metric = 'mn_log_loss',
+        #                                          save_workflow = F)
+        #         )
+        # )
+        #         # render user report
+        #         tar_render(
+        #                 name = user_report,
+        #                 path = here::here("notebooks", "test.Rmd"),
+        #                 params = list(username = usernames,
+        #                               results = user_results),
+        #                 output_dir = here::here("reports")
+        #       #          output_file = paste(usernames, outcome, end_train_year, sep = "_")
+        #         )
+        # )
 )
 # tar_target(
 #         name = user_results,
