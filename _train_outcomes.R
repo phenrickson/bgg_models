@@ -52,6 +52,16 @@ tar_source(here::here("src", "features", "recipes_outcomes.R"))
 tar_source(here::here("src", "models", "train_outcomes.R"))
 
 # source("other_functions.R") # Source other scripts as needed. # nolint
+pin_load_hash = function(board, name) {
+        
+        pin =
+                pins::pin_meta(
+                        board = board,
+                        name = name)
+        
+        pin$pin_hash
+        
+}
 
 # Replace the target list below with your own:
 list(
@@ -68,13 +78,21 @@ list(
         # boards
         tar_target(deployed_board,
                    get_gcs_board(board = "deployed")),
+        # pins of desired tables
+        tar_target(
+                name = pin_hash_games_raw,
+                command = 
+                        pin_load_hash(board = pins::board_folder(here::here("data", "processed")),
+                                      name = "games")
+        ),
         # load raw data
         tar_target(
                 name = games_raw,
                 command = 
                         pins::pin_read(
                                 board = pins::board_folder(here::here("data", "processed")),
-                                name = "games"),
+                                name = "games",
+                                hash =  pin_hash_games_raw)
         ),
         # process
         tar_target(
@@ -128,25 +146,6 @@ list(
                                 remove_wflow_ids = "impute",
                                 tune_method = "tune_race_anova"
                         )
-        ),
-        # impute averageweight
-        # # select best mod
-        tar_target(
-                name = best_averageweight_method,
-                command =
-                        {
-                                averageweight_models =
-                                        list("linear" = linear_averageweight_models,
-                                             "trees" = trees_averageweight_models)
-                                
-                                map(averageweight_models,
-                                    ~ .x %>% pluck("tuning_metrics")) %>%
-                                        bind_rows(.id = 'method') %>%
-                                        filter(.metric == 'rmse') %>%
-                                        arrange(mean) %>%
-                                        head(1) %>%
-                                        pull(method)
-                        }
         ),
         # impute with best mod
         tar_target(
@@ -310,38 +309,4 @@ list(
                                 vetiver_pin_write(board = deployed_board)
                 }
         )
-        # ,
-        # # predict upcoming
-        # tar_target(
-        #         name = upcoming_preds,
-        #         command = {
-        #                 
-        #                 averageweight_fit = vetiver_pin_read(deployed_board,
-        #                                                      "vetiver_averageweight")
-        #                 
-        #                 average_fit = vetiver_pin_read(deployed_board,
-        #                                                "vetiver_average")
-        #                 
-        #                 usersrated_fit = vetiver_pin_read(deployed_board,
-        #                                                   "vetiver_usersrated")
-        #                 
-        #                 games_processed %>% %>%
-        #                         filter(yearpublished > end_train_year + valid_window)
-        #                         impute_averageweight(
-        #                                 fit = averageweight_fit
-        #                         ) 
-        #                 filter(yearpublished > end_train_year + valid_window) %>%
-        #                 mutate(bayesaverage = replace_na(bayesaverage, 5.5)) %>%
-        #                 predict_average(
-        #                         workflow = 
-        #                 ) %>%
-        #                 predict_usersrated(
-        #                         workflow = trees_usersrated_models$train_fit
-        #                 ) %>%
-        #                 calculate_bayesaverage() %>%
-        #                 mutate(.pred_averageweight = est_averageweight) %>%
-        #                 mutate(type = case_when(yearpublished <= end_train_year ~ 'training',
-        #                                         yearpublished > end_train_year ~ 'valid'))
-        #                 
-        # )
 )

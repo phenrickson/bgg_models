@@ -33,8 +33,28 @@ tar_source(here::here("src", "data", "connect_to_bigquery.R"))
 tar_source(here::here("src", "data", "connect_to_gcs_boards.R"))
 tar_source(here::here("src", "data", "load_games.R"))
 tar_source(here::here("src", "features", "preprocess_games.R"))
-#tar_source(here::here("src", "models", "impute_games.R"))
 tar_source(here::here("src", "models", "train_outcomes.R"))
+
+
+pin_load_hash = function(board, name) {
+        
+        pin =
+                pins::pin_meta(
+                        board = board,
+                        name = name)
+        
+        pin$pin_hash
+        
+}
+
+pin_load_version = function(board, name) {
+        
+        pins::pin_versions(board, 
+                           name)%>% 
+                filter(created == max(created)) %>% 
+                head(1) %>%
+                pull(version)
+}
 
 # load and process games
 list(
@@ -44,10 +64,20 @@ list(
                    pins::board_folder(here::here("data", "processed"))),
         # board for deployed models
         tar_target(deployed_board,
-                   get_gcs_board(board = "deployed")),
+                   get_gcs_board(board = "deployed"),
+                   cue = tar_cue_age(
+                           name = deployed_board,
+                           age = as.difftime(7, units = "days")
+                   )
+        ),
         # board for saving data to gcs
         tar_target(gcs_board,
-                   get_gcs_board("data")),
+                   get_gcs_board("data"),
+                   cue = tar_cue_age(
+                           name = gcs_board,
+                           age = as.difftime(7, units = "days")
+                   )
+        ),
         # tables to load
         tar_target(games_table, 
                    load_table(table_name = "games"),
@@ -56,6 +86,7 @@ list(
                            age = as.difftime(7, units = "days")
                    )
         ),
+        # categorical
         tar_target(categorical_tables, 
                    load_categorical_tables(tables = c("descriptions",
                                                       "categories",
@@ -71,7 +102,7 @@ list(
                            age = as.difftime(7, units = "days")
                    )
         ),
-                 #  cue = tar_cue(mode = "always")),
+        #  cue = tar_cue(mode = "always")),
         # transform
         # apply standardized transformations
         tar_target(games_transformed,
@@ -90,24 +121,36 @@ list(
                         # add outcome for hurdle model
                         add_users_threshold()
         ),
-        # models
-        tar_target(hurdle_mod,
-                   vetiver::vetiver_pin_read(deployed_board,
-                                             "hurdle_vetiver")),
-        tar_target(averageweight_mod,
-                   vetiver::vetiver_pin_read(deployed_board,
-                                             "vetiver_averageweight_")),
-        tar_target(average_mod,
-                   vetiver::vetiver_pin_read(deployed_board,
-                                             "vetiver_average_")),
-        tar_target(usersrated_mod,
-                   vetiver::vetiver_pin_read(deployed_board,
-                                             "vetiver_usersrated")),
+        # load models
+        tar_map(
+                values = data.frame(models = 
+                                            c("vetiver_averageweight_",
+                                              "vetiver_average_",
+                                              "vetiver_usersrated",
+                                              "hurdle_vetiver")),
+                # get pin version
+                tar_target(
+                        name = pin_version,
+                        command = 
+                                pin_load_version(
+                                        deployed_board,
+                                        models)
+                ),
+                # read model
+                tar_target(
+                        name = model,
+                        command = 
+                                vetiver::vetiver_pin_read(deployed_board,
+                                                          models,
+                                                          version = pin_version,
+                                                          check_renv = T)
+                )
+        ),
         # get model end train year
         tar_target(
                 name = end_train_year,
                 command = 
-                        average_mod$metadata$user$end_train_year),
+                        model_vetiver_average_$metadata$user$end_train_year),
         # impute averageweight
         tar_target(
                 name = games_imputed,
@@ -115,11 +158,13 @@ list(
                         games_processed %>%
                         impute_averageweight(
                                 data = .,
-                                fit = averageweight_mod
+                                fit = model_vetiver_averageweight_
                         ) %>%
-                        predict_hurdle(
-                                workflow = hurdle_mod
-                        )
+                        mutate(pred_hurdle = NA)
+                # %>%
+                #         predict_hurdle(
+                #                 workflow = model_hurdle_vetiver
+                #         )
         ),
         # estimate outcomes
         # # predictions
@@ -129,10 +174,10 @@ list(
                         games_imputed %>%
                         mutate(bayesaverage = replace_na(bayesaverage, 5.5)) %>%
                         predict_average(
-                                workflow = average_mod
+                                workflow = model_vetiver_average_
                         ) %>%
                         predict_usersrated(
-                                workflow = usersrated_mod
+                                workflow = model_vetiver_usersrated
                         ) %>%
                         calculate_bayesaverage() %>%
                         mutate(.pred_averageweight = est_averageweight) %>%
@@ -171,7 +216,7 @@ list(
                                    name = "games_imputed",
                                    versioned = T,
                                    tags = c("data", "averageweight", "hurdle"))),
-           tar_target(gcs_pin_games_predicted,
+        tar_target(gcs_pin_games_predicted,
                    pins::pin_write(x = games_predicted,
                                    board = gcs_board,
                                    name = "games_predicted",

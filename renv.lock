@@ -660,6 +660,20 @@
       ],
       "Hash": "f61dbaec772ccd2e17705c1e872e9e7c"
     },
+    "cereal": {
+      "Package": "cereal",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "jsonlite",
+        "rlang",
+        "tibble",
+        "vctrs"
+      ],
+      "Hash": "a87b608b2e9d7a632538803391e127b3"
+    },
     "class": {
       "Package": "class",
       "Version": "7.3-22",
@@ -3883,14 +3897,16 @@
     },
     "vetiver": {
       "Package": "vetiver",
-      "Version": "0.2.0",
+      "Version": "0.2.3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "bundle",
         "butcher",
+        "cereal",
         "cli",
+        "ellipsis",
         "fs",
         "generics",
         "glue",
@@ -3906,7 +3922,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "d65886d5900cc0260cedaf54b1bd13b3"
+      "Hash": "b10bcaa85820a57746fffce0bf54aa83"
     },
     "viridisLite": {
       "Package": "viridisLite",
