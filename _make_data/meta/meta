@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|393601d5f4b171a2|||||||||||||||
+.Random.seed|object|e49842677276e9d1|||||||||||||||
 add_users_threshold|function|1b916ca116f7d412|||||||||||||||
 average_mod|stem|61531b8b2753383a|6f99100afbf8c51a|0315caef1c776edd|-915284524||t19579.6053458271s|96bf4234c4727fa9|58923144|rds|local|vector|||7.023||
 averageweight_mod|stem|ed378251e915a759|43b2277a700816d7|0315caef1c776edd|1956730271||t19579.6055795526s|972ff1afef399813|38851190|rds|local|vector|||3.886||
@@ -9,25 +9,25 @@ bigquery_dataset|function|3a21460438c267c5|||||||||||||||
 bigquery_download_table|function|59b3d9abc8275f08|||||||||||||||
 bigquery_project_id|function|ab2314e413a7a570|||||||||||||||
 calculate_bayesaverage|function|283b99b71ce4f92a|||||||||||||||
-categorical_tables|stem|4d1b737c97808b91|fcdaae6c9cc385b6|d0f7f85bcfd82228|1833418625||t19585.770149459s|7f92ae469aa3a5f3|53826440|rds|local|vector|||73.119||
+categorical_tables|stem|b76adcd6598d7b62|fcdaae6c9cc385b6|d0f7f85bcfd82228|1833418625||t19605.6542182609s|0055c5a4b77174ad|54017251|rds|local|vector|||84.601||
 collapse_categorical|function|4bbee9340dca86e8|||||||||||||||
 control_grid|function|0c0f3f0d95950127|||||||||||||||
 control_race|function|175b7244c4a12dec|||||||||||||||
 create_workflows|function|cc8a420fe9711fd4|||||||||||||||
 data_board|stem|cfb102937f7ebe6f|0bbcfca9a1999880|c3b5fc02cdc369c1|-443891927||t19515.6873047377s|3280407603f78daf|233|rds|local|vector|||0.001||
-deployed_board|stem|e5a485ab217c9257|35a78a64382629a2|94e5662fbc4504db|-214706945||t19515.6873076523s|bed69d39d5d1de67|240|rds|local|vector|||0.246||
-end_train_year|stem|69c7f4f67f74260a|3bf3dfd50f90c133|4d8e0685211e89f0|660618931||t19579.6055797528s|b6d2e014b07bc296|51|rds|local|vector|||0||
-games|stem|80887f9d5263a5aa|4ba0b14ae3feb94b|a3d84dd2c12a9793|-1959807711||t19585.7705677447s|dfba67bee2af9aae|66953897|rds|local|vector|||0.156||
-games_imputed|stem|fc46631277eac12a|0d149b7b348c05a3|96903ea0ff7bc630|429714562||t19585.7715120742s|9726b11c8af04030|57694614|rds|local|vector|||29.602||
-games_predicted|stem|32e97ca4015e273b|72af80fd674d3a72|fc4cd927f6cf6c89|-1851031446||t19585.77181799s|8be61ad6a2950362|59247102|rds|local|vector|||17.459||
-games_processed|stem|7a8476927f4f2059|7423ba1b54d155b2|fde7b07a23bd5894|-69605428||t19585.7707532538s|409ddee1b3946ef5|56698001|rds|local|vector|||9.688||
-games_table|stem|9deb2b546469c091|372e1a236ea8d883|e379b1dc344ecbdb|2097247324||t19585.7703466557s|0fdf9393ae9daae7|13993276|rds|local|vector|||15.89||
-games_transformed|stem|875da81acef468a6|dcf4175fd8a913ec|369f7fe81ff72944|-1367738370||t19585.7704290829s|95fec29ece8db517|15374274|rds|local|vector|||3.309||
-gcs_board|stem|ed35da60a16334c9|5a55810e59f82924|94e5662fbc4504db|274385212||t19556.6406037864s|3280407603f78daf|233|rds|local|vector|||1.867||
+deployed_board|stem|e5a485ab217c9257|35a78a64382629a2|94e5662fbc4504db|-214706945||t19606.8499526187s|bed69d39d5d1de67|240|rds|local|vector|||1.797||
+end_train_year|stem|69c7f4f67f74260a|fae8656173ec675a|d7e95d3ae6c721ca|660618931||t19606.6726300538s|b6d2e014b07bc296|51|rds|local|vector|||0||
+games|stem|365f92c5bec7b784|4ba0b14ae3feb94b|74d74e1f54e126df|-1959807711||t19605.6547296096s|bdc84598a5af995d|67187118|rds|local|vector|||0.193||
+games_imputed|stem|57b7eee5e5938ca1|840a082bbec236f8|0ba3e6b72497b65b|429714562||t19606.6750053631s|345bbf3951901422|57355006|rds|local|vector|||9.089||
+games_predicted|stem|3e66e561ecb5b21a|0570a7b24773ffbd|78cab345244e1508|-1851031446||t19606.675313816s|dc90f740c2f504b1|58908715|rds|local|vector|||17.734||
+games_processed|stem|ea6259ee1e22e9bc|7423ba1b54d155b2|7a741abd6124029e|-69605428||t19605.6549656842s|864e9e8eb7fa3664|56856788|rds|local|vector|||12.25||
+games_table|stem|12f6792146f08487|372e1a236ea8d883|e379b1dc344ecbdb|2097247324||t19605.6544498323s|a068fe603aa17b1a|14007095|rds|local|vector|||18.547||
+games_transformed|stem|c747b10627b266e8|dcf4175fd8a913ec|1b53ef277778f533|-1367738370||t19605.6545404811s|62f1dd6faad0933e|15425401|rds|local|vector|||2.775||
+gcs_board|stem|ed35da60a16334c9|5a55810e59f82924|94e5662fbc4504db|274385212||t19606.8499535893s|3280407603f78daf|233|rds|local|vector|||0.072||
 gcs_bucket|function|faa69fdd01b33815|||||||||||||||
-gcs_pin_games|stem|5e3db76747f45a53|97f418fc897441c3|d9972e9558fe7a86|1680813335||t19585.7710586786s|e0224cf10db1a05d|62|rds|local|vector|||14.509||
-gcs_pin_games_imputed|stem|ec41b19d63ed8493|625c76dfdf36c4ff|3e562f02ee752b28|2079599502||t19585.7719251384s|1d635f53cb385f1d|65|rds|local|vector|||9.236||
-gcs_pin_games_predicted|stem|5f4ce3dc82309f10|81efcb736cc0fba1|da2867d857cc382e|801612116||t19585.7721917553s|425d385953b3c542|67|rds|local|vector|||9.507||
+gcs_pin_games|stem|5e3db76747f45a53|97f418fc897441c3|457dd28a2fd8ecf3|1680813335||t19605.6558600653s|e0224cf10db1a05d|62|rds|local|vector|||61.906||
+gcs_pin_games_imputed|stem|ec41b19d63ed8493|625c76dfdf36c4ff|0b0a03a4d13a6db0|2079599502||t19606.6760025443s|1d635f53cb385f1d|65|rds|local|vector|||52.992||
+gcs_pin_games_predicted|stem|5f4ce3dc82309f10|81efcb736cc0fba1|7008a8aec41759ca|801612116||t19606.6766892517s|425d385953b3c542|67|rds|local|vector|||52.507||
 get_allow_games_publishers|function|1cff02703031fa60|||||||||||||||
 get_filtered_games_families|function|3baf198007db81ff|||||||||||||||
 get_gcs_board|function|03d7eb1f5be6c82c|||||||||||||||
@@ -37,13 +37,23 @@ impute_hurdle|function|79e88c1610034fd3|||||||||||||||
 linear_models|function|da40c48ba42ed58a|||||||||||||||
 load_categorical_tables|function|2da8c417b9f74b11|||||||||||||||
 load_table|function|077b5b9854ecd78d|||||||||||||||
-local_pin_games|stem|0c96c9200666ccc3|8b42f9cc6c00e42d|14bc88f67432602b|140269151||t19585.7708907072s|9064907978062c20|56|rds|local|vector|||11.854||
-local_pin_games_imputed|stem|ec41b19d63ed8493|2113b7c458d65327|aa0b2ab87738cd3a|1706757586||t19585.7720015358s|1d635f53cb385f1d|65|rds|local|vector|||6.597||
-local_pin_games_predicted|stem|5f4ce3dc82309f10|9a390e6eff3472ce|37ef33bbc657cbd7|1690430988||t19585.7720816885s|425d385953b3c542|67|rds|local|vector|||6.922||
+local_pin_games|stem|0c96c9200666ccc3|8b42f9cc6c00e42d|bb608d3cdf68c462|140269151||t19605.6551434971s|9064907978062c20|56|rds|local|vector|||15.333||
+local_pin_games_imputed|stem|ec41b19d63ed8493|2113b7c458d65327|df9b810acd3bae9e|1706757586||t19606.6753891733s|1d635f53cb385f1d|65|rds|local|vector|||6.491||
+local_pin_games_predicted|stem|5f4ce3dc82309f10|9a390e6eff3472ce|281ca312b13ea774|1690430988||t19606.67608149s|425d385953b3c542|67|rds|local|vector|||6.817||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
+model_hurdle_vetiver|stem|3737553fe7d83b92|cd12ab58acb72b80|b654421aa3faddf4|1577124072||t19606.671782404s|24e9933981d1d2a9|122996153|rds|local|vector|||3.355|1m22mThere is no lockfile stored with 34mhurdle_vetiver39m36mℹ39m Use check_renv  TRUE when you save your model to your board|
+model_vetiver_average_|stem|a3654f6834d94cf4|048690cce48ea5f6|6305ab31e0648723|897235272||t19606.672538295s|beddbdc8757d2747|59378942|rds|local|vector|||24.458|1m22mThere is no lockfile stored with 34mvetiver_average_39m36mℹ39m Use check_renv  TRUE when you save your model to your board|
+model_vetiver_averageweight_|stem|66d70161e13592cc|492715f2f48b4332|b378edb54f97d716|194922305||t19606.6726298874s|9d19de0b40e8d91b|39212615|rds|local|vector|||3.578|1m22mThere is no lockfile stored with 34mvetiver_averageweight_39m36mℹ39m Use check_renv  TRUE when you save your model to your board|
+model_vetiver_usersrated|stem|cc2746450ae9ed28|3eb33d0381119427|63e655b37e3b20da|940718806||t19606.6721795116s|a6e33511aebdaec8|60244917|rds|local|vector|||27.627|1m22mThere is no lockfile stored with 34mvetiver_usersrated39m36mℹ39m Use check_renv  TRUE when you save your model to your board|
 pin_games|stem|0c96c9200666ccc3|8b42f9cc6c00e42d|effe5d2617088bde|709346005||t19556.6222779971s|9064907978062c20|56|rds|local|vector|||11.39||
 pin_games_imputed|stem|ec41b19d63ed8493|2113b7c458d65327|bcce5811dd03285c|1183981462||t19556.6223501669s|1d635f53cb385f1d|65|rds|local|vector|||6.233||
+pin_load_hash|function|7858ac836c79785a|||||||||||||||
+pin_load_version|function|e11fe2047f829492|||||||||||||||
+pin_version_hurdle_vetiver|stem|49c9580ea1727b71|45274396abaf79df|4d188abb3837240e|775615008||t19606.849955473s|36500b95d6893aee|74|rds|local|vector|||0.16||
+pin_version_vetiver_average_|stem|5fb2e942e1dee43f|3e89a2483403b0c1|4d188abb3837240e|-253549371||t19606.8499590239s|36500b95d6893aee|74|rds|local|vector|||0.154||
+pin_version_vetiver_averageweight_|stem|3a242ffce557b8ef|aae14b605bde58b2|4d188abb3837240e|-143450598||t19606.8499607025s|36500b95d6893aee|74|rds|local|vector|||0.143||
+pin_version_vetiver_usersrated|stem|99f8137d4ff75bce|2f4b6b5b2e246031|4d188abb3837240e|-1730903575||t19606.8499572159s|36500b95d6893aee|74|rds|local|vector|||0.149||
 predict_average|function|fbd9582b3ff31658|||||||||||||||
 predict_hurdle|function|1e544218d942ac1b|||||||||||||||
 predict_sim|function|ac7b02cc939ab133|||||||||||||||

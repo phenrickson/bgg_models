@@ -22,8 +22,6 @@ By analyzing a user's collection and training a predictive model, I am able to a
 
 ```{r knitr setup, include =F}
 
-source(here::here("src", "reports", "knitr_settings.R"))
-
 set_knitr_options()
 
 theme_bgg = theme_bgg() +
@@ -42,8 +40,7 @@ How many games has `r get_username()` owned/rated/played?
 ```{r owned plot}
 
 get_collection() %>%
-        collection_owned_plot()+
-        theme(plot.title = element_text(vjust=2))
+        collection_owned_plot()
 ```
 
 ## Collection
