@@ -1,3 +1,48 @@
+pivot_predictions = function(data) {
+        
+        temp =
+                data %>%
+                select(game_id, name, yearpublished,
+                       average, averageweight, bayesaverage, log_usersrated,
+                       starts_with(".pred"),
+                       -any_of(".pred_hurdle"))
+        
+        actual = 
+                data %>%
+                select(game_id,
+                       name,
+                       yearpublished,
+                       average,
+                       averageweight,
+                       bayesaverage,
+                       usersrated) %>%
+                pivot_longer(
+                        cols = -c(game_id, name, yearpublished),
+                        values_to = c("current"),
+                        names_to = c("variable")
+                )
+        
+        predictions = 
+                data %>%
+                select(game_id,
+                       name,
+                       yearpublished,
+                       starts_with(".pred"),
+                       -any_of(".pred_hurdle")) %>%
+                pivot_longer(
+                        cols = starts_with(".pred_"),
+                        values_to = c("estimated"),
+                        names_to = c("variable"),
+                        names_prefix = ".pred_"
+                )
+        
+        actual %>%
+                left_join(predictions,
+                          by = join_by(game_id, name, yearpublished, variable)
+                )
+        
+}
+
 make_bgg_link = function(game_id) {
         
         paste0("https://boardgamegeek.com/boardgame/",
@@ -13,7 +58,8 @@ make_predictions_gt_table = function(predictions,
                                      outcome = bgg_outcomes(),
                                      game_data = games,
                                      top_n = 10,
-                                     description_length = 400,
+                                     rank_by = .pred_bayesaverage,
+                                     description_length = 300,
                                      ...) {
         
         require(gt)
@@ -60,6 +106,7 @@ make_predictions_gt_table = function(predictions,
                 
                 data %>%
                         left_join(., game_data %>%
+                                          unnest(descriptions) %>%
                                           select(game_id, description),
                                   by = c("game_id"))
                 
@@ -74,7 +121,7 @@ make_predictions_gt_table = function(predictions,
                 # make bgg links
                 mutate(link = make_bgg_link(game_id)) %>%
                 # arrange
-                arrange(desc(.pred_bayesaverage)) %>%
+                arrange(desc( {{rank_by}} )) %>%
                 head(top_n) %>%
                 # sort
                 mutate(
@@ -84,10 +131,10 @@ make_predictions_gt_table = function(predictions,
                         description,
                         published = yearpublished,
                         id = game_id,
-                        complexity = round(.pred_averageweight,1),
-                        ratings = .pred_usersrated,
-                        average = round(.pred_average, 1),
-                        geek = round(.pred_bayesaverage, 1),
+                        `Average Weight` = round(.pred_averageweight,1),
+                        `User Ratings` = .pred_usersrated,
+                        `Average Rating` = round(.pred_average, 1),
+                        `Geek Rating` = round(.pred_bayesaverage, 1),
                         link,
                         .keep = 'none') %>%
                 # make link
@@ -104,13 +151,98 @@ make_predictions_gt_table = function(predictions,
                 cols_hide(columns = c(id, link)) %>%
                 gt_img_rows(columns = image, height = 100) %>%
                 cols_align(
-                        columns = c(published, rank, image, geek, average, complexity, ratings),
+                        columns = c(published, rank, image, "Average Weight", "Average Rating", "Geek Rating", "User Ratings"),
                         align = "center"
                 ) %>%
                 cols_align(
                         columns = c("description", "game"),
                         align = "left"
                 ) %>%
+                # geek color
+                data_color(
+                        columns = c("Geek Rating"),
+                        method = "bin",
+                        na_color = "dodgerblue2",
+                        bins = c(5, 5.5, 6, 6.5, 7, 7.5, 8),
+                        autocolor_text = T,
+                        palette = c("white", "dodgerblue2")
+                )  %>%
+                # average color
+                data_color(
+                        columns = c("Average Rating"),
+                        method = "bin",
+                        na_color = "dodgerblue2",
+                        bins = c(1, 3, 4, 5, 6, 6.5, 7, 7.5, 8, 8.5, 9),
+                        autocolor_text = T,
+                        palette = c("red", "white", "dodgerblue2")
+                )  %>%
+                # ratings color
+                data_color(
+                        columns = c("User Ratings"),
+                        method = "bin",
+                        na_color = "dodgerblue2",
+                        bins = c(0, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000),
+                        autocolor_text = T,
+                        palette = c("white", "dodgerblue2")
+                )  %>%
+                # ratings color
+                data_color(
+                        columns = c("Average Weight"),
+                        method = "bin",
+                        na_color = 'orange',
+                        autocolor_text = T,
+                        domain = c(1, 5),
+                        palette = c("white", "orange")
+                )  %>%
+                # set columns
+                cols_move(
+                        columns = c("rank", "published", "image", "game", "description", "Average Weight", "User Ratings", "Average Rating", "Geek Rating"),
+                        after = "rank"
+                ) %>%
+                cols_move(
+                        columns = c("published"),
+                        after = "rank"
+                ) %>%
+                set_gt_theme() %>%
+                set_gt_tab_options() %>%
+                cols_width(
+                        "image" ~ px(150),
+                        "game" ~ px(100),
+                        "description" ~ px(300),
+                        "published" ~ px(100),
+                        "rank" ~ px(50),
+                        "published" ~ px(50),
+                        #    ends_with("r") ~ px(100),
+                        everything() ~ px(50)
+                ) %>%
+                cols_hide(published) %>%
+                tab_spanner(
+                        label = "Estimated",
+                        columns = c("Average Weight", "User Ratings", "Average Rating", "Geek Rating"),
+                ) %>%
+                tab_options(
+                        heading.align = "left",
+                        column_labels.border.top.style = "none", 
+                        table.border.top.style = "none",
+                        column_labels.border.bottom.style = "none", 
+                        column_labels.border.bottom.width = 1,
+                        column_labels.border.bottom.color = "#334422", 
+                        table_body.border.top.style = "none", 
+                        table_body.border.bottom.color = "white",
+                        heading.border.bottom.style = "none",
+                        data_row.padding = px(7)
+                )
+        
+}
+
+
+add_outcomes_color_gt = function(gt,
+                                 geek,
+                                 average,
+                                 ratings,
+                                 complexity) {
+        
+        gt %>%
                 # geek color
                 data_color(
                         columns = c(geek),
@@ -125,7 +257,7 @@ make_predictions_gt_table = function(predictions,
                         columns = c(average),
                         method = "bin",
                         na_color = "dodgerblue2",
-                        bins = c(1, 3, 4, 5, 6, 6.5, 7, 7.5, 8, 8.5, 9),
+                        bins = c(3, 4, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9),
                         autocolor_text = T,
                         palette = c("red", "white", "dodgerblue2")
                 )  %>%
@@ -138,7 +270,7 @@ make_predictions_gt_table = function(predictions,
                         autocolor_text = T,
                         palette = c("white", "dodgerblue2")
                 )  %>%
-                # ratings color
+                # weight
                 data_color(
                         columns = c(complexity),
                         method = "bin",
@@ -146,27 +278,7 @@ make_predictions_gt_table = function(predictions,
                         autocolor_text = T,
                         domain = c(1, 5),
                         palette = c("white", "orange")
-                )  %>%
-                # set columns
-                cols_move(
-                        columns = c("rank", "published", "image", "game", "description"),
-                        after = "rank"
-                ) %>%
-                cols_move(
-                        columns = c("published"),
-                        after = "rank"
-                ) %>%
-                set_gt_theme() %>%
-                set_gt_tab_options() %>%
-                cols_width(
-                        "image" ~ px(150),
-                        "game" ~ px(100),
-                        "description" ~ px(400),
-                        "published" ~ px(100),
-                        #    ends_with("r") ~ px(100),
-                        everything() ~ px(50)
                 )
-        
 }
 
 
@@ -465,6 +577,7 @@ newdata_longer = function(newdata_objs) {
 plot_explain = 
         function(prepped_explain,
                  order_by ='pos',
+                 ...,
                  width = 30) {
                 
                 plot = 
@@ -496,7 +609,7 @@ plot_explain =
                         facet_wrap(
                                 prediction_label ~.,
                                 scales = "free",
-                                ncol = 2
+                                ...
                         )+
                         # set the color
                         scale_fill_gradient2(low = "red",

@@ -1,0 +1,476 @@
+---
+title: "Predicting Upcoming Board Games"
+author: "Phil Henrickson"
+date: "`r Sys.Date()`"
+output: html_document
+runtime: shiny
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = F)
+
+```
+
+
+```{r}
+
+add_gt_predictions_header = function(gt,
+                                  title = 'Top Upcoming Games',
+                                  subtitle = 
+                                           paste('Displaying estimated BoardGameGeek ratings for upcoming board games. Games ranked based on estimated geek rating, which is a combination of their estimated average rating and estimated number of user ratings. Predictions from models trained on games released through', end_train_year),
+                                  ...) {
+        
+        gt %>%
+        gt::tab_header(
+                title,
+                subtitle
+        )
+}
+
+```
+
+# Top Games
+
+Which upcoming board games are expected to be highly rated on BoardGameGeek (BGG)? I trained a series predictive models on historical games in order to estimate how the BGG community is likely to rate upcoming games. The following tables display predictions from those models, sorting games based on their estimated BGG (geek) rating.
+
+For more details...
+
+## Overall
+
+```{r}
+
+games_predicted %>%
+        filter(yearpublished > end_train_year) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        )
+        # ) %>%
+        # add_gt_predictions_header()
+
+```
+
+
+## `r end_train_year + 1`
+
+```{r predictions t plus 1}
+
+games_predicted %>%
+        filter(yearpublished == end_train_year+1) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        ) 
+# %>%
+#         add_gt_predictions_header(
+#                 title = paste('Top Upcoming Games', end_train_year +1, sep = " - ")
+#         )
+
+```
+
+## `r end_train_year +2`
+
+```{r predictions t plus 2}
+
+games_predicted %>%
+        filter(yearpublished == end_train_year+2) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        ) %>%
+        add_gt_predictions_header(
+                title = paste('Top Upcoming Games', end_train_year +2, sep = " - ")
+        )
+
+```
+
+## `r end_train_year + 3`
+        
+```{r predictions t plus 3}
+
+games_predicted %>%
+        filter(yearpublished == end_train_year+3) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        )
+# %>%
+#         add_gt_predictions_header(
+#                 title = paste('Top Upcoming Games', end_train_year +3, sep = " - ")
+#         )
+```
+        
+
+# Top Games by Category
+
+## Economic
+
+```{r economic}
+
+games_predicted %>%
+        filter(yearpublished > end_train_year) %>%
+        filter(game_id %in%
+                       (
+                               games %>%
+                                       select(game_id, name, categories) %>%
+                                       unnest(categories)  %>%
+                                       filter(value == 'Economic') %>%
+                                       pull(game_id)
+                       )
+        ) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        ) %>%
+        add_gt_predictions_header(
+                title = 'Top Upcoming Economic Games',
+                subtitle = ''
+        )
+
+```
+
+## War
+
+```{r war}
+
+games_predicted %>%
+        filter(yearpublished > end_train_year) %>%
+        filter(game_id %in%
+                       (
+                               games %>%
+                                       select(game_id, name, categories) %>%
+                                       unnest(categories)  %>%
+                                       filter(value == 'Wargame') %>%
+                                       pull(game_id)
+                       )
+        ) %>%
+        make_predictions_gt_table(
+                predictions =.,
+                game_data = games,
+                top_n = 25
+        ) %>%
+        add_gt_predictions_header(
+                title = 'Top Upcoming War Games',
+                subtitle = ''
+        )
+
+```
+
+<!-- ### Abstract -->
+
+<!-- ```{r abstract } -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Abstract Strategy') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Abstract Games', -->
+<!--                 subtitle = '' -->
+<!--         ) -->
+
+
+<!-- ``` -->
+
+<!-- ### Party -->
+
+<!-- ```{r party} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Party Game') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Party Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+<!-- ### Dexterity -->
+
+<!-- ```{r dexterity} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Action / Dexterity') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Action / Dexterity' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+<!-- ### Two Player -->
+
+<!-- ```{r two player} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, families) %>% -->
+<!--                                        unnest(families)  %>% -->
+<!--                                        filter(family_value == 'Two Player Only Games') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Two Player Only Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+
+<!-- ### Card -->
+
+<!-- ```{r} -->
+
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Card Game') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Card Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+<!-- ### Dice -->
+
+<!-- ```{r} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Dice') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Dice Games' -->
+<!--         ) -->
+
+
+<!-- ``` -->
+
+
+<!-- ## Genre -->
+
+<!-- ### Fantasy -->
+
+<!-- ```{r fantasy} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Fantasy') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Fantasy Games' -->
+<!--         ) -->
+
+
+<!-- ``` -->
+
+
+<!-- ### Science Fiction -->
+
+<!-- ```{r sci fi} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Science Fiction') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Science Fiction Games' -->
+<!--         ) -->
+
+
+<!-- ``` -->
+
+<!-- ### Adventure -->
+
+<!-- ```{r adventure} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Adventure') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Adventure Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+<!-- ### Miniatures -->
+
+<!-- ```{r} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, families) %>% -->
+<!--                                        unnest(families)  %>% -->
+<!--                                        filter(family_value == 'Miniatures') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Miniatures Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+
+
+
+
+<!-- ### Racing -->
+
+<!-- ```{r} -->
+
+<!-- games_predicted %>% -->
+<!--         filter(yearpublished > end_train_year) %>% -->
+<!--         filter(game_id %in% -->
+<!--                        ( -->
+<!--                                games %>% -->
+<!--                                        select(game_id, name, categories) %>% -->
+<!--                                        unnest(categories)  %>% -->
+<!--                                        filter(value == 'Racing') %>% -->
+<!--                                        pull(game_id) -->
+<!--                        ) -->
+<!--         ) %>% -->
+<!--         make_predictions_gt_table( -->
+<!--                 predictions =., -->
+<!--                 game_data = games, -->
+<!--                 top_n = 25 -->
+<!--         ) %>% -->
+<!--         add_gt_predictions_header( -->
+<!--                 title = 'Top Upcoming Racing Games' -->
+<!--         ) -->
+
+<!-- ``` -->
+
+<!-- # All Predictions -->
+
+<!-- ```{r} -->
+
+
+
+
+
+<!-- ``` -->
+

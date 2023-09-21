@@ -19,7 +19,6 @@ tar_option_set(packages = c("bigrquery",
                             "googleCloudStorageR",
                             "bggUtils"))
 
-
 # tar_make_clustermq() configuration (okay to leave alone):
 options(clustermq.scheduler = "multicore")
 
