@@ -221,6 +221,18 @@ prep_playercounts = function(data) {
                                       paste(collapse = ",")))
 }
 
+prep_playingtime = function(data) {
+        
+        data %>%
+        mutate(playingtime = case_when(playingtime < 15 ~ '<15',
+                                       playingtime < 30 ~ '<30',
+                                       playingtime >= 30 & playingtime <= 60 ~ '30-60',
+                                       playingtime > 60 & playingtime <= 120 ~ '61-120',
+                                       playingtime > 121 & playingtime <= 180 ~ '121-180',
+                                       playingtime > 180 ~ '180+',
+                                       TRUE ~ as.character(playingtime)))
+}
+
 prep_collection_table = function(collection = get_collection() %>%
                                          filter(own == 'yes'),
                                  game_data = games_info,
@@ -486,6 +498,36 @@ make_web_image =
                 ) 
                 
         }
+
+
+add_game_image = function(data,
+                          info,
+                          filter = T,
+                          ...) {
+        
+        game_image = 
+                data %>%
+                left_join(., info %>%
+                                  select(game_id, images) %>%
+                                  unnest(images) %>%
+                                  select(game_id, thumbnail) %>%
+                                  rename(image = thumbnail),
+                          by = c("game_id"))
+        
+        if (filter == T) {
+                
+                game_image %>%
+                        filter(!is.na(image))
+                
+        } 
+        else {
+                
+                game_image
+        }
+        
+        
+}
+
 
 
 # make tables with game picture and description

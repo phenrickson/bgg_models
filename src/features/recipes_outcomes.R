@@ -256,11 +256,11 @@ add_normalize = function(recipe) {
 
 # add pca
 add_pca = function(recipe,
-                   my_threshold = .75) {
+                   ...) {
         
         recipe %>%
                 step_pca(all_numeric_predictors(),
-                         threshold = my_threshold)
+                         ...)
 }
 
 # add corr

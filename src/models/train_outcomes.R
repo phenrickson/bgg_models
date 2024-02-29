@@ -436,6 +436,28 @@ calculate_bayesaverage = function(data, ratings = 2000) {
                 )
 }
 
+predict_outcomes = function(data,
+                                averageweight_workflow,
+                                average_workflow,
+                                usersrated_workflow) {
+        
+        data %>%
+                impute_averageweight(
+                        fit = averageweight_workflow
+                ) %>%
+                mutate(.pred_hurdle = NA) %>%
+                mutate(bayesaverage = replace_na(bayesaverage, 5.5)) %>%
+                predict_average(
+                        workflow = average_workflow
+                ) %>%
+                predict_usersrated(
+                        workflow = usersrated_workflow
+                ) %>%
+                calculate_bayesaverage() %>%
+                mutate(.pred_averageweight = est_averageweight) 
+
+}
+
 predict_average = function(data,
                            workflow) {
         
