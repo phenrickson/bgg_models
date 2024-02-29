@@ -28,22 +28,33 @@ library(gtExtras)
 
 # data --------------------------------------------------------------------
 
-tar_load(
-        games_imputed
-)
+# games with imputed complexity
+games_imputed =
+        pins::pin_read(
+                board = get_gcs_board('data'),
+                name = "games_imputed"
+        )
 
-tar_load(
-        end_train_year
-)
+# games with all bgg info
+games = 
+        pins::pin_read(
+                board = get_gcs_board('data'),
+                name = "games_info"
+        )
 
-tar_load(
-        games
-)
+# predictions
+games_predicted = 
+        pins::pin_read(
+                board = get_gcs_board('data'),
+                name = "games_predicted"
+        )
 
-tar_load(
-        games_predicted
-)
-
+# end_train_year
+end_train_year = 
+        games_predicted %>%
+        filter(type == 'training') %>%
+        summarize(year = max(yearpublished)) %>%
+        pull(year)
 
 # models ------------------------------------------------------------------
 
@@ -69,8 +80,8 @@ explain_usersrated =
         ) %>%
         extract_vetiver_workflow_objects()
 
-# recipes -----------------------------------------------------------------
 
+# recipes -----------------------------------------------------------------
 
 # training
 training = 
@@ -247,7 +258,7 @@ compare_games_raw =
         left_join(.,
                   games_imputed %>%
                           select(game_id, name)
-                  ) %>%
+        ) %>%
         select(game_id, name, yearpublished, everything())
 
 # features to use in comparing
@@ -273,32 +284,32 @@ compare_games =
                           select(game_id, name)
         ) %>%
         select(game_id, name, yearpublished, any_of(compare_features))
-
-# compare PCA
-compare_recipe_pca =
-        compare_recipe %>%
-        add_normalize() %>%
-        add_pca(
-                threshold = 0.50,
-                keep_original_cols = F,
-                id = 'pca') %>%
-        prep(retain = T)
-
-# bake with PCA
-compare_games_pca = 
-        compare_recipe_pca %>%
-        bake(
-                bind_rows(training,
-                          upcoming
-                )
-        ) %>%
-        select(-name) %>%
-        # add in names
-        left_join(.,
-                  games_imputed %>%
-                          select(game_id, name)
-        ) %>%
-        select(game_id, name, yearpublished, starts_with("PC"))
+# 
+# # compare PCA
+# compare_recipe_pca =
+#         compare_recipe %>%
+#         add_normalize() %>%
+#         add_pca(
+#                 threshold = 0.50,
+#                 keep_original_cols = F,
+#                 id = 'pca') %>%
+#         prep(retain = T)
+# 
+# # bake with PCA
+# compare_games_pca = 
+#         compare_recipe_pca %>%
+#         bake(
+#                 bind_rows(training,
+#                           upcoming
+#                 )
+#         ) %>%
+#         select(-name) %>%
+#         # add in names
+#         left_join(.,
+#                   games_imputed %>%
+#                           select(game_id, name)
+#         ) %>%
+#         select(game_id, name, yearpublished, starts_with("PC"))
 
 # run game report
 rmarkdown::run(here::here("shiny", "build_game_report.Rmd"), shiny_args = list(port = 8241))

@@ -33,7 +33,8 @@ tar_source(here::here("src", "data", "connect_to_gcs_boards.R"))
 tar_source(here::here("src", "data", "load_games.R"))
 tar_source(here::here("src", "features", "preprocess_games.R"))
 tar_source(here::here("src", "models", "train_outcomes.R"))
-
+tar_source(here::here("src", "reports", "user_collection_report.R"))
+tar_source(here::here("src", "reports", "outcome_reports.R"))
 
 pin_load_hash = function(board, name) {
         
@@ -221,5 +222,11 @@ list(
                                    name = "games_predicted",
                                    versioned = T,
                                    tags = c("data", "averageweight", "average", "usersrated", "bayesaverage")))
+        # reports
+        # top predictions for 
+        # tar_render(
+        #         name = report_upcoming_predictions,
+        #         path = here::here("notebooks", "upcoming_predictions.Rmd")
+        # )
         
 )

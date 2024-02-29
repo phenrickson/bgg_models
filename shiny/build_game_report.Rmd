@@ -36,7 +36,8 @@ select_data =
                 ),
                 selected = 'Upcoming Releases',
                 justified = TRUE,
-                width = "400px"
+                width = "400px",
+                status = 'primary'
         )
 
 datasetInput <-
@@ -68,7 +69,8 @@ select_game =
                                                     pull(name),
                                             multiple = F,
                                             options = pickerOptions(container = "body",
-                                                                    liveSearch = TRUE),
+                                                                    liveSearch = TRUE,
+                                                                    style = "btn-primary"),
                                             width = "100%",
                                             choicesOpt = list(
                                                     subtext =
@@ -92,7 +94,8 @@ select_game =
                                                     pull(name),
                                             multiple = F,
                                             options = pickerOptions(container = "body",
-                                                                    liveSearch = TRUE),
+                                                                    liveSearch = TRUE,
+                                                                    style = "btn-primary"),
                                             width = "100%",
                                             choicesOpt = list(
                                                     subtext =
@@ -159,23 +162,27 @@ First, select whether you want to examine upcoming or newly released games (publ
 # display options for data and game
 renderUI({
         fluidRow(
-                select_data,
+                column(
+                        width = 4,
+                        select_data
+                )
         )
-        
 })
 
 ```
 
-Next, select a game to examine its predicted ratings and nearest neighbors on BGG.
+Next, select a game to examine its predicted ratings and nearest neighbors on BGG. Upcoming releases are sorted by expected geek rating, while published games are sorted based on their current geek rating.
 
 ```{r}
 
 # display options for data and game
 renderUI({
         fluidRow(
-                select_game()
+                    column(
+                        width = 4,
+                        select_game()
+                )
         )
-        
 })
 
 ```
@@ -188,9 +195,9 @@ input_button =
                      label = "Update Number",
                      style='padding:20px; font-size:90%')
 
-# select_data
+# select metric
 select_metric = 
-        selectInput("metric",
+        pickerInput("metric",
                     label = 'Distance Metric',
                     choices = c("euclidean",
                                 "manhattan",
@@ -200,15 +207,26 @@ select_metric =
                                 #    "hamming"
                     ),
                     multiple = F,
-                    selected = c("canberra")
+                    selected = c("canberra"),
+                    options = pickerOptions(
+                            container = "body",
+                            style = "btn-primary"
+                    )
         )
 
 select_neighbors = 
-        numericInput("top_neighbors",
-                     label = 'Number of Neighbors:',
-                     15,
-                     min = 1,
-                     max = 100)
+        sliderTextInput(
+                "top_neighbors",
+                label = "Number of Neighbors:",
+                choices = c(5, 10, 15, 25, 50, 100, 250),
+                grid =F,
+                selected = 15
+        )
+        # numericInput("top_neighbors",
+        #              label = 'Number of Neighbors:',
+        #              15,
+        #              min = 1,
+        #              max = 100)
 
 select_contributors = 
         numericInput("top_contributors",
@@ -234,8 +252,6 @@ selected_top_contributors =
                 },
                 ignoreNULL = FALSE
         )
-
-
 
 selected_metric = 
         eventReactive(

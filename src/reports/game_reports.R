@@ -53,7 +53,7 @@ make_game_profile_gt =
                         cols_hide(c(game_id, yearpublished, link)) %>%
                         cols_move(columns = everything(),
                                   after = "image") %>%
-                        gt_img_rows(columns = image, height = 150) %>%
+                        gt_img_rows(columns = image, height = 200) %>%
                         set_gt_theme() %>%
                         sub_missing(
                                 columns = everything(),
@@ -64,9 +64,9 @@ make_game_profile_gt =
                                 columns = -c("name"),
                                 align = "center"
                         ) %>%
-                        cols_width(
-                                "image" ~ px(150)
-                        ) %>%
+                        # cols_width(
+                        #         "image" ~ px(200)
+                        # ) %>%
                         tab_options(table.font.size = 14)
         }
 
