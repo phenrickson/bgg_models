@@ -1,0 +1,117 @@
+---
+title: "Results"
+author: 
+- "`r system('git config user.name', intern = T)`"
+- "`r system('git symbolic-ref --short HEAD', intern = T)`"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r init, include=FALSE}
+
+knitr::opts_chunk$set(echo = F,
+                      fig.align = 'center')
+
+```
+
+```{r load predictions}
+
+# try to load that in?
+prediction_names = 
+        targets::tar_meta(names = starts_with("predictions_")) |>
+        pull(name)
+
+# load predictions
+tar_load(targets::contains(prediction_names))
+
+predictions = mget(ls(pattern = "predictions_")) |>
+        bind_rows()
+
+```
+
+# Models
+
+Show models that have been run.
+
+```{r show models}
+
+targets::tar_meta(
+        names = contains("_model_")
+) |>
+        filter(name != 'extract_model_name') |>
+        rmarkdown::paged_table()
+
+```
+
+
+# Predictions {.tabset}
+
+## Plot
+
+Show predictions, filtering to games that achieved a number of ratings.
+
+```{r plot predictions filtered, echo=FALSE, message =F, warning = F}
+
+predictions |>
+        filter(usersrated >= 25) |>
+        pivot_outcomes() |>
+        plot_predictions()
+
+```
+
+## Table
+
+```{r show predictions table}
+
+library(reactable)
+predictions |>
+        table_predictions(filterable = T)
+
+```
+
+# Metrics {.tabset}
+
+## Filtered
+
+```{r assess predictions by year filtered}
+
+reg_metrics = tar_read(reg_metrics)
+
+predictions |>
+        filter(usersrated >= 25) |>
+        pivot_outcomes() |>
+        group_by(yearpublished, outcome) |>
+        assess_outcomes(
+                metrics = reg_metrics
+        ) |>
+        select(-.estimator) |>
+        mutate_if(is.numeric, round, 3) |>
+        pivot_wider(
+                names_from = '.metric',
+                values_from = '.estimate') |>
+        reactable()
+
+```
+
+## All
+
+```{r assess metrics for all games}
+
+predictions |>
+        pivot_outcomes() |>
+        group_by(yearpublished, outcome) |>
+        assess_outcomes(
+                metrics = reg_metrics
+        ) |>
+        select(-.estimator) |>
+        mutate_if(is.numeric, round, 3) |>
+        pivot_wider(
+                names_from = '.metric',
+                values_from = '.estimate'
+        ) |>
+        reactable()
+
+```
+
+
+
