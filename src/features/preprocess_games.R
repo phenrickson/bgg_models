@@ -1,195 +1,180 @@
-# packages:
+preprocess_bgg_games = function(data,
+                                publisher_allow = publisher_allow_list(),
+                                families_allow = families_allow_list(),
+                                families_remove = families_remove_list()
+) {
 
-# tidyverse
-# bggUtils
+        keep_links = paste0("boardgame", c("category", "mechanic", "designer", "artist", "publisher"))
 
-#' Applies all previous functions to nested table
-#' 
-preprocess_games = function(data) {
-        
-        data %>%
-                # collapse categorical variables
-                process_categorical() %>%
-                # select variables to keep
-                select(game_id,
-                       name,
-                       bgg_info,
-                       bgg_outcomes,
-                       bgg_community,
-                       images,
-                       descriptions,
-                       categories,
-                       mechanics,
-                       families,
-                       designers,
-                       artists,
-                       publishers,
-                       load_ts
-                ) %>%
-                # unnest bgg info
-                unnest(c(bgg_info,
-                         bgg_outcomes,
-                         bgg_community,
-                         images,
-                         descriptions)) %>%
-                # make logged usersrated
-                mutate(log_usersrated = log(usersrated))
-        
-}
-
-#' Takes values from nested cateogorical variables
-#' in nested games data and collapses the value for tokenization via textrecipes
-#' 
-#' 
-#' Uses abbreviate_text for abbreviation
-#' Collapses using a simple comma
-#' applies filtering for publishers and families
-collapse_categorical = function(data,
-                                var) {
-        
-        var = ensym(var)
-        
-        var_name = enexpr(var)
-        
-        if (var_name == 'publishers') {
-                
-                message("filtering to selected publishers...")
-                
-                data %>%
-                        select(-!!var) %>%
-                        left_join(.,
-                                  # collapse value within nested var
-                                  data %>%
-                                          select(game_id, !!var) %>%
-                                          unnest(!!var) %>%
-                                          # filter
-                                          filter(value %in% get_allow_games_publishers(data)) %>%
-                                          # abbreviate
-                                          mutate(value = clean_text(value)) %>%
-                                          # collapse
-                                          group_by(game_id) %>%
-                                          summarize(!!var := paste(value, collapse = ", "),
-                                                    .groups = 'drop'),
-                                  by = c("game_id")
-                        )
-        } else if (var_name == 'families') {
-                
-                message("removing selected bgg families...")
-                
-                data %>%
-                        select(-!!var) %>%
-                        left_join(.,
-                                  # collapse value within nested var
-                                  data %>%
-                                          select(game_id, !!var) %>%
-                                          unnest(!!var) %>%
-                                          # filter
-                                          filter(!(value %in% get_filtered_games_families(data))) %>%
-                                          # abbreviate
-                                          mutate(value = clean_text(value)) %>%
-                                          # collapse
-                                          group_by(game_id) %>%
-                                          summarize(!!var := paste(value, collapse = ", "),
-                                                    .groups = 'drop'),
-                                  by = c("game_id")
-                        )
-        } else {
-                
-                # join with original data
-                data %>%
-                        select(-!!var) %>%
-                        left_join(.,
-                                  # collapse value within nested var
-                                  data %>%
-                                          select(game_id, !!var) %>%
-                                          unnest(!!var) %>%
-                                          # abbreviate
-                                          mutate(value = clean_text(value)) %>%
-                                          # collapse
-                                          group_by(game_id) %>%
-                                          summarize(!!var := paste(value, collapse = ", "),
-                                                    .groups = 'drop'),
-                                  by = c("game_id")
-                        )
-        }
-}
-
-#' Process games for modeling by collapsing all specified categorical variables
-process_categorical = function(data) {
-        
-        message("collapsing categorical variables...")
-        
-        data %>%
-                # categories
-                collapse_categorical(.,
-                                     var = categories) %>%
-                # mechanics
-                collapse_categorical(.,
-                                     var = mechanics) %>%
-                # families
-                collapse_categorical(.,
-                                     var = families) %>%
-                # designers
-                collapse_categorical(.,
-                                     var = designers) %>%
-                # artists
-                collapse_categorical(.,
-                                     var = artists) %>%
-                # publishers
-                collapse_categorical(.,
-                                     var = publishers)
-        
-}
-
-
-#' Filter game families for modeling
-get_filtered_games_families = function(data) {
-        
-        game_families = 
-                data %>%
-                select(families) %>%
-                unnest(families) %>%
-                distinct(family_value, id, type, family_value, value)
-        
-        families_filter_table = 
-                bind_rows(
-                        # better description needed 
-                        game_families %>%
-                                filter(grepl("Admin Better Description", value)),
-                        # digital versions (leakage)
-                        game_families %>%
-                                filter(grepl("Digital Implementations", value)),
-                        # misc values (leakage)
-                        game_families %>%
-                                filter(grepl("Misc", value)),
-                        # promotional (leakage)
-                        game_families %>%
-                                filter(grepl("Promotional Implementations", value)),
-                        # upcoming
-                        game_families %>%
-                                filter(grepl("Upcoming", value)),
-                        # unreleased
-                        game_families %>%
-                                filter(grepl("Unreleased", value)),
-                        # components typically added after release
-                        game_families %>%
-                                filter(grepl("Components Game Trayzinside", value)),
-                        # specifc type of crowdfunding
-                        game_families %>%
-                                filter(grepl("Spieleschmiede|Verkami|Indiegogo", value))
+        # outcomes =
+        outcomes = data %>%
+                select(game_id, statistics) %>%
+                unnest(c(statistics), keep_empty = T) %>%
+                select(game_id, averageweight, usersrated, average, bayesaverage, numweights) %>%
+                mutate(across(
+                        c(averageweight,
+                          usersrated,
+                          average,
+                          bayesaverage),
+                        ~ ifelse(. == 0, NA, .))
                 )
-        
-        # pull remaining families
-        families_filter_table %>%
-                pull(value)
-        
+
+        # get info needed from games
+        info = data %>%
+                select(game_id, info) %>%
+                unnest(c(info), keep_empty = T) %>%
+                mutate(across(
+                        c(yearpublished,
+                          minplayers,
+                          maxplayers,
+                          playingtime,
+                          minplaytime,
+                          maxplaytime,
+                          minage),
+                        ~ ifelse(. == 0, NA, .))
+                )
+
+        # get primary name
+        names =
+                data %>%
+                select(game_id, names) %>%
+                unnest(c(names), keep_empty = T) %>%
+                filter(type == 'primary') %>%
+                select(game_id,
+                       name = value)
+
+        # extract links
+        links = data %>%
+                select(game_id, links) %>%
+                unnest(c(links), keep_empty = T) %>%
+                filter(type %in% keep_links) %>%
+                mutate(value = clean_bgg_text(value))
+
+        # get categories
+        categories =
+                links %>%
+                filter(type == 'boardgamecategory') %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = categories)
+
+        # publishers
+        publishers =
+                links %>%
+                filter(type == 'boardgamepublisher') %>%
+                filter(id %in% publisher_allow) %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = publishers)
+
+        # mechanics
+        mechanics =
+                links %>%
+                filter(type == 'boardgamemechanic') %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = mechanics)
+
+        # artists
+        artists =
+                links %>%
+                filter(type == 'boardgameartist') %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = artists)
+
+        # designers
+        designers =
+                links %>%
+                filter(type == 'boardgamedesigner') %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = designers)
+
+        # now extract bgg families
+        # general families
+        families =
+                data %>%
+                select(game_id, links) %>%
+                unnest(c(links), keep_empty = T) %>%
+                filter(type == 'boardgamefamily') %>%
+                filter(!grepl(families_remove, value)) %>%
+                filter(grepl(families_allow, value)) %>%
+                mutate(value = clean_bgg_text(value)) %>%
+                collapse_categorical(name = families)
+
+        # themes
+        themes =
+                data %>%
+                select(game_id, links) %>%
+                unnest(c(links), keep_empty = T) %>%
+                filter(type %in% 'boardgamefamily') %>%
+                filter(grepl("^Theme:", value)) %>%
+                mutate(value = gsub("^Theme: ", "", value)) %>%
+                mutate(value = clean_bgg_text(value)) %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = themes)
+
+        # specific families
+        components =
+                data %>%
+                select(game_id, links) %>%
+                unnest(c(links), keep_empty = T) %>%
+                filter(type %in% 'boardgamefamily') %>%
+                filter(grepl("^Components:", value)) %>%
+                mutate(value = gsub("^Components: ", "", value)) %>%
+                mutate(value = clean_bgg_text(value)) %>%
+                collapse_categorical(., name = components)
+
+        # mechanisms
+        mechanisms =
+                data %>%
+                select(game_id, links) %>%
+                unnest(c(links), keep_empty = T) %>%
+                filter(type %in% 'boardgamefamily') %>%
+                filter(grepl("^Mechanism:", value)) %>%
+                mutate(value = gsub("^Mechanism: ", "", value)) %>%
+                mutate(value = clean_bgg_text(value)) %>%
+                select(game_id, value) %>%
+                collapse_categorical(name = mechanisms)
+
+        outcomes %>%
+                left_join(.,
+                          info,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          names,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          categories,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          mechanics,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          publishers,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          designers,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          artists,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          families,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          mechanisms,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          components,
+                          by = join_by(game_id)) %>%
+                left_join(.,
+                          themes,
+                          by = join_by(game_id)) %>%
+                select(game_id, name, yearpublished, everything())
+
 }
 
-# Specify which publisher features are allowed to enter model
-get_allow_games_publishers = function(data) {
-        
+publisher_allow_list = function() {
+
         # list of ids allowed to enter model for publisher
-        publisher_allow_ids = c(
+        c(
                 51 # Hasbo
                 ,10 # Mayfair Games
                 ,102 # Decision Games
@@ -245,45 +230,80 @@ get_allow_games_publishers = function(data) {
                 ,2456 # The Game Crafter
                 ,12 # Cheapass Games
                 ,9 # alea
-                ,2164 # NorthStar Game Studio 
+                ,2164 # NorthStar Game Studio
                 ,5774 # Bézier Games
-                ,18617 #Red Raven Games 
+                ,18617 #Red Raven Games
                 ,102 #Decision Games (I)
-                , 489# 3W (World Wide Wargames) 
+                , 489# 3W (World Wide Wargames)
         )
-        
-        # table
-        publisher_allow_table = 
-                data %>%
-                select(publishers) %>%
-                unnest(publishers) %>%
-                filter(id %in% publisher_allow_ids) %>%
-                distinct()
-        
-        # pull names
-        publisher_allow_table %>%
-                pull(value)
-        
 }
 
+families_remove_list = function() {
 
-add_users_threshold = function(data) {
-        
+        c("^Admin:",
+          "^Misc:",
+          "^Promotional:",
+          "^Digital Implementations: ",
+          "^Components: Game Trayz Inside",
+          "^Crowdfunding: Spieleschmiede",
+          "^Crowdfunding: Verkami",
+          "^Crowdfunding: Indiegogo",
+          "^Contests:",
+          "^Game:",
+          "^Players:",
+          "^Players: Games with expansions",
+          "^Crowdfunding:") %>%
+                paste(., collapse = "|")
+}
+
+families_allow_list = function() {
+
+        c("^Series: Monopoly-Like",
+          "^Series: 18xx",
+          "^Series: Cards Against Humanity-Like",
+          "^Series: Exit: The Game",
+          "^Country:",
+          "^Animals",
+          "^History",
+          "^Sports",
+          "^Category",
+          "^Cities",
+          "^Traditional",
+          "^Creatures",
+          "^TV",
+          "^Region",
+          "^Card",
+          "^Comic",
+          "^Ancient",
+          "^Brands",
+          "^Versions & Editions",
+          "^Food",
+          "^Movies",
+          "^Setting",
+          "^Card Games",
+          "^Collectible",
+          "^Containers",
+          "^Authors",
+          "^Characters",
+          "^Religious",
+          "^Holidays",
+          "^Space",
+          "^Folk",
+          "^Word",
+          "^Mythology",
+          "^Occupation",
+          "^Celebrities",
+          "^Toys") %>%
+                paste(., collapse = "|")
+
+}
+
+collapse_categorical = function(data, name) {
+
         data %>%
-        # make outcome variable for hurdle
-        mutate(users_threshold = factor(case_when(!is.na(bayesaverage) ~ 'yes',
-                                                  is.na(bayesaverage) ~ 'no'),
-                                        levels = c('no', 'yes')))
+                group_by(game_id) %>%
+                summarize({{name}} := paste(value, collapse = ", "),
+                          .groups = 'drop')
+
 }
-                
-
-
-
-# not run
-# foo = games_nested %>%
-#         preprocess_games()
-
-
-
-
 

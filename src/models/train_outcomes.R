@@ -1,3 +1,402 @@
+# recipes for splits
+# create train/valid/test sets based on year
+create_year_split = function(data, end_train_year, valid_years) {
+        
+        tmp = 
+                data |>
+                mutate(.row_number = row_number())
+        
+        train_id = 
+                tmp |>
+                dplyr::filter(yearpublished <= end_train_year) |>
+                pull(.row_number)
+        
+        val_id = 
+                tmp |>
+                dplyr::filter(yearpublished > end_train_year & yearpublished <= end_train_year + valid_years) |>
+                pull(.row_number)
+        
+        test_id = 
+                tmp |>
+                filter(yearpublished > end_train_year + valid_years) |>
+                pull(.row_number)
+        
+        res = 
+                list(
+                        data = data,
+                        train_id = train_id,
+                        val_id = val_id,
+                        test_id = test_id
+                )
+        
+        class(res) <- c("initial_validation_split", "three_way_split")
+        
+        res
+}
+
+outcome_tuning_split = function(data, outcome, ratings = 25, weights = 0, valid_years = 1, test_years = 1) {
+        
+        data |>
+                preprocess_outcome(
+                        outcome = {{outcome}},
+                        ratings = ratings,
+                        weights = weights
+                ) |>
+                # create a train-valid-test split given the input
+                # set the end of the training set to 
+                create_year_split(
+                        end_train_year = max(data$yearpublished, na.rm = T)- (valid_years + test_years),
+                        valid_years = valid_years
+                )
+}
+
+outcome_assess_split = function(split) {
+        
+        train = 
+                split |>
+                training() |>
+                bind_rows(
+                        split |> 
+                                validation()
+                )
+        
+        test = 
+                split |>
+                testing()
+        
+        make_splits(
+                list(
+                        analysis = seq(nrow(train)),
+                        assessment = nrow(train) + seq(nrow(test))),
+                bind_rows(train,
+                          test)
+        )
+}
+
+# recipes for bgg outcomes
+predictor_vars= function(vars = 
+                                 c("minplayers",
+                                   "maxplayers",
+                                   "playingtime",
+                                   "minplaytime",
+                                   "maxplaytime",
+                                   "minage",
+                                   "categories",
+                                   "mechanics",
+                                   "publishers",
+                                   "designers",
+                                   "artists",
+                                   "families",
+                                   "mechanisms",
+                                   "components",
+                                   "themes"
+                                 )
+) {vars}
+
+id_vars = function(vars = 
+                           c("game_id",
+                             "name",
+                             "numweights",
+                             "yearpublished",
+                             "averageweight",
+                             "average",
+                             "usersrated",
+                             "image",
+                             "thumbnail",
+                             "description")) {vars}
+
+spline_vars = function(vars = c("year",
+                                "number_mechanics",
+                                "number_categories")) {vars}
+
+discrete_vars = function(vars = spline_vars()) {vars}
+
+
+# basic recipe setup
+build_recipe = function(data,
+                        outcome,
+                        ids = id_vars(),
+                        predictors = predictor_vars(),
+                        ...) {
+        
+        recipe(x=data) %>%
+                # set ids
+                update_role(
+                        any_of(ids),
+                        new_role = "id"
+                ) %>%
+                # set predictors
+                update_role(
+                        any_of(predictors),
+                        new_role = "predictor"
+                ) %>%
+                # set outcome
+                update_role(
+                        {{ outcome }},
+                        new_role = "outcome"
+                ) %>%
+                # set anything else as extra
+                update_role(
+                        -has_role("id"),
+                        -has_role("predictor"),
+                        -has_role("outcome"),
+                        new_role = "extra"
+                ) 
+        
+}
+
+# function for extracting dummies from nominal features
+add_dummies = function(recipe,
+                       variable,
+                       threshold = 100) {
+        
+        variable = enquo(variable)
+        
+        recipe %>%
+                # tokenize 
+                step_dummy_extract(!!variable,
+                                   sep = ", ",
+                                   other = "remove_other_field",
+                                   threshold = threshold) %>%
+                # remove other var
+                step_rm(contains("remove_other_field"))
+        
+        
+}
+
+# standard dummy recipes
+add_bgg_dummies = function(recipe,
+                           mechanics_threshold = 1,
+                           categories_threshold = 1,
+                           families_threshold = 100,
+                           publishers_threshold = 25,
+                           designers_threshold = 25,
+                           artists_threshold = 50,
+                           components_threshold = 25,
+                           themes_threshold = 25,
+                           mechanisms_threshold = 25
+) {
+        
+        recipe %>%
+                # include most mechanics
+                add_dummies(mechanics,
+                            threshold = mechanics_threshold) %>%
+                # include all categories
+                add_dummies(categories,
+                            threshold = categories_threshold) %>%
+                # families
+                add_dummies(families,
+                            threshold = families_threshold) %>%
+                # publishers
+                add_dummies(publishers,
+                            threshold = publishers_threshold) %>%
+                # designers
+                add_dummies(designers,
+                            threshold = designers_threshold) %>%
+                # artists
+                add_dummies(artists,
+                            threshold = artists_threshold) %>%
+                # components
+                add_dummies(components,
+                            threshold = components_threshold) %>%
+                # themes
+                add_dummies(themes,
+                            threshold = themes_threshold) %>%
+                # mechanisms
+                add_dummies(mechanisms,
+                            threshold = mechanisms_threshold)
+}
+
+
+# standardized preprocessing
+add_preprocessing = function(recipe) {
+        
+        recipe %>%
+                # indicate missingness in numeric features
+                step_indicate_na(all_numeric_predictors(),
+                                 prefix = "missing") %>%
+                # indicate missingness in image, description, or thumbnail
+                step_indicate_na(image, thumbnail,
+                                 prefix = "missing") %>%
+                # make time per player variable
+                step_mutate(time_per_player = playingtime/ maxplayers) %>% 
+                # remove zero variance predictors
+                step_zv(all_predictors()) %>%
+                # number_mechanics
+                step_mutate(number_mechanics = 
+                                    dplyr::case_when(
+                                            is.na(mechanics) ~ 0,
+                                            TRUE ~ stringr::str_count(mechanics, ',') + 1
+                                    )
+                ) %>%
+                # number categories
+                step_mutate(number_categories = 
+                                    dplyr::case_when(
+                                            is.na(categories) ~ 0,
+                                            TRUE ~ stringr::str_count(categories, ',') + 1
+                                    )
+                ) %>%
+                # log time per player and playingtime
+                step_log(time_per_player,
+                         playingtime,
+                         offset = 1) %>%
+                # truncate yearpublished
+                step_mutate(year = dplyr::case_when(yearpublished < 1900 ~ 1900,
+                                                    TRUE ~ yearpublished),
+                            role = "predictor") %>%
+                # indicator for published before 1900
+                step_mutate(published_before_1900 = dplyr::case_when(yearpublished < 1900 ~ 1,
+                                                                     TRUE ~ 0)) %>%
+                # solo game
+                # big box/deluxe/anniversary edition
+                step_mutate(deluxe_edition = dplyr::case_when(grepl("kickstarter|big box|deluxe|mega box", tolower(name))==T ~ 1,
+                                                              TRUE ~ 0)) %>%
+                # description word count
+                step_mutate(word_count = stringi::stri_count_words(description)) %>%
+                step_mutate(word_count = tidyr::replace_na(word_count, 0)) %>%
+                # magical phrase in description
+                step_mutate(description_from_publisher = dplyr::case_when(grepl("description from publisher", tolower(description))==T ~ 1,
+                                                                          TRUE ~ 0))
+}
+
+
+# imputation
+add_imputation = function(recipe) {
+        
+        recipe %>%
+                # impute missingness in selected features with median
+                step_impute_median(playingtime,
+                                   minplayers,
+                                   maxplayers,
+                                   minage,
+                                   time_per_player) %>% # medianimpute numeric predictors
+                # truncate minage to no greater than 18
+                step_mutate(minage = dplyr::case_when(minage > 18 ~ 18,
+                                                      minage < 0 ~ 0,
+                                                      TRUE ~ minage)) %>%
+                # truncate player counts
+                step_mutate(minplayers = dplyr::case_when(minplayers > 10 ~ 10,
+                                                          TRUE ~ minplayers)) %>%
+                step_mutate(maxplayers = dplyr::case_when(maxplayers > 20 ~ 10,
+                                                          maxplayers <=1 ~ 1,
+                                                          TRUE ~ maxplayers)) %>%
+                step_rm(minplaytime, maxplaytime)
+}
+
+
+# normalize all numeric predictors
+add_normalize = function(recipe) {
+        
+        recipe %>%
+                step_normalize(all_numeric_predictors())
+}
+
+
+# add pca
+add_pca = function(recipe,
+                   ...) {
+        
+        recipe %>%
+                step_pca(all_numeric_predictors(),
+                         ...)
+}
+
+# add corr
+add_corr = function(recipe,
+                    my_threshold = 0.9) {
+        
+        recipe %>%
+                step_corr(all_numeric_predictors(),
+                          threshold = my_threshold)
+        
+}
+
+
+# step to remove zero variance
+add_zv = function(recipe) {
+        
+        recipe %>%
+                step_zv(all_numeric_predictors())
+        
+}
+
+# discretize variables with cart
+add_discrete = function(recipe,
+                        outcome,
+                        vars = c("year",
+                                 "number_mechanics",
+                                 "number_categories")) {
+        
+        outcome = enquo(outcome)
+        
+        # embed categorical feature via mixed
+        step_discretize_feature = function(recipe,
+                                           feature,
+                                           outcome) {
+                
+                feature = enquo(feature)
+                outcome = enquo(outcome)
+                
+                recipe %>%
+                        embed::step_discretize_cart(
+                                !!feature,
+                                outcome = vars(!!outcome))
+        }
+        
+        for (i in 1 :length(vars)) {
+                
+                recipe = recipe %>%
+                        step_discretize_feature(feature = !!vars[i],
+                                                outcome = !!outcome)
+                # add_role(!!vars[i],
+                #          new_role = "discrete")
+                
+        }
+        
+        recipe %>%
+                step_dummy(all_nominal_predictors())
+        # recipe %>%
+        #         step_novel(any_of(has_role("discrete"))) %>%
+        #         step_dummy(has_role("discrete"))
+        
+}
+
+# splines
+# add splines for nonlinear effects for linear models
+add_splines= function(recipe,
+                      vars = c("year",
+                               "number_mechanics",
+                               "number_categories"),
+                      degree = 5) {
+        
+        
+        step_spline_feature = function(recipe,
+                                       feature,
+                                       ...) {
+                
+                feature = enquo(feature)
+                
+                recipe %>%
+                        # add splines
+                        step_ns(
+                                !!feature,
+                                deg_free = degree)
+        }
+        
+        for (i in 1 :length(vars)) {
+                
+                recipe = recipe %>%
+                        step_spline_feature(feature = !!vars[i])
+                
+        }
+        
+        recipe
+        
+        
+}
+
+
+
 # 
 bgg_outcomes = function() {
         
@@ -30,149 +429,6 @@ predict_sim = function(fit,
                   X = prepped) %>%
                 tibble()
         
-}
-
-train_outcome_model = function(data,
-                               outcome,
-                               models = linear_models(),
-                               metrics = reg_metrics(),
-                               remove_wflow_ids = "^trees_",
-                               tune_method = "tune_race_anova",
-                               end_train_year = 2020,
-                               valid_window = 2,
-                               predictors = predictor_vars(),
-                               ids = id_vars(),
-                               splines = spline_vars(),
-                               ...) {
-        
-        # prep data given type of outdcome being trained
-        processed_data = 
-                data %>%
-                preprocess_outcome(outcome = {{outcome}})
-        
-        # create split
-        split = 
-                processed_data %>%
-                make_train_valid_split(
-                        end_train_year = end_train_year,
-                        valid_window = valid_window
-                )
-        
-        # extract training and validation
-        # analysis
-        train = 
-                analysis(split)
-        
-        # assessment
-        valid = 
-                assessment(split)
-        
-        # all other observations
-        other = 
-                processed_data %>%
-                filter(!(game_id %in% (bind_rows(train, valid) %>% pull(game_id))))
-        
-        # resamples for tuning on training set
-        resamples =
-                train %>%
-                make_resamples(
-                        outcome = {{outcome}}
-                )
-        
-        # build basic recipe
-        recipe = 
-                train %>%
-                make_recipe(
-                        outcome = {{outcome}},
-                        predictors = predictors,
-                        metrics = metrics,
-                ) %>%
-                add_bgg_dummies() %>%
-                add_preprocessing()
-        
-        # build other recipes
-        recipes = 
-                make_outcome_recipes(recipe,
-                                     spline_vars = splines)
-        
-        # make workflows
-        workflows =
-                workflow_set(
-                        preproc =
-                                recipes,
-                        models =
-                                models,
-                ) %>%
-                # remove ids based on pattern
-                filter(!grepl(remove_wflow_ids, wflow_id))
-        
-        message(paste0("tuning workflows:", 
-                      paste(workflows$wflow_id, sep = "\n"))
-        )
-
-        # tune
-        tuning_results =
-                workflows %>%
-                tune_workflows(
-                        method = tune_method,
-                        resamples = resamples,
-                )
-
-        # get tuning metrics across all
-        tuning_metrics =
-                tuning_results %>%
-                rank_results(select_best = T)
-
-        # get best fit
-        train_fit =
-                tuning_results %>%
-                fit_best()
-
-        # predict validation
-        valid_preds = train_fit %>%
-                augment(valid)
-
-        # assess
-        valid_metrics =
-                valid_preds %>%
-                metrics(
-                        truth = {{outcome}},
-                        estimate = .pred)
-
-        # predict other
-        other_preds =
-                train_fit %>%
-                augment(other)
-
-        # get final fit
-        final_fit =
-                train_fit %>%
-                fit(bind_rows(train,
-                              valid))
-
-        # return results
-        list(
-                "tuning_results" = tuning_results,
-                "tuning_metrics" = tuning_metrics,
-                "valid_preds" = valid_preds,
-                "valid_metrics" = valid_metrics,
-                "other_preds" = other_preds,
-                "train_fit" = train_fit,
-                "final_fit" = final_fit
-        )
-        
-}
-
-
-
-# standard metrics used for evaluating regression
-reg_metrics = function() {
-        
-        # # specify regression metrics
-        metric_set(yardstick::rmse,
-                   yardstick::mae,
-                   yardstick::mape,
-                   yardstick::rsq)
 }
 
 # define training and valid split
@@ -323,62 +579,12 @@ preprocess_outcome = function(data,
         }
 }
 
-linear_models = function(mixture = 0) {
-        
-        list(
-                "lm" = 
-                        linear_reg(mode = "regression") %>%
-                        set_engine("lm"),
-                "glmnet" = 
-                        linear_reg(mode = "regression",
-                                   penalty = tune::tune(),
-                                   mixture = !!mixture) %>%
-                        set_engine("glmnet"),
-                "pls" = 
-                        pls(
-                                mode = "regression",
-                                predictor_prop = tune::tune(),
-                                num_comp = tune::tune(),
-                                engine = "mixOmics"
-                        )
-        )
-}
-
-
-tree_models = function() {
-        
-        list(
-                "xgbTree" = 
-                        boost_tree(
-                                trees = 500,
-                                min_n = tune(),
-                                sample_size = tune(),
-                                learn_rate = tune(),
-                                tree_depth = tune(),
-                                stop_iter = 50
-                        ) %>%
-                        set_mode("regression") %>%
-                        set_engine("xgboost",
-                                   eval_metric = 'rmse')
-        )
-                #,
-                
-        #         "lightgbm" = 
-        #                 parsnip::boost_tree(
-        #                         mode = "regression",
-        #                         trees = 500,
-        #                         min_n = tune(),
-        #                         tree_depth = tune(),
-        #                 ) %>%
-        #                 set_engine("lightgbm")
-        # )
-}
 
 # impute averageweight
 impute_averageweight = function(data,
-                                fit) {
+                                model) {
         
-        fit %>%
+        model %>%
                 augment(new_data = data) %>%
                 mutate(.pred = truncate_averageweight(.pred)) %>%
                 rename(est_averageweight = .pred)
@@ -437,41 +643,41 @@ calculate_bayesaverage = function(data, ratings = 2000) {
 }
 
 predict_outcomes = function(data,
-                                averageweight_workflow,
-                                average_workflow,
-                                usersrated_workflow) {
+                            averageweight_model,
+                            average_model,
+                            usersrated_model) {
         
         data %>%
                 impute_averageweight(
-                        fit = averageweight_workflow
+                        model = averageweight_model
                 ) %>%
                 mutate(.pred_hurdle = NA) %>%
                 mutate(bayesaverage = replace_na(bayesaverage, 5.5)) %>%
                 predict_average(
-                        workflow = average_workflow
+                        model = average_model
                 ) %>%
                 predict_usersrated(
-                        workflow = usersrated_workflow
+                        model = usersrated_model
                 ) %>%
                 calculate_bayesaverage() %>%
                 mutate(.pred_averageweight = est_averageweight) 
-
+        
 }
 
 predict_average = function(data,
-                           workflow) {
+                           model) {
         
-        workflow %>%
+        model %>%
                 augment(data) %>%
                 rename(.pred_average = .pred)
         
 }
 
 predict_usersrated = function(data,
-                              workflow,
+                              model,
                               round = 50) {
         
-        workflow %>%
+        model %>%
                 augment(data) %>%
                 mutate(.pred = round_usersrated(exp(.pred), round)) %>%
                 rename(.pred_usersrated = .pred)
