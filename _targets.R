@@ -7,7 +7,23 @@
 library(targets)
 library(tarchetypes) # Load other packages as needed.
 
-# Set target options:
+# authenticate to GCR and and set bucket
+library(googleCloudStorageR)
+
+# set global bucket
+gcs_global_bucket("bgg_data")
+
+# function to set where i'm storing
+set_gcp_prefix = function(bucket = gcs_get_global_bucket(), project, branch) {
+        
+        paste(
+                bucket,
+                project,
+                branch,
+                sep = "/"
+        )
+}
+
 # packages
 tar_option_set(
         packages = c("dplyr",
@@ -19,13 +35,15 @@ tar_option_set(
         resources = tar_resources(
                 gcp = tar_resources_gcp(
                         bucket = "bgg_data",
-                        prefix = "models"
+                        prefix = set_gcp_prefix(
+                                bucket = gcs_get_global_bucket(),
+                                project = "bgg_models",
+                                branch = gert::git_branch()
+                        )
                 )
         )
 )
 
-# authenticate to GCR and and set bucket
-library(googleCloudStorageR)
 
 # function to laod games
 load_games = function(object_name = "raw/objects/games",
@@ -421,7 +439,8 @@ list(
                 ),
                 # render model report
                 tar_render(name = model_report,
-                           "model_report.Rmd"
+                           "model_report.Rmd",
+                           params = list(data = names(predictions))
                 )
                 # # assess
                 # tar_target(
