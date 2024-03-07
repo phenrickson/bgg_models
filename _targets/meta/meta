@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|80097cf789a246b6|||||||||||||||
+.Random.seed|object|506dc500b2c33c0d|||||||||||||||
 add_bgg_dummies|function|f5223334d9ade40b|||||||||||||||
 add_corr|function|a7156d710f1b0e97|||||||||||||||
 add_discrete|function|60a12d53a6f50d6f|||||||||||||||
@@ -11,22 +11,22 @@ add_preprocessing|function|1f51185c0cf70138|||||||||||||||
 add_splines|function|d3994b6070149280|||||||||||||||
 add_zv|function|62f17e0c706b36f4|||||||||||||||
 assess_outcomes|function|3ae191a4b362c670|||||||||||||||
-average_last_fit_2019|stem|5952cc3778f1a0aa|966e55f110e22d16|16749cc6963accb0|1722910830|bucket=bgg_data*key=models/objects/average_last_fit_2019*version=1709671887028516|t19787.869051786s||13475824|rds|gcp|vector|||19.18||
-average_model_2019|stem|4ad559d3b1f9f249|7d1b057b155066d1|0680ffece2df5c2a|1348366582|bucket=bgg_data*key=models/objects/average_model_2019*version=1709671863648544|t19787.8684505042s||619842844|rds|gcp|vector|||21.491||
-average_recipe_2019|stem|e7816deeef55e04c|ea6ae6942e82e141|8b63f10dc62ceb87|1718918283|bucket=bgg_data*key=models/objects/average_recipe_2019*version=1709671139675246|t19787.8599681647s||581519957|rds|gcp|vector|||0.07||
-average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=models/objects/average_split_2019*version=1709671028565359|t19787.859111267s||13440796|rds|gcp|vector|||0.049||
-average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|1dd0bf49e285f79f|-337580546|bucket=bgg_data*key=models/objects/average_tuned_2019*version=1709671596172305|t19787.8656819883s||13012935|rds|gcp|vector|||86.493|NAs introduced by coercion|
-average_workflow_2019|stem|2759d1d8120714cf|98e0744e3ba3a743|470149d252ebbb45|1154273135|bucket=bgg_data*key=models/objects/average_workflow_2019*version=1709671374720163|t19787.8627788154s||581520388|rds|gcp|vector|||0.005||
+average_last_fit_2019|stem|5952cc3778f1a0aa|966e55f110e22d16|cee0d02625035931|1722910830|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_last_fit_2019*version=1709829212351981|t19789.6899425121s||13475824|rds|gcp|vector|||17.768||
+average_model_2019|stem|1042f2759c1a6b0a|7d1b057b155066d1|8903b272c8b804e0|1348366582|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_model_2019*version=1709829189736056|t19789.6894384819s||619847812|rds|gcp|vector|||33.845||
+average_recipe_2019|stem|c4f1a3817867300d|ea6ae6942e82e141|8b63f10dc62ceb87|1718918283|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_recipe_2019*version=1709823189254759|t19789.6199686941s||581525129|rds|gcp|vector|||0.626||
+average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_split_2019*version=1709823071082785|t19789.6188669999s||13440796|rds|gcp|vector|||0.877||
+average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|83f60c44cc86edbf|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_tuned_2019*version=1709825403298014|t19789.6458604083s||13012935|rds|gcp|vector|||825.865|NAs introduced by coercion|
+average_workflow_2019|stem|7ce04b6f7a61d0a8|98e0744e3ba3a743|7dff0f212583db1c|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_workflow_2019*version=1709823717969831|t19789.6260957681s||581525548|rds|gcp|vector|||0.003||
 averageweight_assess_split_2019|stem|17bea111fcbd4c4a|020c10cc1f83b721|71f37b120bb41ccb|572968638|bucket=bgg_data*key=models/objects/averageweight_assess_split_2019*version=1709600672493801|t19787.0448150537s||9134230|rds|gcp|vector|||0.016||
-averageweight_last_fit_2019|stem|68c66382800a95a1|5a1285fc8245a15b|e242805b5a0a7178|-540902471|bucket=bgg_data*key=models/objects/averageweight_last_fit_2019*version=1709670443602731|t19787.8523487088s||9189058|rds|gcp|vector|||10.159||
+averageweight_last_fit_2019|stem|68c66382800a95a1|5a1285fc8245a15b|e242805b5a0a7178|-540902471|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_last_fit_2019*version=1709823032190961|t19789.618421784s||9189058|rds|gcp|vector|||9.398||
 averageweight_metrics_2019|stem|1c4b746d9949dda6|dfc4d6606cb90750|30c6d4d69a9fbb7a|-854821502|bucket=bgg_data*key=models/objects/averageweight_metrics_2019*version=1709652223014546|t19787.6414680206s||260|rds|gcp|vector|||0.001||
-averageweight_model_2019|stem|4d88fd4af9e83414|3163a84308483699|ea59fb70055a0b61|110600965|bucket=bgg_data*key=models/objects/averageweight_model_2019*version=1709670430656404|t19787.8514738839s||439409703|rds|gcp|vector|||10.882||
+averageweight_model_2019|stem|4d88fd4af9e83414|3163a84308483699|ea59fb70055a0b61|110600965|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_model_2019*version=1709823020132251|t19789.6180568201s||439409703|rds|gcp|vector|||10.916||
 averageweight_model_2021|stem|e4b94e2bd367008e|faccc051f7d91018|8050a38f64894f50|-833831627|bucket=bgg_data*key=models/objects/averageweight_model_2021*version=1709567724502221|t19786.6634623423s||9968652|rds|gcp|vector|||0.206||
 averageweight_recipe_2019|stem|4132c8d0b720274f|3ac6a6e58682b6a1|8808579a687cde96|-1911270986|bucket=bgg_data*key=models/objects/averageweight_recipe_2019*version=1709669719531690|t19787.843665928s||413376051|rds|gcp|vector|||0.091||
 averageweight_split_2019|stem|cb0cbbb4342ed172|bb091a611080690f|8d929788ba52be4a|1166735688|bucket=bgg_data*key=models/objects/averageweight_split_2019*version=1709669618881256|t19787.8428006551s||9168416|rds|gcp|vector|||0.063||
-averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=models/objects/averageweight_tuned_2019*version=1709670296769251|t19787.8505404367s||8870530|rds|gcp|vector|||71.972|NAs introduced by coercion|
+averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_tuned_2019*version=1709822933002552|t19789.6172717144s||8870530|rds|gcp|vector|||79.172|NAs introduced by coercion|
 averageweight_tuning_split_2019|stem|cb0cbbb4342ed172|4fc991ad77544e97|8a8c4574d40239e3|2026635200|bucket=bgg_data*key=models/objects/averageweight_tuning_split_2019*version=1709652030592717|t19787.6392291343s||9168416|rds|gcp|vector|||0.261||
-averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=models/objects/averageweight_workflow_2019*version=1709670100916520|t19787.8481455873s||413376684|rds|gcp|vector|||0.006||
+averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_workflow_2019*version=1709822850235228|t19789.6161134202s||413376684|rds|gcp|vector|||0.009||
 bgg_outcomes|function|934be5561cac9fa2|||||||||||||||
 build_outcome_recipe|function|e5de65f6f24c54ab|||||||||||||||
 build_outcome_workflow|function|75764b8d91189d30|||||||||||||||
@@ -56,7 +56,7 @@ make_outcome_recipes|function|d552f78e6da342c3|||||||||||||||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
-model_report_2019|stem|7548fd8475e45f4a|3a3bd395278f060c|8423f7ca71f3f2ff|-1624426928|model_report.html*model_report.Rmd|t19787.9381280885s|76e75bafe659c98f|3062018|file|local|vector|||3.784||
+model_report_2019|stem|92de1c9cdbf39032|21b8b1c0feca9f78|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19789.6923130241s|6bc3c877d2b39d85|3062309|file|local|vector|||3.79||
 model_spec|stem|35ad3a8266fe66aa|74cd070e4244b9e3|ef46db3751d8e999|-990697664|bucket=bgg_data*key=models/objects/model_spec*version=1709600628775070|t19787.0443130171s||308|rds|gcp|vector|||0.003||
 outcome_assess_split|function|25f4c23213763c54|||||||||||||||
 outcome_tuning_split|function|3c97d53c322d229a|||||||||||||||
@@ -67,13 +67,14 @@ predict_hurdle|function|1e544218d942ac1b|||||||||||||||
 predict_outcomes|function|e09f8cfc53e7f7c9|||||||||||||||
 predict_sim|function|ac7b02cc939ab133|||||||||||||||
 predict_usersrated|function|22dbf65a85b1c56b|||||||||||||||
-predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|51cdcae2969f5085|-2002231822|bucket=bgg_data*key=models/objects/predictions_2019*version=1709672283798263|t19787.8736464426s||5687470|rds|gcp|vector|||2.718||
+predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
 predictor_vars|function|5920e1f635cc2ee7|||||||||||||||
 preprocess_bgg_games|function|b3ea7160bc20d220|||||||||||||||
 preprocess_outcome|function|598018933cb1678e|||||||||||||||
 publisher_allow_list|function|df51b4c498aa1c39|||||||||||||||
 reg_metrics|stem|ecc1c9789dda943c|8e3c99e53688f989|ef46db3751d8e999|-1596937686|bucket=bgg_data*key=models/objects/reg_metrics*version=1709599044154166|t19787.0259726232s||8726|rds|gcp|vector|||0.021||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
+set_gcp_prefix|function|49bcb2a033aa454e|||||||||||||||
 sim_averageweight|function|fcac218b2c177645|||||||||||||||
 simulate_outcomes|function|e1dd8d495be09afd|||||||||||||||
 source|stem|2e80923fb90fe5a2|d3a8a37159e570e2|ef46db3751d8e999|1538448232|bucket=bgg_data*key=models/objects/source*stage=data/raw/games.qs*version=1709236822936796|t19782.8316662859s|49c1a1611838f3ff|71900504|file|gcp|vector|||0.469||
@@ -90,17 +91,17 @@ train_outcome_model|function|07b9287570047389|||||||||||||||
 training_2015|stem||f953e6dfffa5452a|673de7466bebe0ff|-2011844015||t19786.6612559291s||0|rds|gcp|vector|||0.003||could not find function training_2015
 training_data_2019|stem|fa7fccca0084b7ad|8222fc98ecfddd59|122a8a4d8cbfdb30|-452326442|bucket=bgg_data*key=models/objects/training_data_2019*version=1709658674692814|t19787.7160655225s||41142335|rds|gcp|vector|||0.017||
 training_data_2021|stem|6420896b418a8714|69451bb58c0bc12b|ac6be7a89dd3c5a5|-1168025648|bucket=bgg_data*key=models/objects/training_data_2021*version=1709567721171424|t19786.6633352006s||46515188|rds|gcp|vector|||0.014||
-training_imputed_2019|stem|0996a879cdd9a0d5|e9c31fa48a52b8e9|53cd84600f11e7e3|228302738|bucket=bgg_data*key=models/objects/training_imputed_2019*version=1709671024350646|t19787.8590271461s||41774710|rds|gcp|vector|||9.024||
+training_imputed_2019|stem|0996a879cdd9a0d5|e9c31fa48a52b8e9|53cd84600f11e7e3|228302738|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/training_imputed_2019*version=1709823064893982|t19789.6187739271s||41774710|rds|gcp|vector|||12.862||
 tree_models|function|5996000ebef87d97|||||||||||||||
 truncate_averageweight|function|f53f1fb6ddc6d804|||||||||||||||
 tune_workflow|function|63933ab33c55eb13|||||||||||||||
 tune_workflows|function|e507bb5e69113e7d|||||||||||||||
 tuning_grid|stem|753da26dcc1f761c|b3ff6d01114a976e|ef46db3751d8e999|1796853018|bucket=bgg_data*key=models/objects/tuning_grid*version=1709600628480294|t19787.0443096227s||260|rds|gcp|vector|||1.541||
-usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|0e3822cb4cf69fd0|-1688329540|bucket=bgg_data*key=models/objects/usersrated_last_fit_2019*version=1709671922183477|t19787.869456737s||13548762|rds|gcp|vector|||30.151||
-usersrated_model_2019|stem|775a3cec65720530|e937b13665c01f53|1f2fd0e2666f90dc|1183094964|bucket=bgg_data*key=models/objects/usersrated_model_2019*version=1709672069931556|t19787.8707882484s||623208008|rds|gcp|vector|||31.634||
-usersrated_recipe_2019|stem|87f5c86817bbc233|af770eb1bce17f47|36fd3f46878d8716|-1102203476|bucket=bgg_data*key=models/objects/usersrated_recipe_2019*version=1709671256355327|t19787.8613608857s||584760699|rds|gcp|vector|||0.627||
-usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=models/objects/usersrated_split_2019*version=1709671032238781|t19787.8591538249s||13515637|rds|gcp|vector|||0.034||
-usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|8424fa2ad99969e5|8331713|bucket=bgg_data*key=models/objects/usersrated_tuned_2019*version=1709671707516611|t19787.8669719057s||13024371|rds|gcp|vector|||106.652|NAs introduced by coercion|
-usersrated_workflow_2019|stem|16d286a65a89726b|6dfbcc2a15efbc59|3ba27efc800fe272|-587846464|bucket=bgg_data*key=models/objects/usersrated_workflow_2019*version=1709671504029277|t19787.8642784015s||584761115|rds|gcp|vector|||0.008||
-validation_imputed_2019|stem|e251e6c1d340902e|a543f37a20a4b014|53cd84600f11e7e3|-1068696117|bucket=bgg_data*key=models/objects/validation_imputed_2019*version=1709671004704098|t19787.8588430782s||5460245|rds|gcp|vector|||3.477||
+usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|81923f2fcd6c40a1|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_last_fit_2019*version=1709829270936118|t19789.6906080283s||13548762|rds|gcp|vector|||19.728||
+usersrated_model_2019|stem|5cc531eed5437a17|e937b13665c01f53|12ef504c9a1e5b76|1183094964|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_model_2019*version=1709829406676397|t19789.6918735263s||623211426|rds|gcp|vector|||21.232||
+usersrated_recipe_2019|stem|def63d1e8e484fc2|af770eb1bce17f47|36fd3f46878d8716|-1102203476|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_recipe_2019*version=1709823506910086|t19789.6226927836s||584764565|rds|gcp|vector|||0.089||
+usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_split_2019*version=1709823075639287|t19789.6189207257s||13515637|rds|gcp|vector|||0.478||
+usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_tuned_2019*version=1709826567275317|t19789.6593248967s||13024371|rds|gcp|vector|||1159.845|NAs introduced by coercion|
+usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
+validation_imputed_2019|stem|e251e6c1d340902e|a543f37a20a4b014|53cd84600f11e7e3|-1068696117|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/validation_imputed_2019*version=1709823039571797|t19789.6185063628s||5460245|rds|gcp|vector|||1.451||
 year_splits|object|e55f2adaf03ea742|||||||||||||||
