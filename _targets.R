@@ -63,6 +63,7 @@ load_games = function(object_name = "raw/objects/games",
 tar_source("src/features/preprocess_games.R")
 tar_source("src/models/train_outcomes.R")
 tar_source("src/models/assess.R")
+tar_source("src/visualizations/models.R")
 
 # function to extract model name
 extract_model_name = function(workflow) {
@@ -440,7 +441,8 @@ list(
                 # render model report
                 tar_render(name = model_report,
                            "model_report.Rmd",
-                           params = list(data = names(predictions))
+                           params = list(data = names(predictions),
+                                         end_train_year = end_train_year)
                 )
                 # # assess
                 # tar_target(
