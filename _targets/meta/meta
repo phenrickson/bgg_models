@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|506dc500b2c33c0d|||||||||||||||
+.Random.seed|object|0f0ff59292e8135d|||||||||||||||
 add_bgg_dummies|function|f5223334d9ade40b|||||||||||||||
 add_corr|function|a7156d710f1b0e97|||||||||||||||
 add_discrete|function|60a12d53a6f50d6f|||||||||||||||
@@ -11,22 +11,22 @@ add_preprocessing|function|1f51185c0cf70138|||||||||||||||
 add_splines|function|d3994b6070149280|||||||||||||||
 add_zv|function|62f17e0c706b36f4|||||||||||||||
 assess_outcomes|function|3ae191a4b362c670|||||||||||||||
-average_last_fit_2019|stem|5952cc3778f1a0aa|966e55f110e22d16|cee0d02625035931|1722910830|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_last_fit_2019*version=1709829212351981|t19789.6899425121s||13475824|rds|gcp|vector|||17.768||
-average_model_2019|stem|1042f2759c1a6b0a|7d1b057b155066d1|8903b272c8b804e0|1348366582|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_model_2019*version=1709829189736056|t19789.6894384819s||619847812|rds|gcp|vector|||33.845||
-average_recipe_2019|stem|c4f1a3817867300d|ea6ae6942e82e141|8b63f10dc62ceb87|1718918283|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_recipe_2019*version=1709823189254759|t19789.6199686941s||581525129|rds|gcp|vector|||0.626||
-average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_split_2019*version=1709823071082785|t19789.6188669999s||13440796|rds|gcp|vector|||0.877||
-average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|83f60c44cc86edbf|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_tuned_2019*version=1709825403298014|t19789.6458604083s||13012935|rds|gcp|vector|||825.865|NAs introduced by coercion|
-average_workflow_2019|stem|7ce04b6f7a61d0a8|98e0744e3ba3a743|7dff0f212583db1c|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_workflow_2019*version=1709823717969831|t19789.6260957681s||581525548|rds|gcp|vector|||0.003||
+average_last_fit_2019|stem|833749ab0bff9f0b|966e55f110e22d16|bb7432b1f4c3dcef|1722910830|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_last_fit_2019*version=1709855252921696|t19789.9913439511s||13403478|rds|gcp|vector|||1949.131||
+average_model_2019|stem|deb2ad99c1cdddbb|7d1b057b155066d1|f5388300004d0645|1348366582|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_model_2019*version=1709853300023067|t19789.96855232s||626319396|rds|gcp|vector|||3201.644|The number of neighbors should be  0 and  9. Truncating the value.. input string 1 is invalid in this locale|
+average_recipe_2019|stem|d9fefc3f937c3536|ea6ae6942e82e141|160126b54bcc8489|1718918283|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_recipe_2019*version=1709838486377676|t19789.7971139677s||578559357|rds|gcp|vector|||1.067||
+average_split_2019|stem|777a7e751060762c|1267542319b59be5|52078a5d5b89c5af|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_split_2019*version=1709838384718378|t19789.7961099991s||13372820|rds|gcp|vector|||0.562||
+average_tuned_2019|stem|cd2ecf32283d7ef5|c7f8725a4baaa445|15ab7ad997916c85|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_tuned_2019*version=1709843028236460|t19789.8498506019s||12554882|rds|gcp|vector|||4214.684|NAs introduced by coercion|
+average_workflow_2019|stem|216b0657ca742e8e|98e0744e3ba3a743|d799cc3ccf8fede5|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/average_workflow_2019*version=1709838697415738|t19789.7995665222s||578559770|rds|gcp|vector|||0.006||
 averageweight_assess_split_2019|stem|17bea111fcbd4c4a|020c10cc1f83b721|71f37b120bb41ccb|572968638|bucket=bgg_data*key=models/objects/averageweight_assess_split_2019*version=1709600672493801|t19787.0448150537s||9134230|rds|gcp|vector|||0.016||
-averageweight_last_fit_2019|stem|68c66382800a95a1|5a1285fc8245a15b|e242805b5a0a7178|-540902471|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_last_fit_2019*version=1709823032190961|t19789.618421784s||9189058|rds|gcp|vector|||9.398||
+averageweight_last_fit_2019|stem|7b274f925e55a0bd|5a1285fc8245a15b|156613b273c3bba2|-540902471|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/averageweight_last_fit_2019*version=1709836110159283|t19789.7697863027s||9186405|rds|gcp|vector|||682.564||
 averageweight_metrics_2019|stem|1c4b746d9949dda6|dfc4d6606cb90750|30c6d4d69a9fbb7a|-854821502|bucket=bgg_data*key=models/objects/averageweight_metrics_2019*version=1709652223014546|t19787.6414680206s||260|rds|gcp|vector|||0.001||
-averageweight_model_2019|stem|4d88fd4af9e83414|3163a84308483699|ea59fb70055a0b61|110600965|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_model_2019*version=1709823020132251|t19789.6180568201s||439409703|rds|gcp|vector|||10.916||
+averageweight_model_2019|stem|0df15d0aba84b0f2|3163a84308483699|387c1390c6048eb3|110600965|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/averageweight_model_2019*version=1709835424725556|t19789.7617091407s||445735053|rds|gcp|vector|||716.652|The number of neighbors should be  0 and  9. Truncating the value.. input string 1 is invalid in this locale|
 averageweight_model_2021|stem|e4b94e2bd367008e|faccc051f7d91018|8050a38f64894f50|-833831627|bucket=bgg_data*key=models/objects/averageweight_model_2021*version=1709567724502221|t19786.6634623423s||9968652|rds|gcp|vector|||0.206||
 averageweight_recipe_2019|stem|4132c8d0b720274f|3ac6a6e58682b6a1|8808579a687cde96|-1911270986|bucket=bgg_data*key=models/objects/averageweight_recipe_2019*version=1709669719531690|t19787.843665928s||413376051|rds|gcp|vector|||0.091||
 averageweight_split_2019|stem|cb0cbbb4342ed172|bb091a611080690f|8d929788ba52be4a|1166735688|bucket=bgg_data*key=models/objects/averageweight_split_2019*version=1709669618881256|t19787.8428006551s||9168416|rds|gcp|vector|||0.063||
-averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_tuned_2019*version=1709822933002552|t19789.6172717144s||8870530|rds|gcp|vector|||79.172|NAs introduced by coercion|
+averageweight_tuned_2019|stem|b44dba7f9565e9a8|969803e0aa41c4ee|116170ed8b613b24|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/averageweight_tuned_2019*version=1709834627543831|t19789.7526264919s||8699520|rds|gcp|vector|||1972.863|NAs introduced by coercion|
 averageweight_tuning_split_2019|stem|cb0cbbb4342ed172|4fc991ad77544e97|8a8c4574d40239e3|2026635200|bucket=bgg_data*key=models/objects/averageweight_tuning_split_2019*version=1709652030592717|t19787.6392291343s||9168416|rds|gcp|vector|||0.261||
-averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_workflow_2019*version=1709822850235228|t19789.6161134202s||413376684|rds|gcp|vector|||0.009||
+averageweight_workflow_2019|stem|0c51690591845645|5534f01e2125fb58|e83f7f2d61dc6aa6|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/averageweight_workflow_2019*version=1709832101182676|t19789.7231930138s||413376701|rds|gcp|vector|||0.005||
 bgg_outcomes|function|934be5561cac9fa2|||||||||||||||
 build_outcome_recipe|function|e5de65f6f24c54ab|||||||||||||||
 build_outcome_workflow|function|75764b8d91189d30|||||||||||||||
@@ -56,8 +56,8 @@ make_outcome_recipes|function|d552f78e6da342c3|||||||||||||||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
-model_report_2019|stem|92de1c9cdbf39032|21b8b1c0feca9f78|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19789.6923130241s|6bc3c877d2b39d85|3062309|file|local|vector|||3.79||
-model_spec|stem|35ad3a8266fe66aa|74cd070e4244b9e3|ef46db3751d8e999|-990697664|bucket=bgg_data*key=models/objects/model_spec*version=1709600628775070|t19787.0443130171s||308|rds|gcp|vector|||0.003||
+model_report_2019|stem|4e01e711869e96ad|21b8b1c0feca9f78|60c2322df0b3530b|-1624426928|model_report.html*model_report.Rmd|t19790.7301334137s|1a17377299232d93|3081518|file|local|vector|||4.509||
+model_spec|stem|85d2a4707d57caf3|613257e5f2c9e784|ef46db3751d8e999|-990697664|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/model_spec*version=1709832003889583|t19789.7222647703s||332|rds|gcp|vector|||0.002||
 outcome_assess_split|function|25f4c23213763c54|||||||||||||||
 outcome_tuning_split|function|3c97d53c322d229a|||||||||||||||
 pivot_outcomes|function|90829ebc094a3117|||||||||||||||
@@ -67,7 +67,7 @@ predict_hurdle|function|1e544218d942ac1b|||||||||||||||
 predict_outcomes|function|e09f8cfc53e7f7c9|||||||||||||||
 predict_sim|function|ac7b02cc939ab133|||||||||||||||
 predict_usersrated|function|22dbf65a85b1c56b|||||||||||||||
-predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
+predictions_2019|stem|5429a1c548e97635|8194e1a236efb7ce|815bc5a83fb34aaa|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/predictions_2019*version=1709919078203561|t19790.7300533273s||5570914|rds|gcp|vector|||529.275||
 predictor_vars|function|5920e1f635cc2ee7|||||||||||||||
 preprocess_bgg_games|function|b3ea7160bc20d220|||||||||||||||
 preprocess_outcome|function|598018933cb1678e|||||||||||||||
@@ -91,17 +91,17 @@ train_outcome_model|function|07b9287570047389|||||||||||||||
 training_2015|stem||f953e6dfffa5452a|673de7466bebe0ff|-2011844015||t19786.6612559291s||0|rds|gcp|vector|||0.003||could not find function training_2015
 training_data_2019|stem|fa7fccca0084b7ad|8222fc98ecfddd59|122a8a4d8cbfdb30|-452326442|bucket=bgg_data*key=models/objects/training_data_2019*version=1709658674692814|t19787.7160655225s||41142335|rds|gcp|vector|||0.017||
 training_data_2021|stem|6420896b418a8714|69451bb58c0bc12b|ac6be7a89dd3c5a5|-1168025648|bucket=bgg_data*key=models/objects/training_data_2021*version=1709567721171424|t19786.6633352006s||46515188|rds|gcp|vector|||0.014||
-training_imputed_2019|stem|0996a879cdd9a0d5|e9c31fa48a52b8e9|53cd84600f11e7e3|228302738|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/training_imputed_2019*version=1709823064893982|t19789.6187739271s||41774710|rds|gcp|vector|||12.862||
+training_imputed_2019|stem|d5f65e6465098ff8|e9c31fa48a52b8e9|00864bddb21b235d|228302738|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/training_imputed_2019*version=1709838378260914|t19789.7960196517s||41513753|rds|gcp|vector|||2150.898||
 tree_models|function|5996000ebef87d97|||||||||||||||
 truncate_averageweight|function|f53f1fb6ddc6d804|||||||||||||||
 tune_workflow|function|63933ab33c55eb13|||||||||||||||
 tune_workflows|function|e507bb5e69113e7d|||||||||||||||
-tuning_grid|stem|753da26dcc1f761c|b3ff6d01114a976e|ef46db3751d8e999|1796853018|bucket=bgg_data*key=models/objects/tuning_grid*version=1709600628480294|t19787.0443096227s||260|rds|gcp|vector|||1.541||
-usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|81923f2fcd6c40a1|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_last_fit_2019*version=1709829270936118|t19789.6906080283s||13548762|rds|gcp|vector|||19.728||
-usersrated_model_2019|stem|5cc531eed5437a17|e937b13665c01f53|12ef504c9a1e5b76|1183094964|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_model_2019*version=1709829406676397|t19789.6918735263s||623211426|rds|gcp|vector|||21.232||
-usersrated_recipe_2019|stem|def63d1e8e484fc2|af770eb1bce17f47|36fd3f46878d8716|-1102203476|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_recipe_2019*version=1709823506910086|t19789.6226927836s||584764565|rds|gcp|vector|||0.089||
-usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_split_2019*version=1709823075639287|t19789.6189207257s||13515637|rds|gcp|vector|||0.478||
-usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_tuned_2019*version=1709826567275317|t19789.6593248967s||13024371|rds|gcp|vector|||1159.845|NAs introduced by coercion|
-usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
-validation_imputed_2019|stem|e251e6c1d340902e|a543f37a20a4b014|53cd84600f11e7e3|-1068696117|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/validation_imputed_2019*version=1709823039571797|t19789.6185063628s||5460245|rds|gcp|vector|||1.451||
+tuning_grid|stem|03e491e56666c6c2|a6a4688e32121545|ef46db3751d8e999|1796853018|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/tuning_grid*version=1709832003527169|t19789.7222602813s||179|rds|gcp|vector|||4.663||
+usersrated_last_fit_2019|stem|60238d04a43bb25b|2f0ae9404e7415ad|33132a5a69fa2d72|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_last_fit_2019*version=1709856776161394|t19790.0089738249s||13475739|rds|gcp|vector|||1519.541||
+usersrated_model_2019|stem|c4fbb2c1dc2291e6|e937b13665c01f53|173dd1a3ad5b760e|1183094964|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_model_2019*version=1709918503757926|t19790.7232309085s||630137686|rds|gcp|vector|||2040.136|The number of neighbors should be  0 and  9. Truncating the value.. input string 1 is invalid in this locale|
+usersrated_recipe_2019|stem|6f9414a693a6568b|af770eb1bce17f47|a6e1a2ead8e25f3f|-1102203476|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_recipe_2019*version=1709838605847039|t19789.798494093s||581824946|rds|gcp|vector|||0.105||
+usersrated_split_2019|stem|ac7e43b519c5acf0|6174feee7f8caad2|52078a5d5b89c5af|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_split_2019*version=1709838390366864|t19789.796174179s||13448507|rds|gcp|vector|||0.524||
+usersrated_tuned_2019|stem|5c845c1669590392|20a468a1ae7fcf9c|b5fd16aa458774a1|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_tuned_2019*version=1709849927175535|t19789.9297025605s||12607783|rds|gcp|vector|||6895.168|NAs introduced by coercion|
+usersrated_workflow_2019|stem|7a7c7cf251e2a86a|6dfbcc2a15efbc59|707784c5c882851c|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/usersrated_workflow_2019*version=1709838809712820|t19789.8008457706s||581825469|rds|gcp|vector|||0.032||
+validation_imputed_2019|stem|7ea7844eb184b289|a543f37a20a4b014|00864bddb21b235d|-1068696117|bucket=bgg_data*key=bgg_data/bgg_models/model/cubist/objects/validation_imputed_2019*version=1709836212844832|t19789.7709764759s||5431781|rds|gcp|vector|||97.014||
 year_splits|object|e55f2adaf03ea742|||||||||||||||

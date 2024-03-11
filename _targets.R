@@ -30,6 +30,8 @@ tar_option_set(
                      "bggUtils",
                      "googleCloudStorageR",
                      "tidymodels",
+                     "Cubist",
+                     "rules",
                      "qs"),
         repository = "gcp",
         resources = tar_resources(
@@ -168,21 +170,21 @@ list(
         tar_target(
                 name = model_spec,
                 command = 
-                        linear_reg(
-                                engine = "glmnet",
-                                penalty = tune::tune(),
-                                mixture = tune::tune()
+                        cubist_rules(
+                                mode = "regression",
+                                committees = tune::tune(),
+                                neighbors = tune::tune(),
+                                engine = "Cubist"
                         )
         ),
         # grid
         tar_target(
                 name = tuning_grid,
-                command =
+                command = 
                         grid_regular(
-                                penalty(range = c(-4, -1)),
-                                mixture(),
-                                levels = c(mixture = 5,
-                                           penalty = 10)
+                                rules::committees(),
+                                neighbors(),
+                                levels = 5:5
                         )
         ),
         # create train, validation, testing split based on year
