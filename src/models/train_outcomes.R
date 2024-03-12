@@ -137,7 +137,7 @@ build_recipe = function(data,
                         {{ outcome }},
                         new_role = "outcome"
                 ) %>%
-                # set anything else as extra
+                # set anything else as id
                 update_role(
                         -has_role("predictor"),
                         -has_role("outcome"),
