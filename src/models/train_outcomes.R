@@ -139,12 +139,10 @@ build_recipe = function(data,
                 ) %>%
                 # set anything else as extra
                 update_role(
-                        -has_role("id"),
                         -has_role("predictor"),
                         -has_role("outcome"),
-                        new_role = "extra"
+                        new_role = "id"
                 ) 
-        
 }
 
 # function for extracting dummies from nominal features
