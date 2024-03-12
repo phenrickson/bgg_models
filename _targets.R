@@ -66,7 +66,7 @@ tar_source("src/models/assess.R")
 tar_source("src/visualizations/models.R")
 
 # function to extract model name
-extract_model_name = function(workflow) {
+extract_engine_name = function(workflow) {
         
         outcome = 
                 workflow |> 

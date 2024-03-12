@@ -80,6 +80,8 @@ predictor_vars= function(vars =
                                    "playingtime",
                                    "minplaytime",
                                    "maxplaytime",
+                                   "image",
+                                   "thumbnail",
                                    "minage",
                                    "categories",
                                    "mechanics",
