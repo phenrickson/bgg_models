@@ -94,8 +94,7 @@ build_outcome_recipe =
     function(data,
              outcome,
              id_vars,
-             predictor_vars,
-             spline_vars) {
+             predictor_vars) {
         
         data |>
             build_recipe(
@@ -109,17 +108,8 @@ build_outcome_recipe =
             add_imputation() |>
             # create dummies
             add_bgg_dummies() |>
-            # add splines for nonlinearities
-            # splines with a fourth degree polynomial for year
-            add_splines(vars = "year", degree = 4) |>
-            # splines with fifth degree polynomials for mechanics/categories
-            add_splines(vars = spline_vars) |>
             # remove zero variance
-            step_zv(all_numeric_predictors()) |>
-            # remove highly correlated
-            step_corr(all_numeric_predictors(), threshold = 0.95) |>
-            # normalize
-            step_normalize(all_numeric_predictors())
+            step_zv(all_numeric_predictors())
     }
 
 # function to build workflow for an outcome given a model specification and a recipe
@@ -208,22 +198,22 @@ list(
     tar_target(
         name = model_spec,
         command = 
-            linear_reg(
-                engine = "glmnet",
-                penalty = tune::tune(),
-                mixture = tune::tune()
-            )
+                        boost_tree(
+                                trees = 500,
+                                min_n = tune(),
+                                sample_size = tune(),
+                                learn_rate = tune(),
+                                tree_depth = tune(),
+                                stop_iter = 50
+                        ) %>%
+                        set_mode("regression") %>%
+                        set_engine("xgboost",
+                                   eval_metric = 'rmse')
     ),
     # grid
     tar_target(
         name = tuning_grid,
-        command =
-            grid_regular(
-                penalty(range = c(-4, -1)),
-                mixture(),
-                levels = c(mixture = 5,
-                           penalty = 10)
-            )
+        command = 10
     ),
     # create train, validation, testing split based on year
     tar_target(
