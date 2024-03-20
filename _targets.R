@@ -117,7 +117,9 @@ build_outcome_recipe =
             # remove zero variance
             step_zv(all_numeric_predictors()) |>
             # remove highly correlated
-            step_corr(all_numeric_predictors(), threshold = 0.95) |>
+            step_corr(all_numeric_predictors(), threshold = 0.9) |>
+            # remove any linear combinations
+            step_lincomb(all_numeric_predictors()) |>
             # normalize
             step_normalize(all_numeric_predictors())
     }
@@ -140,16 +142,14 @@ build_outcome_workflow =
 tune_workflow = function(workflow,
                          resamples,
                          metrics,
-                         grid,
                          save_pred = T,
                          ...) {
     
     workflow |>
-        tune_grid(
+        fit_resamples(
             resamples = resamples,
-            grid = grid,
             metrics = metrics,
-            control = tune::control_grid(save_pred = save_pred,
+            control = tune::control_resamples(save_pred = save_pred,
                                          verbose = T),
             ...
         )
@@ -208,22 +208,7 @@ list(
     tar_target(
         name = model_spec,
         command = 
-            linear_reg(
-                engine = "glmnet",
-                penalty = tune::tune(),
-                mixture = tune::tune()
-            )
-    ),
-    # grid
-    tar_target(
-        name = tuning_grid,
-        command =
-            grid_regular(
-                penalty(range = c(-4, -1)),
-                mixture(),
-                levels = c(mixture = 5,
-                           penalty = 10)
-            )
+            linear_reg()
     ),
     # create train, validation, testing split based on year
     tar_target(
@@ -275,8 +260,7 @@ list(
                 resamples =
                     averageweight_split |>
                     validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
+                metrics = reg_metrics
             )
     ),
     # fit model to entirety of training
@@ -344,8 +328,7 @@ list(
                 resamples =
                     average_split |>
                     validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
+                metrics = reg_metrics
             )
     ),
     # fit model on training set
@@ -404,8 +387,7 @@ list(
                 resamples =
                     usersrated_split |>
                     validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
+                metrics = reg_metrics
             )
     ),
     # fit model on training set

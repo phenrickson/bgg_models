@@ -587,6 +587,7 @@ impute_averageweight = function(data,
     
     model %>%
         augment(new_data = data) %>%
+        select(-starts_with(".resid")) |>
         mutate(.pred = truncate_averageweight(.pred)) %>%
         rename(est_averageweight = .pred)
     
@@ -670,6 +671,7 @@ predict_average = function(data,
     
     model %>%
         augment(data) %>%
+        select(-starts_with(".resid")) |>
         rename(.pred_average = .pred)
     
 }
@@ -680,6 +682,7 @@ predict_usersrated = function(data,
     
     model %>%
         augment(data) %>%
+        select(-starts_with(".resid")) |>
         mutate(.pred = round_usersrated(exp(.pred), round)) %>%
         rename(.pred_usersrated = .pred)
     
@@ -757,7 +760,7 @@ simulate_outcomes = function(data,
         
         foreach(i=1:ncol(sims_averageweight), .combine = 'bind_rows') %do% {
             
-            message(i)
+            cat(i, "of", ncol(sims_averageweight), "\r")
             
             prepped_outcome =
                 extract_recipe(average_fit) %>%
@@ -765,21 +768,26 @@ simulate_outcomes = function(data,
                          mutate(est_averageweight = sims_averageweight[,i])
                 )
             
-            tibble(
-                .pred_average = 
-                    simulateX(average_mod,
-                              nsim = 1,
-                              X = prepped_outcome) %>%
-                    pull(),
-                .pred_usersrated = 
-                    simulateX(usersrated_mod,
-                              nsim = 1,
-                              X = prepped_outcome) %>%
-                    pull()
-            ) %>%
+            out = 
+                tibble(
+                    .pred_average = 
+                        simulateX(average_mod,
+                                  nsim = 1,
+                                  X = prepped_outcome) %>%
+                        pull(),
+                    .pred_usersrated = 
+                        simulateX(usersrated_mod,
+                                  nsim = 1,
+                                  X = prepped_outcome) %>%
+                        pull() |>
+                        exp()
+                ) %>%
                 mutate(sim = paste("sim", i, sep = "_"),
                        .row = row_number())
             
+            flush.console()
+            
+            out
         }
         
     }
@@ -797,177 +805,8 @@ simulate_outcomes = function(data,
         left_join(.,
                   data %>%
                       mutate(.row = row_number()) %>%
-                      select(.row, game_id, name, yearpublished)) %>%
+                      select(.row, game_id, name, yearpublished)) |>
+        rename(.pred_averageweight = est_averageweight) |>
         select(.row, yearpublished, game_id, name, everything())
-    #                      names_to = "sim",
-    #                      values_to = "est_averageweight") %>%
-    
-    
-    # simulate_outcome = function(mod,
-    #                             prepped_data,
-    #                             ...) {
-    # 
-    #         # get coefs
-    #         coefs = coef(mod) %>% replace_na(., 0)
-    # 
-    #         # get variance-covariance matrix
-    #         cov = vcov(mod)
-    #         cov[is.na(cov)]=0
-    # 
-    #         # simulate coefficients
-    #         betas = MASS::mvrnorm(n = 1,
-    #                               mu = coefs,
-    #                               Sigma = cov) %>%
-    #                 data.frame() %>%
-    #                 as.matrix()
-    # 
-    #         foreach(i=1:ncol(sims_averageweight)) %do% {
-    # 
-    #                 message(i)
-    # 
-    #                 xi = prepped_data %>%
-    #                         mutate(est_averageweight = sims_averageweight[,i]) %>%
-    #                         select(any_of(names(coefs))) %>%
-    #                         as.matrix() %>%
-    #                         cbind(1, .)
-    # 
-    #                 xi %*% betas
-    # 
-    #         }
-    # 
-    # }
-    # 
-    # sims_averageweight = simulate_averageweight()
-    # 
-    # simulate_outcome(average_mod,
-    #                  prepped_data = prepped_outcome)
-    
-    # simulate_outcome = function(mod,
-    #                             ...) {
-    #
-    #         foreach(i=1:ncol(sims_averageweight),
-    #                 .combine = 'bind_rows') %dopar% {
-    #
-    #                         message(i)
-    #
-    #                         simulateX(mod,
-    #                                   nsim = 1,
-    #                                   X = prepped_average %>%
-    #                                           mutate(est_averageweight = sims_averageweight[i,])
-    #                         ) %>%
-    #                                 mutate(sim = paste("sim_i"))
-    #                 }
-    #
-    # }
-    
-    # sims_average = simulate_outcome(mod = average_mod)
-    # sims_usersrated = simulate_outcome(mod = usersrated_mod)
-    # 
-    # bind_cols(sims_average,
-    #           sims_usersrated)
-    
-    # 
-    # simulate_average = function(...) {
-    #         
-    #                 simulateX(average_mod,
-    #                           nsim = 1,
-    #                           X = prepped_average %>%
-    #                                   mutate(est_averageweight = sim_averageweight))
-    #         
-    #         sim_usersrated =
-    #                 simulateX(average_mod,
-    #                           nsim = 1,
-    #                           X = prepped_average %>%
-    #                                   mutate(est_averageweight = sim_averageweight)) %>%
-    #                 pull()
-    #         
-    #         sim_usersrated
-    #         
-    #         # bind_cols(
-    #         #         sim_averageweight,
-    #         #         sim_average,
-    #         #         sim_usersrated
-    #         # )
-    #         # calculate_bayesaverage() %>%
-    #         # pull(.pred_bayesaverage)
-    #         
-    # }
-    # 
-    # simulate_averageweight()
-    
-    # out = list()
-    # 
-    # for (i in 1:sims) {
-    #         
-    #         message(i)
-    #         
-    #         out[[i]] = simulate_bayesaverage()
-    #         
-    # }
-    
-    #future.apply::future_replicate(sims, simulate_bayesaverage())
-    
-    # sim_average
-    #                        
-    #         
-    # list(mod = average_fit,
-    #      prepped = prepped_average %>%
-    #              mutate(est_averageweight = sim_averageweight)
-    # )
-    
-    # sims %>%
-    #         
-    
-    # sims_averageweight = 
-    #         simulateX(averageweight_mod,
-    #                   nsim = sims,
-    #                   X = prepped)
-    # 
-    # sims_imputed =
-    #         sims_averageweight %>%
-    #         bind_cols(.,
-    #                   prepped_average) %>%
-    #         mutate(across(starts_with("sim_"),
-    #                       truncate_averageweight)) %>%
-    #         pivot_longer(cols = starts_with("sim_"),
-    #                      names_to = "sim",
-    #                      values_to = "est_averageweight") %>%
-    #         nest(data = -sim)
-    # # 
-    # sims_average = 
-    #         sims_imputed %>%
-    #         mutate(average = furrr::future_map(data,
-    #                               ~ simulateX(average_mod,
-    #                                           nsim = 1,
-    #                                           X = .x) %>%
-    #                                       rename(.pred_average = sim_1)))
-    # 
-    # sims_usersrated = 
-    #         sims_imputed %>%
-    #         mutate(usersrated = furrr::future_map(data,
-    #                                  ~ simulateX(usersrated_mod,
-    #                                              nsim = 1,
-    #                                              X = .x) %>%
-    #                                          rename(.pred_usersrated = sim_1)))
-    # 
-    # list("sims_averageweight" = 
-    #              sims_averageweight %>%
-    #              mutate(across(starts_with("sim_"),
-    #                            truncate_averageweight)) %>%
-    #              pivot_longer(cols = starts_with("sim_"),
-    #                           names_to = "sim",
-    #                           values_to = ".pred_averageweight") %>%
-    #              nest(data = -sim) %>%
-    #              rename(averageweight = data) %>%
-    #              select(sim, averageweight),
-    #      "sims_average" = 
-    #              sims_average %>%
-    #              select(sim, average),
-    #      "sims_usersrated" = 
-    #              sims_usersrated %>%
-    #              select(sim, usersrated),
-    #      "data" = data)
-    
-    # sims_averageweight
     
 }
