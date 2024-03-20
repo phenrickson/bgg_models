@@ -10,6 +10,10 @@ library(tarchetypes) # Load other packages as needed.
 # authenticate to GCR and and set bucket
 library(googleCloudStorageR)
 
+# install bonsai for lightgbm
+renv::install('bonsai',
+              prompt = F)
+
 # set global bucket
 gcs_global_bucket("bgg_data")
 
@@ -31,6 +35,7 @@ tar_option_set(
                  "googleCloudStorageR",
                  "tidymodels",
                  "gert",
+                 "bonsai",
                  "quarto",
                  "qs"),
     repository = "gcp",
@@ -198,17 +203,13 @@ list(
     tar_target(
         name = model_spec,
         command = 
-            boost_tree(
-                trees = tune::tune(),
+            parsnip::boost_tree(
+                mode = "classification",
+                trees = 500,
                 min_n = tune(),
-                sample_size = tune(),
-                learn_rate = tune(),
                 tree_depth = tune(),
-                stop_iter = 50
             ) %>%
-            set_mode("regression") %>%
-            set_engine("xgboost",
-                       eval_metric = 'rmse')
+            set_engine("lightgbm")
     ),
     # grid
     tar_target(
