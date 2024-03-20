@@ -198,17 +198,17 @@ list(
     tar_target(
         name = model_spec,
         command = 
-                        boost_tree(
-                                trees = 500,
-                                min_n = tune(),
-                                sample_size = tune(),
-                                learn_rate = tune(),
-                                tree_depth = tune(),
-                                stop_iter = 50
-                        ) %>%
-                        set_mode("regression") %>%
-                        set_engine("xgboost",
-                                   eval_metric = 'rmse')
+            boost_tree(
+                trees = tune::tune(),
+                min_n = tune(),
+                sample_size = tune(),
+                learn_rate = tune(),
+                tree_depth = tune(),
+                stop_iter = 50
+            ) %>%
+            set_mode("regression") %>%
+            set_engine("xgboost",
+                       eval_metric = 'rmse')
     ),
     # grid
     tar_target(
@@ -248,8 +248,7 @@ list(
             build_outcome_recipe(
                 outcome = averageweight,
                 id_vars = id_vars(),
-                predictor_vars = predictor_vars(),
-                spline_vars = spline_vars()
+                predictor_vars = predictor_vars()
             ) |>
             # create workflow
             build_outcome_workflow(
@@ -315,9 +314,7 @@ list(
                 outcome = average,
                 id_vars = id_vars(),
                 predictor_vars = c(predictor_vars(),
-                                   "est_averageweight"),
-                spline_vars = c(spline_vars(),
-                                "est_averageweight")
+                                   "est_averageweight")
             ) |>
             # create workflow
             build_outcome_workflow(
@@ -375,9 +372,7 @@ list(
                 outcome = log_usersrated,
                 id_vars = id_vars(),
                 predictor_vars = c(predictor_vars(),
-                                   "est_averageweight"),
-                spline_vars = c(spline_vars(),
-                                "est_averageweight")
+                                   "est_averageweight")
             ) |>
             # create workflow
             build_outcome_workflow(
