@@ -204,7 +204,7 @@ list(
         name = model_spec,
         command = 
             parsnip::boost_tree(
-                mode = "classification",
+                mode = "regression",
                 trees = 500,
                 min_n = tune(),
                 tree_depth = tune(),
@@ -214,7 +214,13 @@ list(
     # grid
     tar_target(
         name = tuning_grid,
-        command = 10
+        command =   grid_max_entropy(
+            x = dials::parameters(
+                min_n(), # 2nd important
+                tree_depth() # 3rd most important
+            ),
+            size = 20
+        )
     ),
     # create train, validation, testing split based on year
     tar_target(
