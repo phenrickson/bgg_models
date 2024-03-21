@@ -1,0 +1,156 @@
+---
+title: "Model Runs"
+author: 
+- "`r system('git config user.name', intern = T)`\n"
+- "`r system('git symbolic-ref --short HEAD', intern = T)`"
+date: "`r Sys.Date()`"
+format: gfm
+editor: source
+execute:
+    message: false
+    echo: false
+---
+
+```{r setup}
+#| include: false
+
+library(tidyverse)
+library(googleCloudStorageR)
+
+gcs_global_bucket('bgg_data')
+
+# function to read in gcs qs objects
+
+gcs_add_object_name = function(obj, object_name) {
+    
+    if(is.data.frame(obj)) {
+        obj$object_name = object_name
+        
+        obj = obj |>
+            select(object_name, everything())
+    }
+    
+    obj
+    
+}
+
+gcs_qread = function(object_name, ...) {
+    
+    gcs_obj = googleCloudStorageR::gcs_get_object(
+        object_name,
+        ...
+    )
+    
+    gcs_obj |>
+        qs::qdeserialize() |>
+        gcs_add_object_name(object_name)
+    
+}
+
+gcs_qread.download = function(object_name, ...) {
+    
+    tmp = tempfile()
+    
+    gcs_obj = googleCloudStorageR::gcs_get_object(
+        object_name,
+        saveToDisk = tmp,
+        ...
+    )
+    
+    qs::qread(tmp) |>
+        gcs_add_object_name(object_name)
+    
+}
+
+gcs_separate_object_name = function(data,
+                                    names = c("bucket", "project", "branch_type", "branch", "objects", "object"),
+                                    delim = "/",
+                                    ...) {
+    
+    data |>
+        separate_wider_delim(cols = object_name,  delim = delim, names = names, ...)
+    
+}
+
+```
+
+```{r load in metrics from model runs}
+#| message: false
+
+# load in results
+metrics_filtered = 
+    map(
+        gcs_list_objects() |>
+            as_tibble() |>
+            filter(grepl("metrics_filtered", name)) |>
+            pull(name),
+        ~ gcs_qread.download(.x)
+    )
+
+metrics_tidied = 
+    metrics_filtered |>
+    bind_rows() |>
+    gcs_separate_object_name() |>
+    select(bucket, project, branch_type, branch, object, everything())  |>
+    unite(branch_type:branch, col = "branch", sep = "/")
+
+```
+
+Show metrics for model runs, evaluating bgg outcomes
+ 
+```{r}
+
+metrics_tidied |>
+    select(branch, outcome, yearpublished, .metric, .estimate) |>
+    pivot_wider(
+        names_from = c(".metric"),
+        values_from = c(".estimate")
+    ) |>
+    mutate_if(is.numeric, round, 3) |>
+    filter(yearpublished == 2020) |>
+    group_by(outcome, yearpublished) |>
+    arrange(rmse) |>
+    as.data.frame()
+
+```
+
+Show metrics for model runs, evaluating ability to classify 'hits' - games that crack into the top 1000.
+
+
+```{r load results for predicting bgg hits}
+#| message: false
+#| warning: false
+#| include: false
+
+bgg_hit_metrics = 
+    map_df(
+        gcs_list_objects() |>
+            as_tibble() |>
+            filter(grepl("bgg_hit_metrics", name)) |>
+            pull(name),
+        ~ gcs_qread.download(.x)
+    )
+
+```
+
+
+```{r show results for bgg hits}
+
+bgg_hit_metrics |>
+    gcs_separate_object_name() |>
+    select(bucket, project, branch_type, branch, object, everything())  |>
+    unite(branch_type:branch, col = "branch", sep = "/") |>
+    select(branch, yearpublished, .metric, .estimate) |>
+    pivot_wider(
+        names_from = c(".metric"),
+        values_from = c(".estimate")
+    ) |>
+    mutate_if(is.numeric, round, 3) |>
+    group_by(yearpublished) |>
+    arrange(yearpublished, desc(mcc)) |>
+    select(-any_of("bal_accuracy")) |>
+    as.data.frame()
+    
+```
+    
+    
