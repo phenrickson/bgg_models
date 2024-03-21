@@ -107,7 +107,6 @@ metrics_tidied |>
         values_from = c(".estimate")
     ) |>
     mutate_if(is.numeric, round, 3) |>
-    filter(yearpublished == 2020) |>
     group_by(outcome, yearpublished) |>
     arrange(rmse) |>
     as.data.frame()
