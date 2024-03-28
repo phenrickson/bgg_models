@@ -1,0 +1,139 @@
+---
+title: "tidyposterior"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+#| include: false
+#| 
+library(googleCloudStorageR)
+gcs_global_bucket('bgg_data')
+
+renv::install('tidyposterior', prompt = F)
+library(tidyposterior)
+```
+
+You can add options to executable code like this
+
+```{r functions}
+#| include: false
+
+source(here::here("src/data/load_from_gcs.R"))
+source(here::here('src/models/assess.R'))
+
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+
+prediction_files = 
+    gcs_list_objects() |>
+    filter(grepl("predictions$", name))
+
+predictions = 
+    map_df(
+        prediction_files$name,
+        ~ gcs_qread(.x)
+    )
+
+predictions_tidy = 
+    predictions |>
+    separate_wider_delim(
+        cols = object_name,
+        names = c("bucket",
+                  "project", 
+                  "type", 
+                  "branch"),
+        too_few = 'align_start',
+        too_many = 'drop',
+        delim = "/"
+    ) |>
+    unite(bucket:branch,
+          col = object_name,
+          sep = "/")
+
+```
+
+```{r}
+
+reg_metrics = yardstick::metric_set(
+    yardstick::rmse,
+    yardstick::rsq
+)
+
+metrics = 
+    predictions_tidy |>
+    filter(usersrated >= 25) |>
+    group_by(object_name) |>
+    nest() |>
+    mutate(data = map(data, pivot_outcomes)) |>
+    unnest(data) |>
+    group_by(outcome, yearpublished, object_name) |>
+    assess_outcomes(
+        metrics = reg_metrics
+    )
+
+```
+
+```{r}
+
+temp = 
+    metrics |>
+    mutate(object_name = gsub("bgg_data/bgg_models/model/", "", object_name)) |>
+    select(object_name, outcome, yearpublished, .metric, .estimate) |> 
+    filter(.metric == 'rmse') |>
+    filter(outcome == 'average') |>
+    mutate(id = paste(outcome, yearpublished, sep = "-")) |>
+    select(id, object_name, .estimate) |>
+    pivot_wider(
+        names_from = c("object_name"),
+        values_from = c(".estimate")
+    )
+
+set.seed(1)
+perf = perf_mod(temp, iter = 3000)
+
+```
+```{r}
+
+perf %>% 
+    tidy() %>% 
+    ggplot(aes(y=model, 
+               x = posterior))+
+    ggridges::stat_density_ridges(
+        quantile_lines = T,
+        quantiles = 1,
+        quantile_fun = median,
+        alpha = 0.5,
+        fill = 'deepskyblue1',
+        color = 'black'
+    )+
+    theme_minimal()
+
+```
+
+```{r}
+
+contrast = 
+    contrast_models(perf)
+
+contrast |>
+    summary() |>
+    mutate_if(is.numeric, round, 3)
+
+contrast_models(perf) |>
+    autoplot() +
+    theme_minimal()
+
+```
+
