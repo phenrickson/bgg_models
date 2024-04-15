@@ -23,7 +23,18 @@ tar_load(bgg_hit_metrics)
 
 ```
 
-# Storage
+# pipeline
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| results: "asis"
+cat(c("```mermaid", targets::tar_mermaid(targets_only = T), "```"), sep = "\n")
+```
+
+
+# storage
 
 ```{r}
 
@@ -32,7 +43,7 @@ tar_option_get("resources") |>
 
 ```
 
-# Artifacts
+# artifacts
 
 ```{r}
 
@@ -51,9 +62,9 @@ targets::tar_meta(
 
 ```
 
-# Metrics
+# metrics
 
-## Outcomes
+## outcomes
 
 Games with at least 25 user ratings
 
@@ -65,7 +76,7 @@ outcome_metrics_filtered |>
 
 ```
 
-All games
+all games
 
 ```{r}
 
@@ -75,7 +86,7 @@ outcome_metrics_all |>
 
 ```
 
-## BGG Hits
+## bgg hits
 
 Evaluating classification performance where *bgg_hit* is defined as any game above 6.5 on the geek rating.
 
