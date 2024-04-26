@@ -1,0 +1,175 @@
+---
+title: "Model Results"
+format: gfm
+editor: source
+author: 
+- "`r system('git config user.name', intern = T)`\n"
+date: "`r Sys.Date()`"
+execute:
+    echo: false
+---
+
+```{r}
+#| include: false
+#| echo: false
+
+targets::tar_load_globals()
+
+tar_load(predictions)
+
+preds_plot = function(data) {
+    
+    data |>
+        pivot_outcomes() |>
+        left_join(
+            data |>
+                select(game_id, usersrated),
+            by = join_by(game_id)
+        ) |>
+        plot_predictions(
+            alpha = usersrated
+        )+
+        labs(
+            caption = paste(
+                "evaluating games from ",
+                paste(min(predictions$yearpublished), max(predictions$yearpublished), sep =)
+            )
+        )
+}
+
+preds_table = function(data,
+                       table.font.size = 12,
+                       ...) {
+    
+    data |>
+        gt::gt() |>
+        gt::fmt_number(
+            c(
+                starts_with(".pred"),
+                "average",
+                "averageweight",
+                "bayesaverage"
+            ),
+            decimals = 2
+        ) |>
+        gt::fmt_number(
+            c(".pred_usersrated",
+              "usersrated"),
+            decimals = 0
+        ) |>
+        gt::tab_options(
+            table.font.size = table.font.size,
+            ...
+        ) |>
+        gt::as_raw_html()
+}
+
+gt_options = function(gt,
+                      table.font.size = 12,
+                      ...) {
+    
+    gt |>
+        gt::tab_options(
+            table.font.size = table.font.size,
+            ...
+        ) |>
+        gt::as_raw_html()
+}
+
+```
+
+# pipeline
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| results: "asis"
+cat(c("```mermaid", targets::tar_mermaid(targets_only = T), "```"), sep = "\n")
+```
+
+# metrics
+
+## overall
+
+```{r}
+
+predictions |>
+    assess_outcomes_by_threshold(
+        metrics = my_reg_metrics(),
+        groups = c("outcome"),
+        threshold = c(0, 25)
+    ) |>
+    pivot_estimates() |>
+    gt::gt() |>
+    gt_options()
+
+```
+
+## yearpublished
+
+```{r}
+
+predictions |>
+    assess_outcomes_by_threshold(
+        metrics = my_reg_metrics(),
+        groups = c("outcome", "yearpublished"),
+        threshold = c(0, 25)
+    ) |>
+    pivot_estimates() |>
+    arrange(yearpublished) |>
+    gt::gt() |>
+    gt_options()
+
+```
+
+
+# predictions
+
+## validation
+
+```{r}
+#| message: false
+#| warning: false
+set.seed(1)
+predictions |>
+    pivot_outcomes() |>
+    left_join(
+        predictions |>
+            select(game_id, usersrated),
+        by = join_by(game_id)
+    ) |>
+    plot_predictions(
+        alpha = usersrated
+    )+
+    labs(
+        caption = paste(
+            "evaluating games from ",
+            paste(min(predictions$yearpublished), max(predictions$yearpublished), sep =)
+        )
+    )
+
+```
+
+what were the top games?
+
+```{r}
+
+predictions |>
+    slice_max(.pred_bayesaverage, n = 25) |>
+    arrange(desc(.pred_bayesaverage)) |>
+    mutate(rank = row_number()) |>
+    select(
+        rank,
+        game_id,
+        name,
+        yearpublished,
+        starts_with(".pred_"),
+        any_of(c("average", "averageweight", "bayesaverage", "usersrated"))
+    ) |>
+    mutate_if(is.numeric, round, 3) |>
+    preds_table()
+
+```
+
+
