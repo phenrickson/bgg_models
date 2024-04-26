@@ -7,69 +7,47 @@
 library(targets)
 library(tarchetypes) # Load other packages as needed.
 
-# authenticate to GCR and and set bucket
-library(googleCloudStorageR)
-
-# set global bucket
-gcs_global_bucket("bgg_data")
-
-# function to set where i'm storing
-set_gcp_prefix = function(bucket = gcs_get_global_bucket(), project, branch) {
-    
-    paste(
-        bucket,
-        project,
-        branch,
-        sep = "/"
-    )
-}
-
 # packages
 tar_option_set(
     packages = c("dplyr",
                  "bggUtils",
-                 "googleCloudStorageR",
                  "tidymodels",
                  "gert",
                  "quarto",
                  "qs"),
-    repository = "gcp",
+    repository = "local",
     resources = tar_resources(
         gcp = tar_resources_gcp(
-            bucket = "bgg_data",
-            prefix = set_gcp_prefix(
-                bucket = gcs_get_global_bucket(),
-                project = "bgg_models",
-                branch = gert::git_branch()
-            )
+            bucket = "bgg_models",
+            prefix = 'bgg_models'
         )
     ),
     format = "qs"
 )
 
-# function to laod games
+# function to retrieve games stored in gcp bucket
 load_games = function(object_name = "raw/objects/games",
-                      generation = "1708980495752949",
                       bucket = "bgg_data",
                       ...) {
     
-    googleCloudStorageR::gcs_get_object(object_name = object_name,
-                                        generation = generation,
-                                        bucket = bucket,
-                                        ...) |>
-        qs::qdeserialize()
+    bggUtils::get_games_from_gcp(
+        bucket = bucket,
+        object_name = object_name,
+        generation = generation)
     
 }
 
+# function to preprocess games
+preprocess_games = function(data) {
+    data |>
+        bggUtils::preprocess_bgg_games()
+}
+
 # functions
-tar_source("src/features/preprocess_games.R")
-tar_source("src/models/train_outcomes.R")
+tar_source("src/data/load_data.R")
+tar_source("src/models/training.R")
 tar_source("src/models/assess.R")
 tar_source("src/visualizations/models.R")
-
-# parameter for targets
-end_train_year = 2019
-valid_years = 3
 
 # function to extract model name
 extract_engine_name = function(workflow) {
@@ -180,28 +158,31 @@ predict_bayesaverage = function(data,
         )
 }
 
+# parameters for targets
+end_train_year = 2020
+valid_years = 2
+retrain_years = valid_years - 1
+
 # Replace the target list below with your own:
 # targets definine data splitting strategy for training and validation
 list(
     tar_target(
         games_raw,
         command = 
-            load_games()
+            load_games(generation = "1708980495752949"),
+        packages = c("googleCloudStorageR")
     ),
     tar_target(
         name = games_prepared,
         command = games_raw |>
+            # apply preprocessing
             preprocess_games() |>
+            # remove games missing yearpublished
             filter(!is.na(yearpublished))
     ),
     tar_target(
         name = reg_metrics,
-        command = metric_set(
-            yardstick::rmse,
-            yardstick::mae,
-            yardstick::mape,
-            yardstick::rsq
-        )
+        command = my_reg_metrics()
     ),
     # create training, validation, and test splits based around the yearpublished
     # model and grid
@@ -243,7 +224,7 @@ list(
             outcome_tuning_split(
                 outcome = averageweight,
                 weights = 5,
-                valid_years = 2,
+                valid_years = valid_years,
                 test_years = 0
             )
     ),
@@ -310,7 +291,7 @@ list(
             training_imputed |>
             outcome_tuning_split(
                 outcome = average,
-                valid_years = 2,
+                valid_years = valid_years,
                 test_years = 0
             )
     ),
@@ -370,7 +351,7 @@ list(
             mutate(log_usersrated = log(usersrated)) |>
             outcome_tuning_split(
                 outcome = log_usersrated,
-                valid_years = 2,
+                valid_years = valid_years,
                 test_years = 0
             )
     ),
@@ -446,41 +427,76 @@ list(
     # for the outcomes, we'll limit to games with at least 25 user ratings...
     # will doublecheck on this
     tar_target(
-        name = outcome_metrics_filtered,
+        name = metrics,
         command = 
             predictions |>
-            filter(usersrated >= 25) |>
-            pivot_outcomes() |>
-            group_by(outcome, yearpublished) |>
-            assess_outcomes(
-                metrics = my_reg_metrics()
+            assess_outcomes_by_threshold(
+                metrics = my_reg_metrics(),
+                groups = c("outcome"),
+                threshold = c(0, 25)
             )
     ),
-    tar_target(
-        name = outcome_metrics_all,
-        command = 
-            predictions |>
-            pivot_outcomes() |>
-            group_by(outcome, yearpublished) |>
-            assess_outcomes(
-                metrics = my_reg_metrics()
-            )
-    ),
-    tar_target(
-        bgg_hit_metrics,
-        command = 
-            predictions |>
-            mutate(bayesaverage = replace_na(bayesaverage, 5.5)) |>
-            calculate_bgg_hit(threshold = 6.5) |>
-            group_by(yearpublished, threshold) |>
-            assess_bgg_hit(
-                metrics = my_class_metrics()
-            )
-    ),
-    # render report
+    # render report with quarto
     tar_quarto(
         report,
         path = "results.qmd",
         quiet = F
+    ),
+    ## finalize models
+    tar_target(
+        name = training_and_validation,
+        command = 
+            bind_rows(
+                training_imputed,
+                validation_imputed
+            ) |>
+            # only add in one year from the validation set
+            filter(yearpublished <= end_train_year + retrain_years)
+    ),
+    # fit final models and convert to vetiver
+    tar_target(
+        averageweight_vetiver,
+        command = 
+            averageweight_fit |>
+            fit(
+                training_and_validation |>
+                    preprocess_outcome(
+                        outcome = averageweight,
+                        weights = 5
+                    )
+            ) |>
+            vetiver::vetiver_model(
+                "bgg_averageweight"
+            )
+    ),
+    tar_target(
+        average_vetiver,
+        command = 
+            average_fit |>
+            fit(
+                training_and_validation |>
+                    preprocess_outcome(
+                        outcome = average,
+                        weights = 0
+                    )
+            ) |>
+            vetiver::vetiver_model(
+                "bgg_average"
+            )
+    ),
+    tar_target(
+        usersrated_vetiver,
+        command = 
+            usersrated_fit |>
+            fit(
+                training_and_validation |>
+                    mutate(log_usersrated = log(usersrated)) |>
+                    preprocess_outcome(
+                        outcome = usersrated
+                    )
+            ) |>
+            vetiver::vetiver_model(
+                "bgg_usersrated"
+            )
     )
 )

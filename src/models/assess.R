@@ -27,10 +27,10 @@ pivot_estimates = function(data,
                            ...) {
     
     data |>
-    pivot_wider(
-        names_from = c(".metric"),
-        values_from = c(".estimate"),
-        ...) |>
+        pivot_wider(
+            names_from = c(".metric"),
+            values_from = c(".estimate"),
+            ...) |>
         select(-.estimator) |>
         as.data.frame()
 }
@@ -98,8 +98,32 @@ assess_outcomes = function(data,
         metrics(
             truth = actual,
             estimate = .pred
+        ) |>
+        mutate(across(c(.estimate),
+                      ~ round(.x, digits = 3)
+                      )
         )
     
+}
+
+## assess outcomes with filtering
+assess_outcomes_by_threshold = function(data,
+                                        metrics = my_reg_metrics(),
+                                        groups = c("outcome", "yearpublished"),
+                                        threshold = c(0, 25)) {
+    
+    
+    map_df(
+        threshold,
+        ~ data |>
+            filter(usersrated >=.x) |>
+            pivot_outcomes() |>
+            mutate(minratings := .x) |>
+            group_by(minratings, across(any_of(groups))) |>
+            assess_outcomes(
+                metrics = metrics
+            ) 
+    )
 }
 
 # calculate classification metrics for whether a game becomes a hit
@@ -140,7 +164,8 @@ assess_bgg_hit = function(data,
         )
 }
 
-plot_predictions =  function(data) {
+plot_predictions =  function(data,
+                             ...) {
     
     data |>
         mutate(actual = case_when(outcome == 'usersrated' ~ log1p(actual),
@@ -150,10 +175,9 @@ plot_predictions =  function(data) {
         ) |>
         mutate(yearpublished = as.character(yearpublished)) |>
         ggplot(aes(x=.pred, 
-                   color = yearpublished,
+                   ...,
                    y=actual)) +
-        geom_point(alpha = 0.5,
-                   position = ggforce::position_jitternormal(sd_y = 0.05))+
+        geom_point(position = ggforce::position_jitternormal(sd_y = 0.05))+
         facet_wrap(outcome ~.,
                    scales = "free")+
         geom_abline(slope = 1,
@@ -168,6 +192,7 @@ plot_predictions =  function(data) {
 table_predictions = function(predictions,
                              ...) {
     
+    require(reactable)
     
     tab = predictions |>
         pivot_outcomes() |>
