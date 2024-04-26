@@ -109,7 +109,10 @@ metrics_tidied |>
     mutate_if(is.numeric, round, 3) |>
     group_by(outcome, yearpublished) |>
     arrange(yearpublished, rmse) |>
-    as.data.frame()
+    as.data.frame() |>
+    group_by(outcome, yearpublished) |>
+    gt::gt() |>
+    gt::as_raw_html()
 
 ```
 
