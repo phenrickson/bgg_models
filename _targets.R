@@ -48,24 +48,7 @@ tar_source("src/data/load_data.R")
 tar_source("src/models/training.R")
 tar_source("src/models/assess.R")
 tar_source("src/visualizations/models.R")
-
-# function to extract model name
-extract_engine_name = function(workflow) {
-    
-    outcome = 
-        workflow |> 
-        extract_mold() |>
-        pluck("outcomes") |> 
-        names()
-    
-    engine = 
-        workflow |>
-        extract_spec_parsnip() |>
-        pluck("engine")
-    
-    paste(outcome, engine, sep = "-")
-    
-}
+tar_source("src/models/tracking.R")
 
 # function to build a recipe and apply series of steps given an outcome
 build_outcome_recipe = 
@@ -139,7 +122,8 @@ predict_bayesaverage = function(data,
                                 usersrated_model,
                                 ratings = 2000) {
     
-    data |>
+    # get predictions
+        data |>
         predict_average(
             model = average_model
         ) |>
@@ -156,6 +140,7 @@ predict_bayesaverage = function(data,
                starts_with(".pred"),
                everything()
         )
+    
 }
 
 # parameters for targets
@@ -436,10 +421,25 @@ list(
                 threshold = c(0, 25)
             )
     ),
+    # get workflow details to this
+    tar_target(
+        name = details,
+        command = 
+            map_df(
+                list(
+                    average_fit,
+                    averageweight_fit,
+                    usersrated_fit
+                ),
+                extract_workflow_details
+            ) |>
+            mutate(outcome = case_when(outcome == 'log_usersrated' ~ 'usersrated',
+                                       .default = outcome))
+    ),
     # render report with quarto
     tar_quarto(
         report,
-        path = "results.qmd",
+        path = "targets-runs/results.qmd",
         quiet = F
     ),
     ## finalize models
