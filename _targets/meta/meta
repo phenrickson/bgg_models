@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|fce4385f9882f300|||||||||||||||
+.Random.seed|object|9178723e6d869ab3|||||||||||||||
 add_bgg_dummies|function|f5223334d9ade40b|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_corr|function|a7156d710f1b0e97|||||||||||||||
@@ -51,6 +51,7 @@ build_outcome_workflow|function|75764b8d91189d30|||||||||||||||
 build_recipe|function|a052b1398cb22bea|||||||||||||||
 calculate_bayesaverage|function|283b99b71ce4f92a|||||||||||||||
 calculate_bgg_hit|function|ffe0ee6d136fb92f|||||||||||||||
+check_workflow_class|function|529711d54fbee42e|||||||||||||||
 coef_plot.glmnet|function|4d11f0cf915c812e|||||||||||||||
 collapse_categorical|function|21269c6e5539741d|||||||||||||||
 color_colorbar|function|4ddf1fc01a3b56b8|||||||||||||||
@@ -59,10 +60,15 @@ control_grid|function|0c0f3f0d95950127|||||||||||||||
 control_race|function|175b7244c4a12dec|||||||||||||||
 create_workflows|function|cc8a420fe9711fd4|||||||||||||||
 create_year_split|function|c658d02159a974ad|||||||||||||||
+details|stem|d2d28a9d3ded8ecb|62b75dc72a454c6d|f42a124dad00cfd8|131261106||t19842.7226655037s|eaf4be1ffe060f33|217|qs|local|vector|||0.024||
 discrete_vars|function|80bc599945b9e2ed|||||||||||||||
 end_train_year|object|59e5e5a503986d8c|||||||||||||||
 extract_engine_name|function|8d44d6ae5f134199|||||||||||||||
 extract_model_name|function|8d44d6ae5f134199|||||||||||||||
+extract_workflow_details|function|41fde50404f7703b|||||||||||||||
+extract_workflow_engine|function|46a58ef44c40bca6|||||||||||||||
+extract_workflow_outcome|function|d39d75b91604a303|||||||||||||||
+extract_workflow_params|function|ebf8980377377e6d|||||||||||||||
 families_allow_list|function|3a72e45e8de0f52d|||||||||||||||
 families_remove_list|function|b64f4cac38642f43|||||||||||||||
 file|stem|2e80923fb90fe5a2|d3a8a37159e570e2|ef46db3751d8e999|1735323524|bucket=bgg_data*key=models/objects/file*stage=data/raw/games.qs*version=1709236894139379|t19782.8339628553s|49c1a1611838f3ff|71900504|file|gcp|vector|||0.477||
@@ -71,6 +77,7 @@ games_imputed_2019|stem||51efdc0130cb1c9d|70a4e62a08fb492f|1434762926||t19787.08
 games_prepared|stem|7b48a4ccc5762d47|6db4b7f956b1a52a|ed0b1cc9e64f43f2|270007526||t19839.8145310786s|c434fa3b87bc4d8d|51601503|qs|local|vector|||19.78||
 games_raw|stem|a5906e07d34a0d41|9ce85d6596e11514|b1983150bbdb63ac|-450562005||t19839.7734496976s|49c1a1611838f3ff|71900504|qs|local|vector|||6.565||
 games_tidy|stem|7ec87ec688094c21|f2444485789fa2d8|1eb6ca5366be7937|-1430246907|bucket=bgg_data*key=models/objects/games_tidy*version=1709394396696375|t19784.6571041628s||57190694|rds|gcp|vector|||10.284||
+get_bayesaverage_method|function|32bf54712cfe6f1f|||||||||||||||
 get_glmnet_coefs|function|6fa17f92a9f77eaf|||||||||||||||
 get_glmnet_objs|function|1ae011e77111aa64|||||||||||||||
 id_vars|function|c2c3db37ac2818e4|||||||||||||||
@@ -83,7 +90,7 @@ load_raw_games|function|a47f17afaebf928e|||||||||||||||
 make_outcome_recipes|function|d552f78e6da342c3|||||||||||||||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
-metrics|stem|d0ebace46268d25b|e36029763971d73b|4abac519e256b251|1271126549||t19839.8573598154s|19e426cce5adb19f|489|qs|local|vector|||0.161||
+metrics|stem|d0ebace46268d25b|e36029763971d73b|4abac519e256b251|1271126549||t19842.7069987585s|19e426cce5adb19f|489|qs|local|vector|||0.318||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
 model_report_2019|stem|58a5951ac4fe725a|ea5a3a0af35aa2a9|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19793.6542722148s|6bc3c877d2b39d85|3062309|file|local|vector|||4.073||
 model_spec|stem|b25db816d1e16ef1|74cd070e4244b9e3|ef46db3751d8e999|-990697664||t19839.7542617086s|cb2068761c31cd19|278|qs|local|vector|||0.003||
@@ -102,7 +109,7 @@ predict_hurdle|function|1e544218d942ac1b|||||||||||||||
 predict_outcomes|function|e09f8cfc53e7f7c9|||||||||||||||
 predict_sim|function|ac7b02cc939ab133|||||||||||||||
 predict_usersrated|function|22dbf65a85b1c56b|||||||||||||||
-predictions|stem|b56fa23e6d7e48a4|8f328410e8f7c73e|86fc99a6283d89ef|995750475||t19839.8181638634s|6e4b6883b3b6ee5b|5326392|qs|local|vector|||2.104||
+predictions|stem|b56fa23e6d7e48a4|8f328410e8f7c73e|86fc99a6283d89ef|995750475||t19842.7032740271s|6e4b6883b3b6ee5b|5326392|qs|local|vector|||2.68||
 predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
 predictor_vars|function|77713acf7598ed14|||||||||||||||
 preprocess_bgg_games|function|2d36728550076d07|||||||||||||||
@@ -110,7 +117,8 @@ preprocess_games|function|0a9bfe60224904ff|||||||||||||||
 preprocess_outcome|function|598018933cb1678e|||||||||||||||
 publisher_allow_list|function|df51b4c498aa1c39|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
-report|stem|7dfefcbdc39eb0ed|7d5c27f990d21d2e|207b049aab4d99a9|787668912|results_files*results.md*results.qmd|t19839.8940479196s|ee1841c7432d8aa2|404938|file|local|vector|||9.485||
+report|stem|0c147d353cd73cb8|726bfcf14118d6d1|cd9e5debdd926461|787668912|targets-runs/results.md*targets-runs/results.qmd|t19842.7274093887s|442ab4322b55d170|304359|file|local|vector|||10.943||
+results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
 set_gcp_prefix|function|49bcb2a033aa454e|||||||||||||||
@@ -128,7 +136,9 @@ split_2021|stem|b996ebce08d65e46|9716850aca4db4bb|95732e51d82cf73c|467700351|buc
 split_imputed_2019|stem|df86a7dec504321c|f2a13092c3d2c4d8|01e3275e69841946|1252328928|bucket=bgg_data*key=models/objects/split_imputed_2019*version=1709662578862836|t19787.7612946507s||58247842|rds|gcp|vector|||0.004||object split_2019 not found
 splits|object|264ad358cb1700d5|||||||||||||||
 table_predictions|function|84845bea2f3c5ebe|||||||||||||||
+targets_tracking_details|function|d316439df6555437|||||||||||||||
 trace_plot.glmnet|function|1a54ef795638e2c2|||||||||||||||
+tracking|stem|da7e5646cbdfced7|64906aaabaa0da6b|f36f2f8b6bb4b71f|1621002234||t0s|f4066a65ff755f48|0|file|local|vector|||0.042||
 train_outcome_model|function|07b9287570047389|||||||||||||||
 training_2015|stem||f953e6dfffa5452a|673de7466bebe0ff|-2011844015||t19786.6612559291s||0|rds|gcp|vector|||0.003||could not find function training_2015
 training_and_validation|stem|9f9383a5af4bab9b|84da5758e33a0c96|ceb9ef4f4d497a1c|-337972277||t19839.8893453603s|cb0e404a02965dac|46049721|qs|local|vector|||1.033||
