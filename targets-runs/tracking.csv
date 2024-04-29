@@ -1,9 +1,9 @@
 "","time","user","model","penalty","mixture","minratings","outcome","rmse","mae","mape","rsq"
-"1",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.01,0.75,0,"average",1.306,0.925,16.582,0.108
-"2",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.022,0.25,0,"averageweight",0.554,0.426,25.405,0.521
-"3",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,0,"bayesaverage",0.306,0.18,2.987,0.391
-"4",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.022,0.75,0,"usersrated",1276.405,220.108,Inf,0.093
-"5",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.01,0.75,25,"average",0.698,0.512,7.724,0.257
-"6",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.022,0.25,25,"averageweight",0.487,0.374,20.818,0.618
-"7",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,25,"bayesaverage",0.306,0.18,2.987,0.391
-"8",2024-04-29 13:13:11.454928,"phil.henrickson@github.com","glmnet",0.022,0.75,25,"usersrated",2428.767,487.624,178.902,0.081
+"1",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.01,0.5,0,"average",1.302,0.922,16.488,0.113
+"2",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.005,0.75,0,"averageweight",0.55,0.422,25.158,0.527
+"3",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,0,"bayesaverage",0.302,0.176,2.92,0.41
+"4",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.046,0.25,0,"usersrated",1214.448,212.279,Inf,0.123
+"5",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.01,0.5,25,"average",0.687,0.505,7.612,0.28
+"6",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.005,0.75,25,"averageweight",0.48,0.368,20.501,0.628
+"7",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,25,"bayesaverage",0.302,0.176,2.92,0.41
+"8",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.046,0.25,25,"usersrated",2310.846,480.535,170.586,0.11
