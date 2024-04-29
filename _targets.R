@@ -123,7 +123,7 @@ predict_bayesaverage = function(data,
                                 ratings = 2000) {
     
     # get predictions
-        data |>
+    data |>
         predict_average(
             model = average_model
         ) |>
@@ -435,6 +435,25 @@ list(
             ) |>
             mutate(outcome = case_when(outcome == 'log_usersrated' ~ 'usersrated',
                                        .default = outcome))
+    ),
+    # output results for tracking
+    tar_target(
+        tracking,
+        command = 
+            targets_tracking_details(
+                metrics,
+                details
+            ) |>
+            mutate_if(is.numeric, round, 3) |>
+            add_column(
+                time = Sys.time(),
+                user = system('git config user.email', intern = T),
+            ) |>
+            select(time, user, everything()) |>
+            write.csv(
+                file = "targets-runs/tracking.csv"
+            ),
+        format = "file"
     ),
     # render report with quarto
     tar_quarto(

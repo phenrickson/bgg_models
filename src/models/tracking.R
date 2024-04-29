@@ -1,3 +1,28 @@
+targets_tracking_details = function(metrics, details) {
+    
+    bayesaverage_method = 
+        get_bayesaverage_method(details)
+    
+    metrics |>
+        pivot_wider(
+            names_from = c(".metric"),
+            values_from = c(".estimate")
+        ) |>
+        mutate_if(is.numeric, round, 3) |>
+        left_join(
+            details,
+            by = join_by(outcome)
+        ) |>
+        select(model = engine,
+               params,
+               everything()
+        ) |>
+        unnest(params, keep_empty = T) |>
+        mutate(model = replace_na(model, bayesaverage_method)) |>
+        select(-.estimator)
+    
+}
+
 check_workflow_class = function(workflow) {
     
     if (class(workflow) == "vetiver_model") {
@@ -36,6 +61,31 @@ extract_workflow_outcome = function(workflow) {
         pluck("outcomes") |>
         names()
     
+}
+
+get_bayesaverage_method = function(details) {
+    
+    if (
+        (nrow(details |> filter(outcome == 'bayesaverage')) == 0)
+    ) {
+        bayesaverage_method = 
+            paste(
+                details |>
+                    filter(outcome == 'average') |>
+                    pull(engine),
+                details |>
+                    filter(outcome == 'usersrated') |>
+                    pull(engine),
+                sep = "+"
+            )
+    } else {
+        bayesaverage_method = 
+            details |> 
+            filter(outcome == 'bayesaverage') |>
+            pull(engine)
+    }
+    
+    bayesaverage_method
 }
 
 extract_workflow_engine = function(workflow) {
