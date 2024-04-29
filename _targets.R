@@ -432,7 +432,9 @@ list(
                     usersrated_fit
                 ),
                 extract_workflow_details
-            )
+            ) |>
+            mutate(outcome = case_when(outcome == 'log_usersrated' ~ 'usersrated',
+                                       .default = outcome))
     ),
     # render report with quarto
     tar_quarto(
