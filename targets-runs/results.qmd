@@ -16,6 +16,7 @@ execute:
 targets::tar_load_globals()
 
 tar_load(predictions)
+tar_load(details)
 
 preds_plot = function(data) {
     
@@ -86,6 +87,40 @@ gt_options = function(gt,
 #| message: false
 #| results: "asis"
 cat(c("```mermaid", targets::tar_mermaid(targets_only = T), "```"), sep = "\n")
+```
+
+# workflows
+
+workflow objects
+
+```{r}
+
+targets::tar_meta(
+    c(ends_with("_tuned"),
+      ends_with("_fit"))
+) |>
+    select(
+        name,
+        time,
+        seconds
+    ) |>
+    gt::gt() |>
+    gt::fmt_datetime(
+        columns = c("time")
+    ) |>
+    gt_options()
+
+```
+
+workflow details
+
+```{r}
+
+details |>
+    unnest(params) |>
+    gt::gt() |>
+    gt_options()
+
 ```
 
 # metrics

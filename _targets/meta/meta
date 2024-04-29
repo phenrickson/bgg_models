@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|fce4385f9882f300|||||||||||||||
+.Random.seed|object|12e2bb30b90733e9|||||||||||||||
 add_bgg_dummies|function|f5223334d9ade40b|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_corr|function|a7156d710f1b0e97|||||||||||||||
@@ -51,6 +51,7 @@ build_outcome_workflow|function|75764b8d91189d30|||||||||||||||
 build_recipe|function|a052b1398cb22bea|||||||||||||||
 calculate_bayesaverage|function|283b99b71ce4f92a|||||||||||||||
 calculate_bgg_hit|function|ffe0ee6d136fb92f|||||||||||||||
+check_workflow_class|function|529711d54fbee42e|||||||||||||||
 coef_plot.glmnet|function|4d11f0cf915c812e|||||||||||||||
 collapse_categorical|function|21269c6e5539741d|||||||||||||||
 color_colorbar|function|4ddf1fc01a3b56b8|||||||||||||||
@@ -59,10 +60,15 @@ control_grid|function|0c0f3f0d95950127|||||||||||||||
 control_race|function|175b7244c4a12dec|||||||||||||||
 create_workflows|function|cc8a420fe9711fd4|||||||||||||||
 create_year_split|function|c658d02159a974ad|||||||||||||||
+details|stem|4ecba8e8a82aa5b1|8a7eeacdfede5d34|f42a124dad00cfd8|131261106||t19842.7032416853s|0cca50742c16a705|215|qs|local|vector|||0.015||
 discrete_vars|function|80bc599945b9e2ed|||||||||||||||
 end_train_year|object|59e5e5a503986d8c|||||||||||||||
 extract_engine_name|function|8d44d6ae5f134199|||||||||||||||
 extract_model_name|function|8d44d6ae5f134199|||||||||||||||
+extract_workflow_details|function|41fde50404f7703b|||||||||||||||
+extract_workflow_engine|function|46a58ef44c40bca6|||||||||||||||
+extract_workflow_outcome|function|d39d75b91604a303|||||||||||||||
+extract_workflow_params|function|ebf8980377377e6d|||||||||||||||
 families_allow_list|function|3a72e45e8de0f52d|||||||||||||||
 families_remove_list|function|b64f4cac38642f43|||||||||||||||
 file|stem|2e80923fb90fe5a2|d3a8a37159e570e2|ef46db3751d8e999|1735323524|bucket=bgg_data*key=models/objects/file*stage=data/raw/games.qs*version=1709236894139379|t19782.8339628553s|49c1a1611838f3ff|71900504|file|gcp|vector|||0.477||
@@ -83,7 +89,7 @@ load_raw_games|function|a47f17afaebf928e|||||||||||||||
 make_outcome_recipes|function|d552f78e6da342c3|||||||||||||||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
-metrics|stem|d0ebace46268d25b|e36029763971d73b|4abac519e256b251|1271126549||t19839.8573598154s|19e426cce5adb19f|489|qs|local|vector|||0.161||
+metrics|stem|d0ebace46268d25b|e36029763971d73b|4abac519e256b251|1271126549||t19842.7069987585s|19e426cce5adb19f|489|qs|local|vector|||0.318||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
 model_report_2019|stem|58a5951ac4fe725a|ea5a3a0af35aa2a9|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19793.6542722148s|6bc3c877d2b39d85|3062309|file|local|vector|||4.073||
 model_spec|stem|b25db816d1e16ef1|74cd070e4244b9e3|ef46db3751d8e999|-990697664||t19839.7542617086s|cb2068761c31cd19|278|qs|local|vector|||0.003||
@@ -102,7 +108,7 @@ predict_hurdle|function|1e544218d942ac1b|||||||||||||||
 predict_outcomes|function|e09f8cfc53e7f7c9|||||||||||||||
 predict_sim|function|ac7b02cc939ab133|||||||||||||||
 predict_usersrated|function|22dbf65a85b1c56b|||||||||||||||
-predictions|stem|b56fa23e6d7e48a4|8f328410e8f7c73e|86fc99a6283d89ef|995750475||t19839.8181638634s|6e4b6883b3b6ee5b|5326392|qs|local|vector|||2.104||
+predictions|stem|b56fa23e6d7e48a4|8f328410e8f7c73e|86fc99a6283d89ef|995750475||t19842.7032740271s|6e4b6883b3b6ee5b|5326392|qs|local|vector|||2.68||
 predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
 predictor_vars|function|77713acf7598ed14|||||||||||||||
 preprocess_bgg_games|function|2d36728550076d07|||||||||||||||
@@ -110,7 +116,7 @@ preprocess_games|function|0a9bfe60224904ff|||||||||||||||
 preprocess_outcome|function|598018933cb1678e|||||||||||||||
 publisher_allow_list|function|df51b4c498aa1c39|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
-report|stem|7dfefcbdc39eb0ed|7d5c27f990d21d2e|207b049aab4d99a9|787668912|results_files*results.md*results.qmd|t19839.8940479196s|ee1841c7432d8aa2|404938|file|local|vector|||9.485||
+report|stem|b6e84ac2fafbbdf9|726bfcf14118d6d1|a2432eb341b8352b|787668912|targets-runs/results.md*targets-runs/results.qmd|t19842.7198684525s|a00ebfe0b170c62a|304363|file|local|vector|||10.521||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
 set_gcp_prefix|function|49bcb2a033aa454e|||||||||||||||
