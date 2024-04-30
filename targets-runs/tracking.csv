@@ -1,9 +1,9 @@
-"","time","user","model","penalty","mixture","minratings","outcome","rmse","mae","mape","rsq"
-"1",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.01,0.5,0,"average",1.302,0.922,16.488,0.113
-"2",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.005,0.75,0,"averageweight",0.55,0.422,25.158,0.527
-"3",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,0,"bayesaverage",0.302,0.176,2.92,0.41
-"4",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.046,0.25,0,"usersrated",1214.448,212.279,Inf,0.123
-"5",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.01,0.5,25,"average",0.687,0.505,7.612,0.28
-"6",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.005,0.75,25,"averageweight",0.48,0.368,20.501,0.628
-"7",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,25,"bayesaverage",0.302,0.176,2.92,0.41
-"8",2024-04-29 13:39:51.912633,"phil.henrickson@github.com","glmnet",0.046,0.25,25,"usersrated",2310.846,480.535,170.586,0.11
+"","time","user","model","trees","min_n","tree_depth","learn_rate","sample_size","stop_iter","minratings","outcome","rmse","mae","mape","rsq"
+"1",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,0,"average",1.315,0.938,16.432,0.114
+"2",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,0,"averageweight",0.542,0.416,24.934,0.547
+"3",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost+xgboost",NA,NA,NA,NA,NA,NA,0,"bayesaverage",0.309,0.185,3.06,0.349
+"4",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,0,"usersrated",807.202,234.249,Inf,0.194
+"5",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,25,"average",0.702,0.524,7.765,0.269
+"6",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,25,"averageweight",0.47,0.362,20.301,0.646
+"7",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost+xgboost",NA,NA,NA,NA,NA,NA,25,"bayesaverage",0.309,0.185,3.06,0.349
+"8",2024-04-30 15:46:40.488505,"phil.henrickson@github.com","xgboost",371,12,6,0.022,0.169,50,25,"usersrated",1512.126,462.109,216.737,0.173
