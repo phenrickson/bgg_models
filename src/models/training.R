@@ -110,8 +110,98 @@ id_vars = function(vars =
 spline_vars = function(vars = c("number_mechanics",
                                 "number_categories")) {vars}
 
-discrete_vars = function(vars = spline_vars()) {vars}
+# function to predict and calculate bayesaverage given average and usersrated
+predict_bayesaverage = function(data,
+                                average_model,
+                                usersrated_model,
+                                ratings = 2000) {
+    
+    # get predictions
+    data |>
+        predict_average(
+            model = average_model
+        ) |>
+        predict_usersrated(
+            model = usersrated_model
+        ) |>
+        calculate_bayesaverage(
+            ratings = ratings
+        ) |>
+        mutate(.pred_averageweight = est_averageweight) |>
+        select(yearpublished,
+               game_id,
+               name,
+               starts_with(".pred"),
+               everything()
+        )
+    
+}
 
+# function to tune model given workflow and resamples
+tune_workflow = function(workflow,
+                         resamples,
+                         metrics,
+                         grid,
+                         save_pred = T,
+                         ...) {
+    
+    workflow |>
+        tune_grid(
+            resamples = resamples,
+            grid = grid,
+            metrics = metrics,
+            control = tune::control_grid(save_pred = save_pred,
+                                         verbose = T),
+            ...
+        )
+}
+
+# function to build workflow for an outcome given a model specification and a recipe
+build_outcome_workflow = 
+    function(model,
+             recipe) {
+        
+        workflows::workflow() |>
+            workflows::add_model(
+                model
+            ) |>
+            workflows::add_recipe(
+                recipe
+            )
+    }
+
+# function to build a recipe and apply series of steps given an outcome
+build_outcome_recipe = 
+    function(data,
+             outcome,
+             id_vars,
+             predictor_vars,
+             spline_vars) {
+        
+        data |>
+            build_recipe(
+                outcome = {{outcome}},
+                ids = id_vars,
+                predictors = predictor_vars
+            ) |>
+            # standard preprocessing
+            add_preprocessing() |>
+            # simple imputation for numeric
+            add_imputation() |>
+            # create dummies
+            add_bgg_dummies() |>
+            # add splines for nonlinearities
+            # splines with a fourth degree polynomial for year
+            add_splines(vars = "year", degree = 4) |>
+            # splines with fifth degree polynomials for mechanics/categories
+            add_splines(vars = spline_vars) |>
+            # remove zero variance
+            step_zv(all_numeric_predictors()) |>
+            # remove highly correlated
+            step_corr(all_numeric_predictors(), threshold = 0.95) |>
+            # normalize
+            step_normalize(all_numeric_predictors())
+    }
 
 # basic recipe setup
 build_recipe = function(data,
@@ -143,6 +233,32 @@ build_recipe = function(data,
             new_role = "id"
         ) 
 }
+
+# standardized steps for preprocessing bgg games
+add_bgg_preprocessing = function(recipe,
+                                 ...) {
+    
+    recipe |>
+        step_rm(has_role("extras")) |>
+        add_preprocessing() |>
+        add_imputation() |>
+        add_bgg_dummies(...)
+}
+
+# standardized steps for preprocessing bgg games for linear models
+# splines + normalization
+add_linear_preprocessing = function(recipe) {
+    
+    recipe |>
+        # spline for year
+        add_splines(vars = "year", degree = 4) |>
+        # splines with fifth degree polynomials for mechanics/categories
+        add_splines(c("number_mechanics", "number_categories")) |>
+        # remove zero variance
+        add_zv() |>
+        add_normalize()
+}
+
 
 # function for extracting dummies from nominal features
 add_dummies = function(recipe,

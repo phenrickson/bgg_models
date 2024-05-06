@@ -1,6 +1,7 @@
+# function to retrieve games stored in gcp bucket
 load_games = function(object_name = "raw/objects/games",
-                      generation = "1708980495752949",
                       bucket = "bgg_data",
+                      generation = NULL,
                       ...) {
     
     bggUtils::get_games_from_gcp(

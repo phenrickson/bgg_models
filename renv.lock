@@ -356,10 +356,10 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "bggUtils",
       "RemoteUsername": "phenrickson",
-      "RemoteRef": "v0.0.2",
-      "RemoteSha": "66383be7386814864bf4ebf4aaa22e212ca150a4",
+      "RemoteRepo": "bggUtils",
+      "RemoteRef": "v0.0.3",
+      "RemoteSha": "afb34118113932566c84e7ecc3a6d28021910981",
       "Requirements": [
         "DBI",
         "RcppSimdJson",
@@ -383,7 +383,7 @@
         "xml2",
         "zoo"
       ],
-      "Hash": "98443059489a6ea456350dc2252f11c6"
+      "Hash": "6902a772ab3c5716a541329dbac405ab"
     },
     "bigD": {
       "Package": "bigD",
@@ -2491,13 +2491,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.5",
+      "Version": "1.0.7",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "utils"
       ],
-      "Hash": "32c3f93e8360f667ca5863272ec8ba6a"
+      "Hash": "397b7b2a265bc5a7a06852524dabae20"
     },
     "reticulate": {
       "Package": "reticulate",

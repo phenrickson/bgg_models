@@ -25,25 +25,13 @@ tar_option_set(
     format = "qs"
 )
 
-# function to retrieve games stored in gcp bucket
-load_games = function(object_name = "raw/objects/games",
-                      bucket = "bgg_data",
-                      ...) {
-    
-    bggUtils::get_games_from_gcp(
-        bucket = bucket,
-        object_name = object_name,
-        generation = generation)
-    
-}
-
 # function to preprocess games
 preprocess_games = function(data) {
     data |>
         bggUtils::preprocess_bgg_games()
 }
 
-# local model board
+# create local model board
 model_board = pins::board_folder("models",
                                  versioned = T)
 
@@ -53,91 +41,6 @@ tar_source("src/models/training.R")
 tar_source("src/models/assess.R")
 tar_source("src/visualizations/models.R")
 tar_source("src/models/tracking.R")
-
-# function to build a recipe and apply series of steps given an outcome
-build_outcome_recipe = 
-    function(data,
-             outcome,
-             id_vars,
-             predictor_vars,
-             spline_vars) {
-        
-        data |>
-            build_recipe(
-                outcome = {{outcome}},
-                ids = id_vars,
-                predictors = predictor_vars
-            ) |>
-            # standard preprocessing
-            add_preprocessing() |>
-            # simple imputation for numeric
-            add_imputation() |>
-            # create dummies
-            add_bgg_dummies() |>
-            # add splines for nonlinearities
-            # remove zero variance
-            step_zv(all_numeric_predictors())
-    }
-
-# function to build workflow for an outcome given a model specification and a recipe
-build_outcome_workflow = 
-    function(model,
-             recipe) {
-        
-        workflows::workflow() |>
-            workflows::add_model(
-                model
-            ) |>
-            workflows::add_recipe(
-                recipe
-            )
-    }
-
-# function to tune model given workflow and resamples
-tune_workflow = function(workflow,
-                         resamples,
-                         metrics,
-                         grid,
-                         save_pred = T,
-                         ...) {
-    
-    workflow |>
-        tune_grid(
-            resamples = resamples,
-            grid = grid,
-            metrics = metrics,
-            control = tune::control_grid(save_pred = save_pred,
-                                         verbose = T),
-            ...
-        )
-}
-
-# function to predict and calculate bayesaverage given average and usersrated
-predict_bayesaverage = function(data,
-                                average_model,
-                                usersrated_model,
-                                ratings = 2000) {
-    
-    # get predictions
-    data |>
-        predict_average(
-            model = average_model
-        ) |>
-        predict_usersrated(
-            model = usersrated_model
-        ) |>
-        calculate_bayesaverage(
-            ratings = ratings
-        ) |>
-        mutate(.pred_averageweight = est_averageweight) |>
-        select(yearpublished,
-               game_id,
-               name,
-               starts_with(".pred"),
-               everything()
-        )
-    
-}
 
 # parameters for targets
 end_train_year = 2020
@@ -156,8 +59,8 @@ list(
     tar_target(
         name = games_prepared,
         command = games_raw |>
-            # apply preprocessing
-            preprocess_games() |>
+            # apply preprocessing via bggUtils function
+            bggUtils::preprocess_bgg_games() |>
             # remove games missing yearpublished
             filter(!is.na(yearpublished))
     ),
@@ -170,30 +73,21 @@ list(
     tar_target(
         name = model_spec,
         command = 
-            boost_tree(
-                trees = tune::tune(),
-                min_n = tune(),
-                sample_size = tune(),
-                learn_rate = tune(),
-                tree_depth = tune(),
-                stop_iter = 50
-            ) %>%
-            set_mode("regression") %>%
-            set_engine("xgboost",
-                       eval_metric = 'rmse')
+            linear_reg(
+                engine = "glmnet",
+                penalty = tune::tune(),
+                mixture = tune::tune()
+            )
     ),
     # simple tuning grid
     tar_target(
         name = tuning_grid,
         command =
-            grid_latin_hypercube(
-                trees(range = c(150, 500)),
-                tree_depth = tree_depth(range = c(2L, 9L)),
-                min_n(),
-                sample_size = sample_prop(),
-                #  mtry = mtry_prop(c(0.25, 1)),
-                learn_rate(),
-                size = 10
+            grid_regular(
+                penalty(range = c(-4, -1)),
+                mixture(),
+                levels = c(mixture = 5,
+                           penalty = 10)
             )
     ),
     # create train, validation, testing split based on year
