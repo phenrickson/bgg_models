@@ -43,12 +43,12 @@ extract_workflow_params = function(workflow) {
     workflow = check_workflow_class(workflow)
     
     spec <- workflows::extract_spec_parsnip(workflow)
-    parameter_names <- names(spec$args)
     parameter_values <- lapply(spec$args, rlang::get_expr)
     
-    parameter_values |>
-        as_tibble()
-    
+    parameter_values |> 
+        enframe() |> 
+        unnest(c(value), keep_empty = F) |>
+        pivot_wider()
 }
 
 extract_workflow_outcome = function(workflow) {

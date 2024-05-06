@@ -43,6 +43,10 @@ preprocess_games = function(data) {
         bggUtils::preprocess_bgg_games()
 }
 
+# local model board
+model_board = pins::board_folder("models",
+                                 versioned = T)
+
 # functions
 tar_source("src/data/load_data.R")
 tar_source("src/models/training.R")
@@ -71,16 +75,8 @@ build_outcome_recipe =
             # create dummies
             add_bgg_dummies() |>
             # add splines for nonlinearities
-            # splines with a fourth degree polynomial for year
-            add_splines(vars = "year", degree = 4) |>
-            # splines with fifth degree polynomials for mechanics/categories
-            add_splines(vars = spline_vars) |>
             # remove zero variance
-            step_zv(all_numeric_predictors()) |>
-            # remove highly correlated
-            step_corr(all_numeric_predictors(), threshold = 0.95) |>
-            # normalize
-            step_normalize(all_numeric_predictors())
+            step_zv(all_numeric_predictors())
     }
 
 # function to build workflow for an outcome given a model specification and a recipe
@@ -174,21 +170,30 @@ list(
     tar_target(
         name = model_spec,
         command = 
-            linear_reg(
-                engine = "glmnet",
-                penalty = tune::tune(),
-                mixture = tune::tune()
-            )
+            boost_tree(
+                trees = tune::tune(),
+                min_n = tune(),
+                sample_size = tune(),
+                learn_rate = tune(),
+                tree_depth = tune(),
+                stop_iter = 50
+            ) %>%
+            set_mode("regression") %>%
+            set_engine("xgboost",
+                       eval_metric = 'rmse')
     ),
-    # grid
+    # simple tuning grid
     tar_target(
         name = tuning_grid,
         command =
-            grid_regular(
-                penalty(range = c(-4, -1)),
-                mixture(),
-                levels = c(mixture = 5,
-                           penalty = 10)
+            grid_latin_hypercube(
+                trees(range = c(150, 500)),
+                tree_depth = tree_depth(range = c(2L, 9L)),
+                min_n(),
+                sample_size = sample_prop(),
+                #  mtry = mtry_prop(c(0.25, 1)),
+                learn_rate(),
+                size = 10
             )
     ),
     # create train, validation, testing split based on year
@@ -486,7 +491,11 @@ list(
             ) |>
             vetiver::vetiver_model(
                 "bgg_averageweight"
-            )
+            ) |>
+            vetiver::vetiver_pin_write(
+                board = model_board
+            ),
+        format = "file"
     ),
     tar_target(
         average_vetiver,
@@ -501,7 +510,11 @@ list(
             ) |>
             vetiver::vetiver_model(
                 "bgg_average"
-            )
+            ) |>
+            vetiver::vetiver_pin_write(
+                board = model_board
+            ),
+        format = "file"
     ),
     tar_target(
         usersrated_vetiver,
@@ -516,6 +529,10 @@ list(
             ) |>
             vetiver::vetiver_model(
                 "bgg_usersrated"
-            )
+            ) |>
+            vetiver::vetiver_pin_write(
+                board = model_board
+            ),
+        format = "file"
     )
 )
