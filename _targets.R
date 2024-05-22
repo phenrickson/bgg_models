@@ -384,7 +384,11 @@ list(
                     )
             ) |>
             vetiver::vetiver_model(
-                "bgg_averageweight"
+                "bgg_averageweight",
+               metadata = list(
+                    "end_train_year" = end_train_year + valid_years - retrain_years,
+                    "data" = training_and_validation
+                )
             ) |>
             vetiver::vetiver_pin_write(
                 board = model_board
@@ -403,7 +407,11 @@ list(
                     )
             ) |>
             vetiver::vetiver_model(
-                "bgg_average"
+                "bgg_average",
+               metadata = list(
+                    "end_train_year" = end_train_year + valid_years - retrain_years,
+                    "data" = training_and_validation
+                )
             ) |>
             vetiver::vetiver_pin_write(
                 board = model_board
@@ -422,7 +430,11 @@ list(
                     )
             ) |>
             vetiver::vetiver_model(
-                "bgg_usersrated"
+                "bgg_usersrated",
+                metadata = list(
+                    "end_train_year" = end_train_year + valid_years - retrain_years,
+                    "data" = training_and_validation
+                )
             ) |>
             vetiver::vetiver_pin_write(
                 board = model_board

@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|f21ad99e4f048509|||||||||||||||
+.Random.seed|object|54d3d3d659dc905d|||||||||||||||
 add_bgg_dummies|function|824802374d6e7999|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_bgg_preprocessing|function|ce3e0c811d3f3eaa|||||||||||||||
@@ -26,7 +26,7 @@ average_split|stem|98cb6d9bc947296e|066908c9ebc5b172|7f84c7a1924e4e61|1029818450
 average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_split_2019*version=1709823071082785|t19789.6188669999s||13440796|rds|gcp|vector|||0.877||
 average_tuned|stem|2ca05d0e9ed61280|045723bac5065b36|c10497fdd61a5787|2075245144||t19849.8064944191s|21d17f3599310568|14912974|qs|local|vector|||197.995|NAs introduced by coercion|
 average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|83f60c44cc86edbf|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_tuned_2019*version=1709825403298014|t19789.6458604083s||13012935|rds|gcp|vector|||825.865|NAs introduced by coercion|
-average_vetiver|stem|da7e5646cbdfced7|a1d9489adc86ca4a|aa80bd01ff4070d7|814172009||t0s|f4066a65ff755f48|0|file|local|vector|||64.606||
+average_vetiver|stem|da7e5646cbdfced7|89861948efb841cd|f08202dacafab0f0|814172009||t0s|f4066a65ff755f48|0|file|local|vector|||68.23||
 average_wflow|stem|bc4b047d7462f379|f777060c66df0c68|d4081b09e24f2e29|-1979774709||t19849.8014224895s|d0eca0793555fbbf|620611353|qs|local|vector|||0.024||
 average_workflow_2019|stem|7ce04b6f7a61d0a8|98e0744e3ba3a743|7dff0f212583db1c|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_workflow_2019*version=1709823717969831|t19789.6260957681s||581525548|rds|gcp|vector|||0.003||
 averageweight|object|6315ec5b5c33ddb0|||||||||||||||
@@ -43,7 +43,7 @@ averageweight_split_2019|stem|cb0cbbb4342ed172|bb091a611080690f|8d929788ba52be4a
 averageweight_tuned|stem|9889340d579187af|c142f449fbc868df|f39e793513bc468c|-646993965||t19849.8006588889s|92e9f8167f451abb|9867971|qs|local|vector|||96.816|NAs introduced by coercion|
 averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_tuned_2019*version=1709822933002552|t19789.6172717144s||8870530|rds|gcp|vector|||79.172|NAs introduced by coercion|
 averageweight_tuning_split_2019|stem|cb0cbbb4342ed172|4fc991ad77544e97|8a8c4574d40239e3|2026635200|bucket=bgg_data*key=models/objects/averageweight_tuning_split_2019*version=1709652030592717|t19787.6392291343s||9168416|rds|gcp|vector|||0.261||
-averageweight_vetiver|stem|da7e5646cbdfced7|bd906a248f24bf1f|2993e38e79cb4e8f|143165180||t0s|f4066a65ff755f48|0|file|local|vector|||27.681||
+averageweight_vetiver|stem|da7e5646cbdfced7|b1d4727011d002ae|d3b112c80f93393a|143165180||t0s|f4066a65ff755f48|0|file|local|vector|||35.075||
 averageweight_wflow|stem|e05ea1b244627678|30c8c5142566f172|14e770c81bc4f3e5|-1164597312||t19849.7995342371s|19b0076cedc31c55|431719490|qs|local|vector|||0.056||
 averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_workflow_2019*version=1709822850235228|t19789.6161134202s||413376684|rds|gcp|vector|||0.009||
 bgg_hit_metrics|stem|4c0b247b1e6d2843|7fa501f73037a88b|54fe05568e40b99b|-573508956|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/bgg_hit_metrics*version=1710880426861006|t19801.8567910649s||369|qs|gcp|vector|||0.271||
@@ -54,10 +54,11 @@ build_recipe|function|a052b1398cb22bea|||||||||||||||
 calculate_bayesaverage|function|283b99b71ce4f92a|||||||||||||||
 calculate_bgg_hit|function|ffe0ee6d136fb92f|||||||||||||||
 check_workflow_class|function|529711d54fbee42e|||||||||||||||
-coef_plot.glmnet|function|4d11f0cf915c812e|||||||||||||||
+coef_plot_by_group|function|ea99bafb04d0f71a|||||||||||||||
+coef_plot.glmnet|function|d93d9311e19d2c19|||||||||||||||
 collapse_categorical|function|21269c6e5539741d|||||||||||||||
 color_colorbar|function|4ddf1fc01a3b56b8|||||||||||||||
-color_fill_gradient|function|127325740b05091b|||||||||||||||
+color_fill_gradient|function|5c270588b41ed456|||||||||||||||
 control_grid|function|0c0f3f0d95950127|||||||||||||||
 control_race|function|175b7244c4a12dec|||||||||||||||
 create_workflows|function|cc8a420fe9711fd4|||||||||||||||
@@ -80,6 +81,7 @@ games_prepared|stem|7573e30d72e6e683|a6e5782df88a0ebe|2758731d93467410|270007526
 games_raw|stem|a5906e07d34a0d41|9ce85d6596e11514|88357963c368fca0|-450562005||t19849.79929579s|49c1a1611838f3ff|71900504|qs|local|vector|||6.296||
 games_tidy|stem|7ec87ec688094c21|f2444485789fa2d8|1eb6ca5366be7937|-1430246907|bucket=bgg_data*key=models/objects/games_tidy*version=1709394396696375|t19784.6571041628s||57190694|rds|gcp|vector|||10.284||
 get_bayesaverage_method|function|32bf54712cfe6f1f|||||||||||||||
+get_coefs.glmnet|function|803746b92f394aab|||||||||||||||
 get_glmnet_coefs|function|6fa17f92a9f77eaf|||||||||||||||
 get_glmnet_objs|function|1ae011e77111aa64|||||||||||||||
 id_vars|function|c2c3db37ac2818e4|||||||||||||||
@@ -120,7 +122,7 @@ preprocess_games|function|0a9bfe60224904ff|||||||||||||||
 preprocess_outcome|function|598018933cb1678e|||||||||||||||
 publisher_allow_list|function|df51b4c498aa1c39|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
-report|stem|47ac67cece955e09|726bfcf14118d6d1|3be6b4d9ba5631e0|787668912|targets-runs/results.md*targets-runs/results.qmd|t19849.8097283607s|a7e20c4bc82eb92e|304781|file|local|vector|||12.768||
+report|stem|47ac67cece955e09|726bfcf14118d6d1|3be6b4d9ba5631e0|787668912|targets-runs/results.md*targets-runs/results.qmd|t19852.9931513478s|a7e20c4bc82eb92e|304781|file|local|vector|||12.768||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
@@ -140,7 +142,8 @@ split_imputed_2019|stem|df86a7dec504321c|f2a13092c3d2c4d8|01e3275e69841946|12523
 splits|object|264ad358cb1700d5|||||||||||||||
 table_predictions|function|84845bea2f3c5ebe|||||||||||||||
 targets_tracking_details|function|d316439df6555437|||||||||||||||
-trace_plot.glmnet|function|1a54ef795638e2c2|||||||||||||||
+top_coefs_by_sign|function|8769a4336a983bbf|||||||||||||||
+trace_plot.glmnet|function|57a278ad60956cd1|||||||||||||||
 tracking|stem|da7e5646cbdfced7|64906aaabaa0da6b|9eee8b2050407735|1621002234||t0s|f4066a65ff755f48|0|file|local|vector|||0.032||
 train_outcome_model|function|07b9287570047389|||||||||||||||
 training_2015|stem||f953e6dfffa5452a|673de7466bebe0ff|-2011844015||t19786.6612559291s||0|rds|gcp|vector|||0.003||could not find function training_2015
@@ -163,7 +166,7 @@ usersrated_split|stem|214b154db4b24dd3|44053cc44027177f|7f84c7a1924e4e61|1122274
 usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_split_2019*version=1709823075639287|t19789.6189207257s||13515637|rds|gcp|vector|||0.478||
 usersrated_tuned|stem|0c1b489baf3b8994|fdbf2d95c2d6c07a|a3cf2dd7f16473d4|257239947||t19849.8041999896s|540ad838922fe412|15055792|qs|local|vector|||211.773|NAs introduced by coercion|
 usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_tuned_2019*version=1709826567275317|t19789.6593248967s||13024371|rds|gcp|vector|||1159.845|NAs introduced by coercion|
-usersrated_vetiver|stem|da7e5646cbdfced7|8fe202a44c45e8d0|5db786071b839334|-1686075036||t0s|f4066a65ff755f48|0|file|local|vector|||68.155||
+usersrated_vetiver|stem|da7e5646cbdfced7|3f63e6cf165bb76c|fcca7b0a5441d61c|-1686075036||t0s|f4066a65ff755f48|0|file|local|vector|||71.984||
 usersrated_wflow|stem|127b0865bcfcf482|94cd0c8a6d16505f|67055fb3f6de4eee|-883851043||t19849.8013162149s|02d38a8c646b6fff|627982673|qs|local|vector|||0.035||
 usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
 valid_years|object|a26c7eb00fbd604a|||||||||||||||
