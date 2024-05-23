@@ -151,7 +151,6 @@ upcoming_games =
 # Predictions
 
 ```{r}
-#| column: screen-inset-right
 predictions = 
     upcoming_games |>
     impute_averageweight(
