@@ -10,3 +10,13 @@ load_games = function(object_name = "raw/objects/games",
         generation = generation)
     
 }
+
+# function to preprocess games
+prepare_games = function(data) {
+    data |>
+        # apply preprocessing via bggUtils function
+        bggUtils::preprocess_bgg_games() |>
+        # remove games missing yearpublished
+        filter(!is.na(yearpublished))
+}
+

@@ -1,3 +1,14 @@
+write_tracking = function(metrics, details, file = 'targets-runs/tracking.csv') {
+    
+    targets_tracking_details(metrics = metrics,
+                             details = details) |>
+        mutate_if(is.numeric, round, 3) |>
+        add_column(time = Sys.time(),
+                   user = system('git config user.email', intern = T)) |>
+        select(time, user, everything()) |>
+        write.csv(file = file)
+}
+
 targets_tracking_details = function(metrics, details) {
     
     bayesaverage_method = 
@@ -13,7 +24,7 @@ targets_tracking_details = function(metrics, details) {
             details,
             by = join_by(outcome)
         ) |>
-        select(model = engine,
+        select(model = wflow_id,
                params,
                everything()
         ) |>
@@ -72,20 +83,28 @@ get_bayesaverage_method = function(details) {
             paste(
                 details |>
                     filter(outcome == 'average') |>
-                    pull(engine),
+                    pull(wflow_id),
                 details |>
                     filter(outcome == 'usersrated') |>
-                    pull(engine),
+                    pull(wflow_id),
                 sep = "+"
             )
     } else {
         bayesaverage_method = 
             details |> 
             filter(outcome == 'bayesaverage') |>
-            pull(engine)
+            pull(wflow_id)
     }
     
     bayesaverage_method
+}
+
+extract_workflow_outcome = function(workflow) {
+    
+    workflow |>
+        extract_mold() |>
+        pluck("outcomes") |>
+        names()
 }
 
 extract_workflow_engine = function(workflow) {

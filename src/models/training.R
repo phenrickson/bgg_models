@@ -1,3 +1,289 @@
+finalize_model = function(wflow,
+                          data,
+                          ratings = 25,
+                          weights = 5) {
+    
+    
+    outcome = 
+        wflow |>
+        extract_workflow_outcome()
+        
+    processed = 
+        data |>
+        preprocess_outcome(outcome = outcome,
+                           ratings = ratings,
+                           weights = weights)
+    
+    wflow |>
+        fit(processed) |>
+        bundle::bundle()
+}
+
+pin_outcome_model = function(wflow,
+                             board,
+                             tuning,
+                             metrics,
+                             data) {
+    
+    model_outcome = wflow |> extract_workflow_outcome()
+    model_name = paste0("bgg_", model_outcome)
+    model_metrics = metrics |> filter(outcome == model_outcome)
+    model_data = data |> preprocess_outcome(outcome = model_outcome)
+    model_tuning = tuning |> pluck("result", 1) |> select(-.predictions)
+    
+    model_metadata = 
+        list("metrics" = model_metrics,
+             "data" = model_data,
+             "tuning" = model_tuning)
+    
+    wflow |>
+        pin_model(
+            board = board,
+            model_name = model_name,
+            metadata = model_metadata
+        )
+    
+}
+
+pin_model = function(model,
+                     model_name,
+                     board,
+                     metadata,
+                     ...) {
+    
+    
+    model |>
+        vetiver::vetiver_model(
+            model_name = model_name,
+            metadata = metadata
+        ) |>
+        vetiver::vetiver_pin_write(
+            board = board
+        )
+
+}
+
+# function to fid models by outcome, recipe, and model type
+train_outcome_wflow = function(data,
+                               outcome,
+                               weights = 5,
+                               ratings = 25,
+                               valid_years,
+                               test_years =0,
+                               recipe,
+                               model_spec,
+                               grid,
+                               metrics = my_reg_metrics(),
+                               ids = id_vars(),
+                               predictors = predictor_vars(),
+                               ...) {
+    
+    data |>
+        prepare_outcome_split(outcome = outcome,
+                              weights = weights,
+                              ratings = ratings,
+                              valid_years = valid_years,  
+                              test_years = test_years) |>
+        prepare_outcome_recipe(outcome = outcome,
+                               recipe = recipe,
+                               ids = ids,
+                               predictors = predictors,
+                               ...) |>
+        prepare_outcome_wflow(model_spec = model_spec) |>
+        tune_outcome_wflow(grid = grid,
+                           metrics = metrics)
+}
+
+
+convert_to_workflow_set = function(tuned) {
+    
+    wflow = 
+        tuned |>
+        pluck("wflow", 1)
+    
+    wflow_id = 
+        tuned |>
+        pull(wflow_id)
+    
+    result = 
+        tuned |>
+        pluck("result", 1)
+    
+    wflow_list = list(wflow)
+    names(wflow_list) = wflow_id
+    
+    wflow_set = 
+        as_workflow_set(!!!wflow_list)
+    
+    wflow_set |>
+        mutate(result = list(result))
+    
+}
+
+bundle_wflow = function(tuned) {
+    
+    tuned |>
+        pluck("wflow", 1) |>
+        bundle::bundle()
+}
+
+prepare_outcome_split = function(data,
+                                 outcome,
+                                 weights,
+                                 ratings,
+                                 valid_years,
+                                 test_years) {
+    
+    split = 
+        data |>
+        outcome_tuning_split(
+            outcome = outcome,
+            weights = weights,
+            valid_years = valid_years,
+            test_years = test_years,
+            ratings = ratings
+        )
+    
+    settings = tibble(weights = weights,
+                      ratings = ratings)
+    
+    tibble(outcome = outcome,
+           settings = list(settings),
+           split = list(split))
+}
+
+prepare_outcome_recipe = function(split,
+                                  outcome,
+                                  recipe,
+                                  ...) {
+    
+    training =
+        split |>
+        pluck("split", 1) |>
+        training()
+    
+    rec =
+        training |>
+        recipe(outcome = {{outcome}},
+               ...)
+    
+    split |>
+        add_column(recipe = list(rec))
+}
+
+prepare_outcome_wflow = function(prepared,
+                                 model_spec,
+                                 wflow_id = NULL,
+                                 ...) {
+    
+    
+    rec = 
+        prepared |> pluck("recipe", 1)
+    
+    wflow =
+        workflow() |>
+        add_recipe(rec) |>
+        add_model(model_spec)
+    
+    if (is.null(wflow_id)) {
+        wflow_id = model_spec$engine
+    }
+    
+    prepared |>
+        select(-recipe) |>
+        add_column(wflow = list(wflow),
+                   wflow_id = wflow_id) |>
+        select(outcome, wflow_id, everything())
+}
+
+tune_outcome_wflow = function(prepared,
+                              grid,
+                              metrics = my_reg_metrics()) {
+    
+    valid = 
+        prepared |> 
+        pluck("split", 1) |> 
+        validation_set()
+    
+    wflow = 
+        prepared |>
+        pluck("wflow", 1)
+    
+    result = 
+        wflow |>
+        tune_workflow(
+            resamples = valid,
+            metrics = metrics,
+            grid = grid
+        )
+    
+    prepared |>
+        add_column(result = list(result))
+}
+
+finalize_outcome_wflow = function(tuned,
+                                  metric = 'rmse') {
+    
+    result = 
+        tuned |>
+        pluck("result", 1)
+    
+    best_params = 
+        result |>
+        select_best(metric = metric)
+    
+    wflow = 
+        tuned |>
+        pluck("wflow", 1) |>
+        finalize_workflow(parameters = best_params)
+    
+    tuned |>
+        select(-wflow) |>
+        add_column(params = list(best_params),
+                   wflow = list(wflow))
+    
+}
+
+fit_outcome_wflow = function(tuned,
+                             data = 'all') {
+    
+    wflow = 
+        tuned |>
+        pluck("wflow", 1)
+    
+    split = 
+        tuned |>
+        pluck("split", 1)
+    
+    if (data == "all") {
+        dat = 
+            tuned |> 
+            pluck("split", 1) |>
+            pluck("data")
+    }
+    else if (data == "train") {
+        dat = 
+            split |>
+            training()
+    }
+    else if (data == "valid") {
+        dat = bind_rows(split |> training(),
+                        split |> validation())
+    } else {
+        
+        fit = 
+            wflow |>
+            fit(data)
+    }
+    
+    fit = 
+        wflow |>
+        fit(dat)
+    
+    tuned |>
+        mutate(wflow = list(fit))
+}
+
 # recipes for splits
 # create train/valid/test sets based on year
 create_year_split = function(data, end_train_year, valid_years) {
@@ -38,7 +324,7 @@ outcome_tuning_split = function(data, outcome, ratings = 25, weights = 0, valid_
     
     data |>
         preprocess_outcome(
-            outcome = {{outcome}},
+            outcome = outcome,
             ratings = ratings,
             weights = weights
         ) |>
@@ -102,6 +388,7 @@ id_vars = function(vars =
                          "yearpublished",
                          "averageweight",
                          "average",
+                         "bayesaverage",
                          "usersrated",
                          "image",
                          "thumbnail",
@@ -170,19 +457,93 @@ build_outcome_workflow =
             )
     }
 
+# recipe for linear model
+recipe_linear = function(data,
+                         outcome,
+                         ids,
+                         predictors,
+                         splines) {
+    
+    data |>
+        build_recipe(
+            outcome = {{outcome}},
+            ids = ids,
+            predictors = predictors
+        ) |>
+        # standard preprocessing
+        add_preprocessing() |>
+        # simple imputation for numeric
+        add_imputation() |>
+        # create dummies
+        add_bgg_dummies() |>
+        # add splines for nonlinearities
+        # splines with a fourth degree polynomial for year
+        add_splines(vars = "year", degree = 4) |>
+        # splines with fifth degree polynomials for mechanics/categories
+        add_splines(vars = splines) |>
+        # remove zero variance
+        step_zv(all_numeric_predictors()) |>
+        # remove highly correlated
+        step_corr(all_numeric_predictors(), threshold = 0.95) |>
+        # normalize
+        step_normalize(all_numeric_predictors())
+}
+
+# recipe for tree based models
+recipe_trees = function(data,
+                        outcome,
+                        ids = id_vars(),
+                        predictors = predictor_vars()) {
+    
+    data |>
+        build_recipe(
+            outcome = {{outcome}},
+            ids = ids,
+            predictors = predictors
+        ) |>
+        # standard preprocessing
+        add_preprocessing() |>
+        # simple imputation for numeric
+        add_imputation() |>
+        # create dummies
+        add_bgg_dummies() |>
+        # remove zero variance
+        step_zv(all_numeric_predictors()) |>
+        # remove highly correlated
+        step_corr(all_numeric_predictors(), threshold = 0.95)
+}
+
+glmnet_spec = function() {
+    linear_reg(
+        engine = "glmnet",
+        penalty = tune::tune(),
+        mixture = tune::tune()
+    )
+}
+
+glmnet_grid = function() {
+    
+    grid_regular(
+        penalty(range = c(-4, -1)),
+        mixture(),
+        levels = c(mixture = 5,
+                   penalty = 10)
+    )
+}
+
 # function to build a recipe and apply series of steps given an outcome
 build_outcome_recipe = 
     function(data,
              outcome,
-             id_vars,
-             predictor_vars,
-             spline_vars) {
+             ids,
+             predictors,
+             splines) {
         
         data |>
             build_recipe(
                 outcome = {{outcome}},
-                ids = id_vars,
-                predictors = predictor_vars
+                ids = ids,
+                predictors = predictors
             ) |>
             # standard preprocessing
             add_preprocessing() |>
@@ -194,7 +555,7 @@ build_outcome_recipe =
             # splines with a fourth degree polynomial for year
             add_splines(vars = "year", degree = 4) |>
             # splines with fifth degree polynomials for mechanics/categories
-            add_splines(vars = spline_vars) |>
+            add_splines(vars = splines) |>
             # remove zero variance
             step_zv(all_numeric_predictors()) |>
             # remove highly correlated
@@ -206,8 +567,8 @@ build_outcome_recipe =
 # basic recipe setup
 build_recipe = function(data,
                         outcome,
-                        ids = id_vars(),
-                        predictors = predictor_vars(),
+                        ids,
+                        predictors,
                         ...) {
     
     recipe(x=data) %>%
@@ -686,7 +1047,12 @@ preprocess_outcome = function(data,
         # filter games above minimum number of ratings
         filter(usersrated >= ratings)
     
-    if (rlang::englue("{{outcome}}") == 'averageweight') { 
+    if (outcome == 'usersrated') {
+        
+        temp %>%
+            mutate(usersrated = log(usersrated))
+        
+    } else if (outcome == 'averageweight') { 
         
         temp %>%
             filter(numweights > weights)
