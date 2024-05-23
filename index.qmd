@@ -1,0 +1,173 @@
+---
+title: "Predicting Upcoming Board Games"
+subtitle: "Predictive Models for BoardGameGeek Ratings"
+author: "Phil Henrickson"
+date: today
+date-format: short
+format: 
+        html:
+                code-fold: true
+                code-overflow: scroll
+                code-summary: 'Show the code'
+                self-contained: true
+                toc: true
+                fig-align: center
+                theme: cerulean
+                message: false
+editor: source
+---
+```{r}
+#| include: false
+#| echo: false
+options(knitr.duplicate.label = "allow")
+```
+
+```{r}
+#| include: false
+library(dplyr)
+library(bggUtils)
+library(tidymodels)
+library(vetiver)
+library(gert)
+library(qs)
+library(quarto)
+library(targets)
+library(tarchetypes)
+library(googleCloudStorageR)
+
+tar_source("src/data/load_data.R")
+tar_source("src/models/training.R")
+tar_source("src/models/assess.R")
+tar_source("src/visualizations/models.R")
+tar_source("src/models/tracking.R")
+tar_source("src/visualizations/tables.R")
+
+tar_load(valid_predictions)
+tar_load(valid_metrics)
+tar_load(details)
+
+games = 
+    get_games_from_gcp(
+        bucket = "bgg_data"
+    )
+```
+
+
+# Pipeline
+
+<!-- # ```{r, results = "asis", echo = FALSE} -->
+<!-- #   cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T), "```"), sep = "\n") -->
+<!-- # ``` -->
+
+
+```{r}
+#| fig-align: center
+#| fig-height: 4
+#| message: false
+#| warning: false
+targets::tar_visnetwork(targets_only =T)
+
+```
+
+# Models
+
+```{r}
+
+model_board = pins::board_folder("models",
+                                 versioned = T)
+
+averageweight_fit = 
+    vetiver_pin_read(
+        model_board,
+        "bgg_averageweight"
+    )
+
+average_fit = 
+    vetiver_pin_read(
+        model_board,
+        "bgg_average"
+    )
+
+usersrated_fit = 
+    vetiver_pin_read(
+        model_board,
+        "bgg_usersrated"
+    )
+
+```
+
+## Assessment
+
+```{r}
+#| message: false
+#| warning: false
+valid_predictions |>
+    pivot_outcomes() |>
+    left_join(
+        games |>
+            bggUtils:::unnest_outcomes() |>
+            select(game_id, usersrated),
+        by = join_by(game_id)
+    ) |>
+    plot_predictions(alpha = usersrated)+
+    theme(legend.title = element_text())
+
+```
+
+```{r}
+
+targets_tracking_details(metrics = valid_metrics,
+                         details = details) |>
+    select(model, minratings, outcome, any_of(c("rmse", "mae", "mape", "rsq", "ccc"))) |>
+    filter(minratings == 25) |>
+    select(minratings, everything()) |>
+    gt::gt() |>
+    gt::tab_options(quarto.disable_processing = T) |>
+    gtExtras::gt_theme_espn()
+
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+
+end_train_year = max(average_fit$metadata$user$data$yearpublished) +1
+
+upcoming_ids = 
+    games |>
+    bggUtils:::unnest_info() |>
+    filter(yearpublished > end_train_year) |>
+    pull(game_id)
+
+upcoming_games = 
+    games |>
+    filter(game_id %in% upcoming_ids) |>
+    bggUtils::preprocess_bgg_games()
+
+```
+
+# Predictions
+
+```{r}
+#| column: screen-inset-right
+predictions = 
+    upcoming_games |>
+    impute_averageweight(
+        model = averageweight_fit
+    ) |>
+    predict_bayesaverage(
+        average_model = average_fit,
+        usersrated_model = usersrated_fit
+    )
+
+predictions |>
+    filter(yearpublished >= 2024) |>
+    # this goddamn bah humbug game
+    filter(game_id != 388225) |>
+    predictions_dt(games = games) |>
+    add_colors()
+
+```
+

@@ -16,7 +16,8 @@ my_reg_metrics = function() {
         yardstick::rmse,
         yardstick::mae,
         yardstick::mape,
-        yardstick::rsq
+        yardstick::rsq,
+        yardstick::ccc
     )
 }
 

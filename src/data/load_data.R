@@ -1,6 +1,7 @@
+# function to retrieve games stored in gcp bucket
 load_games = function(object_name = "raw/objects/games",
-                      generation = "1708980495752949",
                       bucket = "bgg_data",
+                      generation = NULL,
                       ...) {
     
     bggUtils::get_games_from_gcp(
@@ -9,3 +10,13 @@ load_games = function(object_name = "raw/objects/games",
         generation = generation)
     
 }
+
+# function to preprocess games
+prepare_games = function(data) {
+    data |>
+        # apply preprocessing via bggUtils function
+        bggUtils::preprocess_bgg_games() |>
+        # remove games missing yearpublished
+        filter(!is.na(yearpublished))
+}
+

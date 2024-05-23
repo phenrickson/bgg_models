@@ -38,3 +38,5 @@ data/
 !src/data/
 !src/models/
 !data/processed
+
+/.quarto/

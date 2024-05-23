@@ -22,28 +22,10 @@ tar_option_set(
             prefix = 'bgg_models'
         )
     ),
+    memory = "transient",
     format = "qs"
 )
-
-# function to retrieve games stored in gcp bucket
-load_games = function(object_name = "raw/objects/games",
-                      bucket = "bgg_data",
-                      ...) {
-    
-    bggUtils::get_games_from_gcp(
-        bucket = bucket,
-        object_name = object_name,
-        generation = generation)
-    
-}
-
-# function to preprocess games
-preprocess_games = function(data) {
-    data |>
-        bggUtils::preprocess_bgg_games()
-}
-
-# local model board
+# create local model board
 model_board = pins::board_folder("models",
                                  versioned = T)
 
@@ -53,91 +35,6 @@ tar_source("src/models/training.R")
 tar_source("src/models/assess.R")
 tar_source("src/visualizations/models.R")
 tar_source("src/models/tracking.R")
-
-# function to build a recipe and apply series of steps given an outcome
-build_outcome_recipe = 
-    function(data,
-             outcome,
-             id_vars,
-             predictor_vars,
-             spline_vars) {
-        
-        data |>
-            build_recipe(
-                outcome = {{outcome}},
-                ids = id_vars,
-                predictors = predictor_vars
-            ) |>
-            # standard preprocessing
-            add_preprocessing() |>
-            # simple imputation for numeric
-            add_imputation() |>
-            # create dummies
-            add_bgg_dummies() |>
-            # add splines for nonlinearities
-            # remove zero variance
-            step_zv(all_numeric_predictors())
-    }
-
-# function to build workflow for an outcome given a model specification and a recipe
-build_outcome_workflow = 
-    function(model,
-             recipe) {
-        
-        workflows::workflow() |>
-            workflows::add_model(
-                model
-            ) |>
-            workflows::add_recipe(
-                recipe
-            )
-    }
-
-# function to tune model given workflow and resamples
-tune_workflow = function(workflow,
-                         resamples,
-                         metrics,
-                         grid,
-                         save_pred = T,
-                         ...) {
-    
-    workflow |>
-        tune_grid(
-            resamples = resamples,
-            grid = grid,
-            metrics = metrics,
-            control = tune::control_grid(save_pred = save_pred,
-                                         verbose = T),
-            ...
-        )
-}
-
-# function to predict and calculate bayesaverage given average and usersrated
-predict_bayesaverage = function(data,
-                                average_model,
-                                usersrated_model,
-                                ratings = 2000) {
-    
-    # get predictions
-    data |>
-        predict_average(
-            model = average_model
-        ) |>
-        predict_usersrated(
-            model = usersrated_model
-        ) |>
-        calculate_bayesaverage(
-            ratings = ratings
-        ) |>
-        mutate(.pred_averageweight = est_averageweight) |>
-        select(yearpublished,
-               game_id,
-               name,
-               starts_with(".pred"),
-               everything()
-        )
-    
-}
 
 # parameters for targets
 end_train_year = 2020
@@ -155,46 +52,9 @@ list(
     ),
     tar_target(
         name = games_prepared,
-        command = games_raw |>
-            # apply preprocessing
-            preprocess_games() |>
-            # remove games missing yearpublished
-            filter(!is.na(yearpublished))
-    ),
-    tar_target(
-        name = reg_metrics,
-        command = my_reg_metrics()
-    ),
-    # create training, validation, and test splits based around the yearpublished
-    # model and grid
-    tar_target(
-        name = model_spec,
         command = 
-            boost_tree(
-                trees = tune::tune(),
-                min_n = tune(),
-                sample_size = tune(),
-                learn_rate = tune(),
-                tree_depth = tune(),
-                stop_iter = 50
-            ) %>%
-            set_mode("regression") %>%
-            set_engine("xgboost",
-                       eval_metric = 'rmse')
-    ),
-    # simple tuning grid
-    tar_target(
-        name = tuning_grid,
-        command =
-            grid_latin_hypercube(
-                trees(range = c(150, 500)),
-                tree_depth = tree_depth(range = c(2L, 9L)),
-                min_n(),
-                sample_size = sample_prop(),
-                #  mtry = mtry_prop(c(0.25, 1)),
-                learn_rate(),
-                size = 10
-            )
+            games_raw |>
+            prepare_games()
     ),
     # create train, validation, testing split based on year
     tar_target(
@@ -206,63 +66,29 @@ list(
                 valid_years = valid_years
             )
     ),
-    tar_target(
-        averageweight_split,
-        command = 
-            split |>
-            training() |>
-            outcome_tuning_split(
-                outcome = averageweight,
-                weights = 5,
-                valid_years = valid_years,
-                test_years = 0
-            )
-    ),
     # define tuning split given outcome
     tar_target(
         # build workflow
-        averageweight_wflow,
-        command = 
-            averageweight_split |>
-            training()  |>
-            # define recipe
-            build_outcome_recipe(
-                outcome = averageweight,
-                id_vars = id_vars(),
-                predictor_vars = predictor_vars(),
-                spline_vars = spline_vars()
-            ) |>
-            # create workflow
-            build_outcome_workflow(
-                model = model_spec
-            )
-    ),
-    # tune workflow on validation set
-    tar_target(
         averageweight_tuned,
         command = 
-            averageweight_wflow |>
-            tune_workflow(
-                resamples =
-                    averageweight_split |>
-                    validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
-            )
+            split |>
+            training() |>
+            train_outcome_wflow(outcome = 'averageweight',
+                                weights = 5,
+                                valid_years = valid_years,
+                                recipe = recipe_linear,
+                                model_spec = glmnet_spec(),
+                                grid = glmnet_grid(),
+                                splines = spline_vars())
     ),
-    # fit model to entirety of training
+    # now fit model
     tar_target(
         averageweight_fit,
         command = 
-            averageweight_wflow |>
-            finalize_workflow(
-                parameters = averageweight_tuned |>  
-                    select_best(metric = 'rmse')
-            ) |>
-            fit(
-                averageweight_split |>
-                    pluck("data")
-            )
+            averageweight_tuned |>
+            finalize_outcome_wflow() |>
+            fit_outcome_wflow(data = 'all') |>
+            bundle_wflow()
     ),
     # use model to impute averageweight for training set
     tar_target(
@@ -270,206 +96,108 @@ list(
         command =
             split |>
             training() |>
-            impute_averageweight(
-                model = averageweight_fit
-            )
+            impute_averageweight(model = bundle::unbundle(averageweight_fit))
     ),
-    ### predict average
-    tar_target(
-        name = average_split,
-        command = 
-            training_imputed |>
-            outcome_tuning_split(
-                outcome = average,
-                valid_years = valid_years,
-                test_years = 0
-            )
-    ),
-    # create workflow for average
-    tar_target(
-        average_wflow,
-        command = 
-            average_split |>
-            training() |>
-            # create recipe
-            build_outcome_recipe(
-                outcome = average,
-                id_vars = id_vars(),
-                predictor_vars = c(predictor_vars(),
-                                   "est_averageweight"),
-                spline_vars = c(spline_vars(),
-                                "est_averageweight")
-            ) |>
-            # create workflow
-            build_outcome_workflow(
-                model = model_spec
-            )
-    ),
-    # tune model on validation_set
+    # # now train average and usersrated models
     tar_target(
         name = average_tuned,
-        command = 
-            average_wflow |>
-            # tune workflow on validation set
-            tune_workflow(
-                resamples =
-                    average_split |>
-                    validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
-            )
-    ),
-    # fit model on training set
-    tar_target(
-        name = average_fit,
-        command = 
-            average_wflow |>
-            finalize_workflow(
-                parameters = average_tuned |>
-                    select_best(metric = 'rmse')
-            ) |>
-            fit(
-                average_split |>
-                    pluck("data")
-            )
-    ),
-    ### predict usersrated
-    tar_target(
-        name = usersrated_split,
-        command = 
+        command =
             training_imputed |>
-            mutate(log_usersrated = log(usersrated)) |>
-            outcome_tuning_split(
-                outcome = log_usersrated,
-                valid_years = valid_years,
-                test_years = 0
-            )
+            train_outcome_wflow(outcome = 'average',
+                                ratings = 25,
+                                valid_years = valid_years,
+                                recipe = recipe_linear,
+                                model_spec = glmnet_spec(),
+                                grid = glmnet_grid(),
+                                ids = id_vars(),
+                                predictors = c("est_averageweight", predictor_vars()),
+                                splines = c("est_averageweight", spline_vars()))
     ),
-    # create workflow for usersrated
-    tar_target(
-        usersrated_wflow,
-        command = 
-            usersrated_split |>
-            training() |>
-            # create recipe
-            build_outcome_recipe(
-                outcome = log_usersrated,
-                id_vars = id_vars(),
-                predictor_vars = c(predictor_vars(),
-                                   "est_averageweight"),
-                spline_vars = c(spline_vars(),
-                                "est_averageweight")
-            ) |>
-            # create workflow
-            build_outcome_workflow(
-                model = model_spec
-            )
-    ),
-    # tune model on validation_set
+    # now train usersrated
     tar_target(
         name = usersrated_tuned,
         command = 
-            usersrated_wflow |>
-            # tune workflow on validation set
-            tune_workflow(
-                resamples =
-                    usersrated_split |>
-                    validation_set(),
-                metrics = reg_metrics,
-                grid = tuning_grid
-            )
+            training_imputed |>
+            train_outcome_wflow(outcome = 'usersrated',
+                                ratings = 25,
+                                valid_years = valid_years,
+                                recipe = recipe_linear,
+                                model_spec = glmnet_spec(),
+                                grid = glmnet_grid(),
+                                ids = id_vars(),
+                                predictors = c("est_averageweight", predictor_vars()),
+                                splines = c("est_averageweight", spline_vars()))
     ),
-    # fit model on training set
+    # fit models to whole of training
+    # average
+    tar_target(
+        name = average_fit,
+        command = 
+            average_tuned |>
+            finalize_outcome_wflow() |>
+            fit_outcome_wflow(data = 'all') |>
+            bundle_wflow()
+    ),
+    # usersrated
     tar_target(
         name = usersrated_fit,
         command = 
-            usersrated_wflow |>
-            finalize_workflow(
-                parameters = usersrated_tuned |>
-                    select_best(metric = 'rmse')
-            ) |>
-            fit(
-                usersrated_split |>
-                    pluck("data")
-            )
+            usersrated_tuned |>
+            finalize_outcome_wflow() |>
+            fit_outcome_wflow(data = 'all') |>
+            bundle_wflow()
     ),
-    # now, predict validation set
+    ## now predict the validation set
     tar_target(
         name = validation_imputed,
         command =
             split |>
             validation() |>
-            impute_averageweight(
-                model = averageweight_fit
-            )
+            impute_averageweight(model = bundle::unbundle(averageweight_fit))
     ),
-    # get predictions from models
     tar_target(
-        name = predictions,
-        command =
-            validation_imputed |>
-            predict_bayesaverage(
-                average_model = average_fit,
-                usersrated_model = usersrated_fit
-            )
-    ),
-    # now calculate how the model performed 
-    # for the outcomes, we'll limit to games with at least 25 user ratings...
-    # will doublecheck on this
-    tar_target(
-        name = metrics,
+        name = valid_predictions,
         command = 
-            predictions |>
-            assess_outcomes_by_threshold(
-                metrics = my_reg_metrics(),
-                groups = c("outcome"),
-                threshold = c(0, 25)
-            )
+            validation_imputed |>
+            predict_bayesaverage(average_model = bundle::unbundle(average_fit),
+                                 usersrated_model = bundle::unbundle(usersrated_fit))
     ),
-    # get workflow details to this
+    tar_target(
+        name = valid_metrics,
+        command =
+            valid_predictions |>
+            assess_outcomes_by_threshold(metrics = my_reg_metrics(),
+                                         groups = c("outcome"),
+                                         threshold = c(0, 25))
+    ),
     tar_target(
         name = details,
         command = 
-            map_df(
-                list(
-                    average_fit,
-                    averageweight_fit,
-                    usersrated_fit
-                ),
-                extract_workflow_details
-            ) |>
-            mutate(outcome = case_when(outcome == 'log_usersrated' ~ 'usersrated',
-                                       .default = outcome))
+            bind_rows(average_tuned,
+                      usersrated_tuned,
+                      averageweight_tuned) |>
+            finalize_outcome_wflow() |>
+            select(outcome, wflow_id, params)
     ),
-    # output results for tracking
     tar_target(
-        tracking,
+        name = tracking,
         command = 
-            targets_tracking_details(
-                metrics,
-                details
-            ) |>
-            mutate_if(is.numeric, round, 3) |>
-            add_column(
-                time = Sys.time(),
-                user = system('git config user.email', intern = T),
-            ) |>
-            select(time, user, everything()) |>
-            write.csv(
-                file = "targets-runs/tracking.csv"
-            ),
+            write_tracking(metrics = valid_metrics,
+                           details = details,
+                           file = "targets-runs/tracking.csv"),
         format = "file"
     ),
-    # render report with quarto
-    tar_quarto(
-        report,
-        path = "targets-runs/results.qmd",
-        quiet = F
-    ),
-    ## finalize models
+    # # render report with quarto
+    # tar_quarto(
+    #     report,
+    #     path = "results.qmd",
+    #     quiet = F
+    # ),
+    ## finalize models and predict test set
+    # get training and validation
     tar_target(
         name = training_and_validation,
-        command = 
+        command =
             bind_rows(
                 training_imputed,
                 validation_imputed
@@ -477,62 +205,76 @@ list(
             # only add in one year from the validation set
             filter(yearpublished <= end_train_year + retrain_years)
     ),
-    # fit final models and convert to vetiver
+    ## finalize and predict
     tar_target(
-        averageweight_vetiver,
+        name = averageweight_final,
         command = 
             averageweight_fit |>
-            fit(
-                training_and_validation |>
-                    preprocess_outcome(
-                        outcome = averageweight,
-                        weights = 5
-                    )
-            ) |>
-            vetiver::vetiver_model(
-                "bgg_averageweight"
-            ) |>
-            vetiver::vetiver_pin_write(
-                board = model_board
-            ),
-        format = "file"
+            bundle::unbundle() |>
+            finalize_model(data = training_and_validation)
     ),
     tar_target(
-        average_vetiver,
+        name = average_final,
         command = 
             average_fit |>
-            fit(
-                training_and_validation |>
-                    preprocess_outcome(
-                        outcome = average,
-                        weights = 0
-                    )
-            ) |>
-            vetiver::vetiver_model(
-                "bgg_average"
-            ) |>
-            vetiver::vetiver_pin_write(
-                board = model_board
-            ),
+            bundle::unbundle() |>
+            finalize_model(data = training_and_validation)
+    ),
+    tar_target(
+        name = usersrated_final,
+        command =
+            usersrated_fit |>
+            bundle::unbundle() |>
+            finalize_model(data = training_and_validation)
+    ),
+    tar_target(
+        name = test_predictions,
+        command = 
+            split |>
+            testing() |>
+            impute_averageweight(model = unbundle(averageweight_final)) |>
+            predict_bayesaverage(average_model = unbundle(average_final),
+                                 usersrated_model = unbundle(usersrated_final)),
+        packages = c("bundle")
+    ),
+    ## vetiver versions of models
+    tar_target(
+        name = averageweight_vetiver,
+        command = 
+            averageweight_final |>
+            bundle::unbundle() |>
+            pin_outcome_model(metrics = valid_metrics,
+                              data = training_and_validation,
+                              tuning = averageweight_tuned,
+                              board = model_board),
         format = "file"
     ),
     tar_target(
-        usersrated_vetiver,
+        name = average_vetiver,
         command = 
-            usersrated_fit |>
-            fit(
-                training_and_validation |>
-                    mutate(log_usersrated = log(usersrated)) |>
-                    preprocess_outcome(
-                        outcome = usersrated
-                    )
-            ) |>
-            vetiver::vetiver_model(
-                "bgg_usersrated"
-            ) |>
-            vetiver::vetiver_pin_write(
-                board = model_board
-            ),
+            average_final |>
+            bundle::unbundle() |>
+            pin_outcome_model(metrics = valid_metrics,
+                              data = training_and_validation,
+                              tuning = average_tuned,
+                              board = model_board),
         format = "file"
+    ),
+    tar_target(
+        name = usersrated_vetiver,
+        command = 
+            usersrated_final |>
+            bundle::unbundle() |>
+            pin_outcome_model(metrics = valid_metrics,
+                              data = training_and_validation,
+                              tuning = usersrated_tuned,
+                              board = model_board),
+        format = "file"
+    ),
+    # render reports
+    tar_quarto(
+        name = reports,
+        path = ".",
+        quiet = F
     )
 )
