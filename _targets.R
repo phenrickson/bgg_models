@@ -187,12 +187,12 @@ list(
                            file = "targets-runs/tracking.csv"),
         format = "file"
     ),
-    # render report with quarto
-    tar_quarto(
-        report,
-        path = "targets-runs/results.qmd",
-        quiet = F
-    ),
+    # # render report with quarto
+    # tar_quarto(
+    #     report,
+    #     path = "results.qmd",
+    #     quiet = F
+    # ),
     ## finalize models and predict test set
     # get training and validation
     tar_target(
@@ -270,5 +270,11 @@ list(
                               tuning = usersrated_tuned,
                               board = model_board),
         format = "file"
+    ),
+    # render reports
+    tar_quarto(
+        name = reports,
+        path = ".",
+        quiet = F
     )
 )
