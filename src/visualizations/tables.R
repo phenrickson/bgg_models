@@ -79,7 +79,6 @@ predictions_dt = function(predictions,
                       class = list(stripe =F),
                       filter = list(position = 'top'),
                       options = list(pageLength = pageLength,
-                                     searching = F,
                                      initComplete = htmlwidgets::JS(
                                          "function(settings, json) {",
                                          paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
