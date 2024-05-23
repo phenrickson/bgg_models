@@ -82,7 +82,7 @@ predictions_dt = function(predictions,
                                      searching = F,
                                      initComplete = htmlwidgets::JS(
                                          "function(settings, json) {",
-                                         paste0("$(this.api().table().container()).css({'font-size': '", '8pt', "'});"),
+                                         paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
                                          "}"),
                                      scrollX=F,
                                      columnDefs = list(

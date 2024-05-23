@@ -317,18 +317,6 @@
       ],
       "Hash": "4f57884290cc75ab22f4af9e9d4ca862"
     },
-    "anytime": {
-      "Package": "anytime",
-      "Version": "0.3.9",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "BH",
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "74a64813f17b492da9c6afda6b128e3d"
-    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.2.0",
@@ -2854,24 +2842,6 @@
         "stats"
       ],
       "Hash": "5c47e84dc0a3ca761ae1d307889e796d"
-    },
-    "shinyWidgets": {
-      "Package": "shinyWidgets",
-      "Version": "0.7.6",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "anytime",
-        "bslib",
-        "grDevices",
-        "htmltools",
-        "jsonlite",
-        "rlang",
-        "sass",
-        "shiny"
-      ],
-      "Hash": "fd889b32caa37b8ed9b1e9e7ef1564bc"
     },
     "sitmo": {
       "Package": "sitmo",
