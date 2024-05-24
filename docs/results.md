@@ -80,17 +80,17 @@ workflow objects
 
 <div>
 
-<div id="dqxhfwbrou" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="zdjqsnwtii" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | name                |                time | seconds |
 |:--------------------|--------------------:|--------:|
 | averageweight_tuned | 2024-05-24 08:58:55 | 224.914 |
-| usersrated_tuned    | 2024-05-24 09:03:11 | 198.164 |
-| average_tuned       | 2024-05-24 09:06:30 | 189.597 |
+| usersrated_tuned    | 2024-05-24 09:26:26 | 481.283 |
+| average_tuned       | 2024-05-24 09:34:30 | 474.570 |
 | averageweight_fit   | 2024-05-24 08:59:23 |  18.921 |
-| usersrated_fit      | 2024-05-24 09:07:39 |  53.141 |
-| average_fit         | 2024-05-24 09:08:48 |  54.207 |
+| usersrated_fit      | 2024-05-24 09:35:28 |  43.523 |
+| average_fit         | 2024-05-24 09:36:27 |  44.877 |
 
 </div>
 
@@ -100,14 +100,14 @@ workflow details
 
 <div>
 
-<div id="edanfcufhk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="elknlxbkev" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
-| outcome       | wflow_id |     penalty | mixture | .config               |
-|:--------------|:---------|------------:|--------:|:----------------------|
-| average       | glmnet   | 0.004641589 |       1 | Preprocessor1_Model46 |
-| usersrated    | glmnet   | 0.004641589 |       1 | Preprocessor1_Model46 |
-| averageweight | lightgbm | 0.004641589 |       1 | Preprocessor1_Model46 |
+| outcome       | wflow_id | min_n | tree_depth | .config               |
+|:--------------|:---------|------:|-----------:|:----------------------|
+| average       | lightgbm |    15 |          7 | Preprocessor1_Model06 |
+| usersrated    | lightgbm |    15 |          7 | Preprocessor1_Model06 |
+| averageweight | lightgbm |    15 |          7 | Preprocessor1_Model06 |
 
 </div>
 
@@ -119,7 +119,7 @@ workflow details
 
 <div>
 
-<div id="eosjgeexml" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="vkoktghnbe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       |     rmse |     mae |    mape |   rsq |   ccc |
@@ -141,7 +141,7 @@ workflow details
 
 <div>
 
-<div id="ztupiicacp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="faqmrmczyd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       | yearpublished |     rmse |     mae |    mape |   rsq |   ccc |

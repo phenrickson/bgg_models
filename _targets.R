@@ -106,12 +106,11 @@ list(
             train_outcome_wflow(outcome = 'average',
                                 ratings = 25,
                                 valid_years = valid_years,
-                                recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
+                                recipe = recipe_trees,
+                                model_spec = lightgbm_spec(),
+                                grid = lightgbm_grid(),
                                 ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()),
-                                splines = c("est_averageweight", spline_vars()))
+                                predictors = c("est_averageweight", predictor_vars()))
     ),
     # now train usersrated
     tar_target(
@@ -121,12 +120,11 @@ list(
             train_outcome_wflow(outcome = 'usersrated',
                                 ratings = 25,
                                 valid_years = valid_years,
-                                recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
+                                recipe = recipe_trees,
+                                model_spec = lightgbm_spec(),
+                                grid = lightgbm_grid(),
                                 ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()),
-                                splines = c("est_averageweight", spline_vars()))
+                                predictors = c("est_averageweight", predictor_vars()))
     ),
     # fit models to whole of training
     # average
