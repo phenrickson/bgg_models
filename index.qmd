@@ -45,11 +45,14 @@ tar_source("src/visualizations/tables.R")
 tar_load(valid_predictions)
 tar_load(valid_metrics)
 tar_load(details)
+tar_load(tuning_plots)
 
 games = 
     get_games_from_gcp(
         bucket = "bgg_data"
     )
+
+theme_set(bggUtils::theme_bgg())
 ```
 
 
@@ -127,6 +130,107 @@ targets_tracking_details(metrics = valid_metrics,
 
 ```
 
+## Tuning
+
+::: {.panel-tabset}
+
+### Average Weight
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+tuning_plots[[1]]+
+        labs(title = 'Average Weight')
+
+```
+
+### Average Rating
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+tuning_plots[[2]]+
+    labs(title = 'Average Rating')
+
+```
+
+
+### Users Rated
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+tuning_plots[[3]]+
+    labs(title = 'Users Rated')
+
+```
+
+:::
+
+## Features
+
+```{r}
+#| message: false
+#| warning: false
+average_plot = 
+    average_fit |> 
+    extract_vetiver_features() |>
+    plot_model_features()+
+    labs(title = 'Average Rating')
+
+averageweight_plot = 
+    averageweight_fit |> 
+    extract_vetiver_features() |>
+    plot_model_features()+
+    labs(title = 'Average Weight')
+
+usersrated_plot = 
+    usersrated_fit |> 
+    extract_vetiver_features() |>
+    plot_model_features()+
+    labs(title = 'Users Rated')
+
+```
+
+::: {.panel-tabset}
+
+### Average Weight
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+
+averageweight_plot
+
+```
+
+### Average 
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+average_plot
+
+```
+
+### Users Rated
+
+```{r}
+#| fig-height: 7
+#| results: asis
+#| echo: false
+usersrated_plot
+
+```
+
+:::
+
+# Predictions
 
 ```{r}
 #| message: false
@@ -148,7 +252,6 @@ upcoming_games =
 
 ```
 
-# Predictions
 
 ```{r}
 predictions = 

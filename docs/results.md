@@ -10,68 +10,69 @@ graph LR
   style Graph fill:#FFFFFF00,stroke:#000000;
   subgraph Legend
     direction LR
-    x7420bd9270f8d27d([""Up to date""]):::uptodate --- x0a52b03877696646([""Outdated""]):::outdated
-    x0a52b03877696646([""Outdated""]):::outdated --- xa8565c104d8f0705([""Dispatched""]):::dispatched
+    x7420bd9270f8d27d([""Up to date""]):::uptodate --- xa8565c104d8f0705([""Dispatched""]):::dispatched
     xa8565c104d8f0705([""Dispatched""]):::dispatched --- xbf4603d6c2c2ad6b([""Stem""]):::none
   end
   subgraph Graph
     direction LR
-    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate
-    x170105733f313efa(["training_imputed"]):::uptodate --> x8b18f98f2746942f(["usersrated_tuned"]):::uptodate
-    x2b7f0716b8751c70(["games_raw"]):::uptodate --> xe73a0f95bb7c669b(["games_prepared"]):::uptodate
-    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x170105733f313efa(["training_imputed"]):::uptodate
-    x6a9d509448f9bd3e(["split"]):::uptodate --> x170105733f313efa(["training_imputed"]):::uptodate
-    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x5a0dca7931d71121(["averageweight_final"]):::uptodate
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x5a0dca7931d71121(["averageweight_final"]):::uptodate
-    x32d592eaf8d082e6(["valid_predictions"]):::uptodate --> xc2507955de0caf4e(["valid_metrics"]):::uptodate
     xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> xd99568a85da9c31b(["usersrated_final"]):::uptodate
     xd6936e852f1fbe47(["usersrated_fit"]):::uptodate --> xd99568a85da9c31b(["usersrated_final"]):::uptodate
+    xe73a0f95bb7c669b(["games_prepared"]):::uptodate --> x6a9d509448f9bd3e(["split"]):::uptodate
+    x5a0dca7931d71121(["averageweight_final"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
+    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
+    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x5a0dca7931d71121(["averageweight_final"]):::uptodate
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x5a0dca7931d71121(["averageweight_final"]):::uptodate
+    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate
     x51e4cab15d71e6a3(["average_final"]):::uptodate --> x09d4ee9c0cdd997f(["test_predictions"]):::uptodate
     x5a0dca7931d71121(["averageweight_final"]):::uptodate --> x09d4ee9c0cdd997f(["test_predictions"]):::uptodate
     x6a9d509448f9bd3e(["split"]):::uptodate --> x09d4ee9c0cdd997f(["test_predictions"]):::uptodate
     xd99568a85da9c31b(["usersrated_final"]):::uptodate --> x09d4ee9c0cdd997f(["test_predictions"]):::uptodate
-    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x60bd72cb3684ce1d(["validation_imputed"]):::uptodate
-    x6a9d509448f9bd3e(["split"]):::uptodate --> x60bd72cb3684ce1d(["validation_imputed"]):::uptodate
-    xe73a0f95bb7c669b(["games_prepared"]):::uptodate --> x6a9d509448f9bd3e(["split"]):::uptodate
+    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
+    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
+    x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
+    x170105733f313efa(["training_imputed"]):::uptodate --> xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate
+    x60bd72cb3684ce1d(["validation_imputed"]):::uptodate --> xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate
+    x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> xd6936e852f1fbe47(["usersrated_fit"]):::uptodate
+    xd0ff2216903615b0(["average_tuned"]):::uptodate --> xc0de7cb1ceaaae9a(["average_fit"]):::uptodate
+    x2b7f0716b8751c70(["games_raw"]):::uptodate --> xe73a0f95bb7c669b(["games_prepared"]):::uptodate
+    x51e4cab15d71e6a3(["average_final"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
+    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
     xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x156a6ed4485a6769(["usersrated_vetiver"]):::uptodate
     xd99568a85da9c31b(["usersrated_final"]):::uptodate --> x156a6ed4485a6769(["usersrated_vetiver"]):::uptodate
     x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> x156a6ed4485a6769(["usersrated_vetiver"]):::uptodate
     xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x156a6ed4485a6769(["usersrated_vetiver"]):::uptodate
-    x170105733f313efa(["training_imputed"]):::uptodate --> xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate
-    x60bd72cb3684ce1d(["validation_imputed"]):::uptodate --> xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate
+    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x5009635ca9660f5b(["tuning_plots"]):::uptodate
+    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x5009635ca9660f5b(["tuning_plots"]):::uptodate
+    x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> x5009635ca9660f5b(["tuning_plots"]):::uptodate
     x170105733f313efa(["training_imputed"]):::uptodate --> xd0ff2216903615b0(["average_tuned"]):::uptodate
-    xc0de7cb1ceaaae9a(["average_fit"]):::uptodate --> x51e4cab15d71e6a3(["average_final"]):::uptodate
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x51e4cab15d71e6a3(["average_final"]):::uptodate
-    x45aff652992a023a(["details"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
-    x32d592eaf8d082e6(["valid_predictions"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
-    x51e4cab15d71e6a3(["average_final"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
-    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
-    xd0ff2216903615b0(["average_tuned"]):::uptodate --> xc0de7cb1ceaaae9a(["average_fit"]):::uptodate
-    x6a9d509448f9bd3e(["split"]):::uptodate --> x04d83687468f3fc4(["averageweight_tuned"]):::uptodate
+    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x170105733f313efa(["training_imputed"]):::uptodate
+    x6a9d509448f9bd3e(["split"]):::uptodate --> x170105733f313efa(["training_imputed"]):::uptodate
     xc0de7cb1ceaaae9a(["average_fit"]):::uptodate --> x32d592eaf8d082e6(["valid_predictions"]):::uptodate
     xd6936e852f1fbe47(["usersrated_fit"]):::uptodate --> x32d592eaf8d082e6(["valid_predictions"]):::uptodate
     x60bd72cb3684ce1d(["validation_imputed"]):::uptodate --> x32d592eaf8d082e6(["valid_predictions"]):::uptodate
-    x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> xd6936e852f1fbe47(["usersrated_fit"]):::uptodate
-    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
-    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
-    x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
-    x45aff652992a023a(["details"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::outdated
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::outdated
-    x5a0dca7931d71121(["averageweight_final"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
-    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
+    x45aff652992a023a(["details"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
+    x5009635ca9660f5b(["tuning_plots"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
+    x32d592eaf8d082e6(["valid_predictions"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
+    x0f34a02bd6ed632f(["averageweight_fit"]):::uptodate --> x60bd72cb3684ce1d(["validation_imputed"]):::uptodate
+    x6a9d509448f9bd3e(["split"]):::uptodate --> x60bd72cb3684ce1d(["validation_imputed"]):::uptodate
+    x32d592eaf8d082e6(["valid_predictions"]):::uptodate --> xc2507955de0caf4e(["valid_metrics"]):::uptodate
+    x6a9d509448f9bd3e(["split"]):::uptodate --> x04d83687468f3fc4(["averageweight_tuned"]):::uptodate
+    x170105733f313efa(["training_imputed"]):::uptodate --> x8b18f98f2746942f(["usersrated_tuned"]):::uptodate
+    x45aff652992a023a(["details"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::uptodate
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::uptodate
+    xc0de7cb1ceaaae9a(["average_fit"]):::uptodate --> x51e4cab15d71e6a3(["average_final"]):::uptodate
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x51e4cab15d71e6a3(["average_final"]):::uptodate
   end
   classDef uptodate stroke:#000000,color:#ffffff,fill:#354823;
-  classDef outdated stroke:#000000,color:#000000,fill:#78B7C5;
   classDef dispatched stroke:#000000,color:#000000,fill:#DC863B;
   classDef none stroke:#000000,color:#000000,fill:#94a4ac;
   linkStyle 0 stroke-width:0px;
   linkStyle 1 stroke-width:0px;
-  linkStyle 2 stroke-width:0px;
 ```
 
 # workflows
@@ -80,17 +81,17 @@ workflow objects
 
 <div>
 
-<div id="zdjqsnwtii" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="myakhitngh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | name                |                time | seconds |
 |:--------------------|--------------------:|--------:|
+| average_tuned       | 2024-05-24 09:34:30 | 474.570 |
 | averageweight_tuned | 2024-05-24 08:58:55 | 224.914 |
 | usersrated_tuned    | 2024-05-24 09:26:26 | 481.283 |
-| average_tuned       | 2024-05-24 09:34:30 | 474.570 |
+| average_fit         | 2024-05-24 09:36:27 |  44.877 |
 | averageweight_fit   | 2024-05-24 08:59:23 |  18.921 |
 | usersrated_fit      | 2024-05-24 09:35:28 |  43.523 |
-| average_fit         | 2024-05-24 09:36:27 |  44.877 |
 
 </div>
 
@@ -100,7 +101,7 @@ workflow details
 
 <div>
 
-<div id="elknlxbkev" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="cjgmyyjyuu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | outcome       | wflow_id | min_n | tree_depth | .config               |
@@ -119,7 +120,7 @@ workflow details
 
 <div>
 
-<div id="vkoktghnbe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="oxwwsalhjq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       |     rmse |     mae |    mape |   rsq |   ccc |
@@ -141,7 +142,7 @@ workflow details
 
 <div>
 
-<div id="faqmrmczyd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="ktomeklcin" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       | yearpublished |     rmse |     mae |    mape |   rsq |   ccc |

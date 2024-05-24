@@ -126,6 +126,15 @@ list(
                                 ids = id_vars(),
                                 predictors = c("est_averageweight", predictor_vars()))
     ),
+    # extract tuning plots
+    tar_target(
+        name = tuning_plots,
+        command =
+            bind_rows(averageweight_tuned,
+                      average_tuned,
+                      usersrated_tuned) |>
+            get_tuning_plots()
+    ),
     # fit models to whole of training
     # average
     tar_target(
@@ -185,12 +194,6 @@ list(
                            file = "targets-runs/tracking.csv"),
         format = "file"
     ),
-    # # render report with quarto
-    # tar_quarto(
-    #     report,
-    #     path = "results.qmd",
-    #     quiet = F
-    # ),
     ## finalize models and predict test set
     # get training and validation
     tar_target(

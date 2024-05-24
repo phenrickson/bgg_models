@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|7790c56c07bb9138|||||||||||||||
+.Random.seed|object|27940eebb0a56d3f|||||||||||||||
 add_bgg_dummies|function|824802374d6e7999|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_bgg_preprocessing|function|ce3e0c811d3f3eaa|||||||||||||||
@@ -69,7 +69,11 @@ details|stem|3d5302d2c93197f2|cbebc91f2363c006|7497e6d8f9b6132c|131261106||t1986
 discrete_vars|function|80bc599945b9e2ed|||||||||||||||
 end_train_year|object|59e5e5a503986d8c|||||||||||||||
 extract_engine_name|function|8d44d6ae5f134199|||||||||||||||
+extract_model_features|function|d6ca855a6acef6f1|||||||||||||||
 extract_model_name|function|8d44d6ae5f134199|||||||||||||||
+extract_model_type|function|1ac8d097da2342a5|||||||||||||||
+extract_vetiver_features|function|99b9ee7a30bc1961|||||||||||||||
+extract_vetiver_model|function|c3438c55143cac72|||||||||||||||
 extract_workflow_details|function|ba25e442749a4e00|||||||||||||||
 extract_workflow_engine|function|46a58ef44c40bca6|||||||||||||||
 extract_workflow_outcome|function|b403d83e3104c449|||||||||||||||
@@ -89,6 +93,7 @@ get_bayesaverage_method|function|1d97a67ebac9977b|||||||||||||||
 get_coefs.glmnet|function|803746b92f394aab|||||||||||||||
 get_glmnet_coefs|function|6fa17f92a9f77eaf|||||||||||||||
 get_glmnet_objs|function|1ae011e77111aa64|||||||||||||||
+get_tuning_plots|function|524906dd1e723d97|||||||||||||||
 glmnet_grid|function|636d57d8983d2434|||||||||||||||
 glmnet_spec|function|6766ad55dedeb0ad|||||||||||||||
 id_vars|function|7935a09cd8bd8f92|||||||||||||||
@@ -118,6 +123,9 @@ pin_model|function|27e23f1c590a5ada|||||||||||||||
 pin_outcome_model|function|d3c7ed350c09fdf1|||||||||||||||
 pivot_estimates|function|30eef18b223de767|||||||||||||||
 pivot_outcomes|function|90829ebc094a3117|||||||||||||||
+plot_features.default|function|2b6e96f53de62596|||||||||||||||
+plot_features.lightgbm|function|5c417a94b4e2b891|||||||||||||||
+plot_model_features|function|e1786f666bad47fc|||||||||||||||
 plot_predictions|function|7b474d37252d397d|||||||||||||||
 predict_average|function|6d27ae4de4ab4ed6|||||||||||||||
 predict_bayesaverage|function|1138a629a889cff9|||||||||||||||
@@ -140,7 +148,7 @@ recipe_linear|function|8be4983eae687edc|||||||||||||||
 recipe_trees|function|b13ae956662c9c2a|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|ebc95b56a4d7a850|40603e2a07745e1b|569c8d236619ff58|536393307|docs*index.qmd*results.qmd*_quarto.yml|t19867.6118509695s|7eb4f2904957574e|4410596|file|local|vector|||63.488||
+reports|stem|3dbd1e8e0be20a89|7a073cf6fc3b0972|cc933c54f049368c|536393307|docs*index.qmd*results.qmd*_quarto.yml|t19867.6792956162s|4ba2d54d90c5907a|5993551|file|local|vector|||86.379||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
@@ -178,6 +186,7 @@ tune_outcome_wflow|function|58986a3604251944|||||||||||||||
 tune_workflow|function|f8ae94f0d5ed140c|||||||||||||||
 tune_workflows|function|e507bb5e69113e7d|||||||||||||||
 tuning_grid|stem|996e2b1aa22412a2|b3ff6d01114a976e|ef46db3751d8e999|1796853018||t19849.7906829998s|b87462683b64d887|223|qs|local|vector|||0.006||
+tuning_plots|stem|41e30eb996bcca0e|8dc0ab87a4d0cb5d|594758cc20d379f3|-414874247||t19867.6674927178s|9824c588258fcee1|124835|qs|local|vector|||0.123||
 usersrated_final|stem|b9076d4727f9b400|3fdbd1fa4306f02a|4f6666cd9de7426d|318722018||t19867.6096327491s|8041c0302ea0f653|736375852|qs|local|vector|||56.397||
 usersrated_fit|stem|bf51398cbf4cd116|1447115050e82b49|fd77eea888ea0ecc|-463875767||t19867.607965134s|c52f84a28e3ba4ea|734061418|qs|local|vector|||43.523||
 usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|81923f2fcd6c40a1|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_last_fit_2019*version=1709829270936118|t19789.6906080283s||13548762|rds|gcp|vector|||19.728||
