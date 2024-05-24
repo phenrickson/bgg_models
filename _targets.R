@@ -76,10 +76,10 @@ list(
             train_outcome_wflow(outcome = 'averageweight',
                                 weights = 5,
                                 valid_years = valid_years,
-                                recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
-                                splines = spline_vars())
+                                recipe = recipe_trees,
+                                model_spec = lightgbm_spec(),
+                                grid = 10),
+        packages = c("bonsai", "lightgbm")
     ),
     # now fit model
     tar_target(

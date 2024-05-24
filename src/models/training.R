@@ -531,6 +531,33 @@ glmnet_grid = function() {
     )
 }
 
+lightgbm_spec = function(trees = 500, ...) {
+        
+        
+        require(bonsai)
+        
+        parsnip::boost_tree(
+                mode = "regression",
+                trees = trees,
+                min_n = tune(),
+                tree_depth = tune(),
+                ...) |>
+                set_engine("lightgbm")
+}
+
+lightgbm_grid = 
+        function(size = 15) {
+                
+                grid_max_entropy(
+                        x = dials::parameters(
+                                min_n(), # 2nd important
+                                tree_depth() # 3rd most important
+                        ),
+                        size = size
+                )
+        }
+
+
 # function to build a recipe and apply series of steps given an outcome
 build_outcome_recipe = 
     function(data,

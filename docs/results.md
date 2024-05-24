@@ -10,7 +10,8 @@ graph LR
   style Graph fill:#FFFFFF00,stroke:#000000;
   subgraph Legend
     direction LR
-    x7420bd9270f8d27d([""Up to date""]):::uptodate --- xa8565c104d8f0705([""Dispatched""]):::dispatched
+    x7420bd9270f8d27d([""Up to date""]):::uptodate --- x0a52b03877696646([""Outdated""]):::outdated
+    x0a52b03877696646([""Outdated""]):::outdated --- xa8565c104d8f0705([""Dispatched""]):::dispatched
     xa8565c104d8f0705([""Dispatched""]):::dispatched --- xbf4603d6c2c2ad6b([""Stem""]):::none
   end
   subgraph Graph
@@ -44,10 +45,10 @@ graph LR
     x45aff652992a023a(["details"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
     xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
     x32d592eaf8d082e6(["valid_predictions"]):::uptodate --> x3c2f8ffacaa45076(["reports"]):::dispatched
-    x51e4cab15d71e6a3(["average_final"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
-    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::uptodate
+    x51e4cab15d71e6a3(["average_final"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
+    xd0ff2216903615b0(["average_tuned"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x1b61a8b8a8b5e6c2(["average_vetiver"]):::outdated
     xd0ff2216903615b0(["average_tuned"]):::uptodate --> xc0de7cb1ceaaae9a(["average_fit"]):::uptodate
     x6a9d509448f9bd3e(["split"]):::uptodate --> x04d83687468f3fc4(["averageweight_tuned"]):::uptodate
     xc0de7cb1ceaaae9a(["average_fit"]):::uptodate --> x32d592eaf8d082e6(["valid_predictions"]):::uptodate
@@ -57,18 +58,20 @@ graph LR
     xd0ff2216903615b0(["average_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
     x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
     x8b18f98f2746942f(["usersrated_tuned"]):::uptodate --> x45aff652992a023a(["details"]):::uptodate
-    x45aff652992a023a(["details"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::uptodate
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::uptodate
-    x5a0dca7931d71121(["averageweight_final"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
-    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
-    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
-    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::uptodate
+    x45aff652992a023a(["details"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::outdated
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> x92c9ab88ae1439d1(["tracking"]):::outdated
+    x5a0dca7931d71121(["averageweight_final"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
+    x04d83687468f3fc4(["averageweight_tuned"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
+    xe5bd2d3c6fdf29ae(["training_and_validation"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
+    xc2507955de0caf4e(["valid_metrics"]):::uptodate --> xcbeb0ce109eb5b86(["averageweight_vetiver"]):::outdated
   end
   classDef uptodate stroke:#000000,color:#ffffff,fill:#354823;
+  classDef outdated stroke:#000000,color:#000000,fill:#78B7C5;
   classDef dispatched stroke:#000000,color:#000000,fill:#DC863B;
   classDef none stroke:#000000,color:#000000,fill:#94a4ac;
   linkStyle 0 stroke-width:0px;
   linkStyle 1 stroke-width:0px;
+  linkStyle 2 stroke-width:0px;
 ```
 
 # workflows
@@ -77,17 +80,17 @@ workflow objects
 
 <div>
 
-<div id="yachfaepoo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="uzoqekipgx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | name                |                time | seconds |
 |:--------------------|--------------------:|--------:|
-| average_tuned       | 2024-05-23 13:06:48 | 178.743 |
-| averageweight_tuned | 2024-05-23 12:59:27 |  86.476 |
-| usersrated_tuned    | 2024-05-23 13:03:39 | 193.233 |
-| average_fit         | 2024-05-23 13:09:00 |  49.730 |
-| averageweight_fit   | 2024-05-23 12:59:58 |  21.004 |
-| usersrated_fit      | 2024-05-23 13:07:56 |  53.211 |
+| averageweight_tuned | 2024-05-23 17:01:54 | 151.050 |
+| usersrated_tuned    | 2024-05-23 17:06:06 | 194.986 |
+| average_tuned       | 2024-05-23 17:09:23 | 187.130 |
+| averageweight_fit   | 2024-05-23 17:02:23 |  19.137 |
+| usersrated_fit      | 2024-05-23 17:22:40 | 104.842 |
+| average_fit         | 2024-05-23 17:32:02 | 547.950 |
 
 </div>
 
@@ -97,14 +100,14 @@ workflow details
 
 <div>
 
-<div id="eifralfcxj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="bcleqafzrf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | outcome       | wflow_id | penalty | mixture | .config               |
 |:--------------|:---------|--------:|--------:|:----------------------|
-| average       | glmnet   |    0.01 |     0.5 | Preprocessor1_Model27 |
-| usersrated    | glmnet   |    0.01 |     0.5 | Preprocessor1_Model27 |
-| averageweight | glmnet   |    0.01 |     0.5 | Preprocessor1_Model27 |
+| average       | glmnet   |    0.01 |    0.75 | Preprocessor1_Model37 |
+| usersrated    | glmnet   |    0.01 |    0.75 | Preprocessor1_Model37 |
+| averageweight | lightgbm |    0.01 |    0.75 | Preprocessor1_Model37 |
 
 </div>
 
@@ -116,7 +119,7 @@ workflow details
 
 <div>
 
-<div id="qrgmzdajxe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="onteyjvupj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       |     rmse |     mae |    mape |   rsq |   ccc |
@@ -138,7 +141,7 @@ workflow details
 
 <div>
 
-<div id="jutokskvul" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="vbygnwhmdz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       | yearpublished |     rmse |     mae |    mape |   rsq |   ccc |
