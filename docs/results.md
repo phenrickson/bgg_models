@@ -1,6 +1,6 @@
 # Model Results
 
-2024-05-23
+2024-05-24
 
 # pipeline
 
@@ -80,17 +80,17 @@ workflow objects
 
 <div>
 
-<div id="uzoqekipgx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="dqxhfwbrou" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | name                |                time | seconds |
 |:--------------------|--------------------:|--------:|
-| averageweight_tuned | 2024-05-23 17:01:54 | 151.050 |
-| usersrated_tuned    | 2024-05-23 17:06:06 | 194.986 |
-| average_tuned       | 2024-05-23 17:09:23 | 187.130 |
-| averageweight_fit   | 2024-05-23 17:02:23 |  19.137 |
-| usersrated_fit      | 2024-05-23 17:22:40 | 104.842 |
-| average_fit         | 2024-05-23 17:32:02 | 547.950 |
+| averageweight_tuned | 2024-05-24 08:58:55 | 224.914 |
+| usersrated_tuned    | 2024-05-24 09:03:11 | 198.164 |
+| average_tuned       | 2024-05-24 09:06:30 | 189.597 |
+| averageweight_fit   | 2024-05-24 08:59:23 |  18.921 |
+| usersrated_fit      | 2024-05-24 09:07:39 |  53.141 |
+| average_fit         | 2024-05-24 09:08:48 |  54.207 |
 
 </div>
 
@@ -100,14 +100,14 @@ workflow details
 
 <div>
 
-<div id="bcleqafzrf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="edanfcufhk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
-| outcome       | wflow_id | penalty | mixture | .config               |
-|:--------------|:---------|--------:|--------:|:----------------------|
-| average       | glmnet   |    0.01 |    0.75 | Preprocessor1_Model37 |
-| usersrated    | glmnet   |    0.01 |    0.75 | Preprocessor1_Model37 |
-| averageweight | lightgbm |    0.01 |    0.75 | Preprocessor1_Model37 |
+| outcome       | wflow_id |     penalty | mixture | .config               |
+|:--------------|:---------|------------:|--------:|:----------------------|
+| average       | glmnet   | 0.004641589 |       1 | Preprocessor1_Model46 |
+| usersrated    | glmnet   | 0.004641589 |       1 | Preprocessor1_Model46 |
+| averageweight | lightgbm | 0.004641589 |       1 | Preprocessor1_Model46 |
 
 </div>
 
@@ -119,7 +119,7 @@ workflow details
 
 <div>
 
-<div id="onteyjvupj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="eosjgeexml" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       |     rmse |     mae |    mape |   rsq |   ccc |
@@ -141,7 +141,7 @@ workflow details
 
 <div>
 
-<div id="vbygnwhmdz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="ztupiicacp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       | yearpublished |     rmse |     mae |    mape |   rsq |   ccc |

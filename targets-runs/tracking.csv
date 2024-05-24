@@ -1,9 +1,9 @@
 "","time","user","model","penalty","mixture",".config","minratings","outcome","rmse","mae","mape","rsq","ccc"
-"1",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet",0.01,0.75,"Preprocessor1_Model37",0,"average",1.301,0.921,16.479,0.114,0.203
-"2",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","lightgbm",0.01,0.75,"Preprocessor1_Model37",0,"averageweight",0.526,0.399,23.302,0.569,0.74
-"3",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,NA,0,"bayesaverage",0.298,0.173,2.861,0.415,0.633
-"4",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet",0.01,0.75,"Preprocessor1_Model37",0,"usersrated",1002.006,206.069,Inf,0.163,0.401
-"5",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet",0.01,0.75,"Preprocessor1_Model37",25,"average",0.685,0.504,7.598,0.281,0.458
-"6",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","lightgbm",0.01,0.75,"Preprocessor1_Model37",25,"averageweight",0.445,0.342,18.849,0.681,0.815
-"7",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,NA,25,"bayesaverage",0.298,0.173,2.861,0.415,0.633
-"8",2024-05-23 17:37:21.171222,"phil.henrickson@github.com","glmnet",0.01,0.75,"Preprocessor1_Model37",25,"usersrated",1902.399,469.158,164.699,0.145,0.378
+"1",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet",0.005,1,"Preprocessor1_Model46",0,"average",1.301,0.92,16.406,0.115,0.212
+"2",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","lightgbm",0.005,1,"Preprocessor1_Model46",0,"averageweight",0.532,0.403,23.69,0.56,0.733
+"3",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,NA,0,"bayesaverage",0.301,0.174,2.878,0.413,0.635
+"4",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet",0.005,1,"Preprocessor1_Model46",0,"usersrated",981.93,206.215,Inf,0.163,0.403
+"5",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet",0.005,1,"Preprocessor1_Model46",25,"average",0.683,0.502,7.557,0.287,0.471
+"6",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","lightgbm",0.005,1,"Preprocessor1_Model46",25,"averageweight",0.457,0.347,19.21,0.665,0.804
+"7",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet+glmnet",NA,NA,NA,25,"bayesaverage",0.301,0.174,2.878,0.413,0.635
+"8",2024-05-24 09:14:43.300182,"phil.henrickson@github.com","glmnet",0.005,1,"Preprocessor1_Model46",25,"usersrated",1863.498,464.973,165.513,0.146,0.38

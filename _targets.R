@@ -78,7 +78,7 @@ list(
                                 valid_years = valid_years,
                                 recipe = recipe_trees,
                                 model_spec = lightgbm_spec(),
-                                grid = 10),
+                                grid = lightgbm_grid()),
         packages = c("bonsai", "lightgbm")
     ),
     # now fit model
