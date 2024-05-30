@@ -1,10 +1,12 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|27940eebb0a56d3f|||||||||||||||
+.Random.seed|object|d2db26530b65c3fd|||||||||||||||
 add_bgg_dummies|function|824802374d6e7999|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_bgg_preprocessing|function|ce3e0c811d3f3eaa|||||||||||||||
+add_colors|function|31486d5cf2eea326|||||||||||||||
 add_corr|function|a7156d710f1b0e97|||||||||||||||
 add_discrete|function|60a12d53a6f50d6f|||||||||||||||
+add_dt_colors|function|b494898d9b2791ac|||||||||||||||
 add_dummies|function|5a1a5f38d7146b7a|||||||||||||||
 add_imputation|function|d7e0fe505e85875a|||||||||||||||
 add_linear_preprocessing|function|14df0c7084be0ae2|||||||||||||||
@@ -17,22 +19,22 @@ assess_bgg_hit|function|d3e9bb6f2821f897|||||||||||||||
 assess_outcomes|function|4aa23d70c2931237|||||||||||||||
 assess_outcomes_by_threshold|function|9480f8490961652a|||||||||||||||
 average|object|d2d6eec4a76fa9a1|||||||||||||||
-average_final|stem|566f460e2b416085|7b4325494354b92f|49b6c8ee23af391c|469714530||t19867.6105456463s|ef1dd07dee361ede|731155104|qs|local|vector|||51.69||
-average_fit|stem|a98c30b6f7d2d584|94b046e18f5a3b48|539ce101155b9d31|-1438633663||t19867.6086554664s|7a4d309773a7a18c|728857170|qs|local|vector|||44.877||
+average_final|stem|7153695d13d293db|7b4325494354b92f|240138bc197cc74f|469714530||t19873.869989926s|afbf9d05ded97719|731155101|qs|local|vector|||54.575||
+average_fit|stem|6f60bc226ba0a8ee|94b046e18f5a3b48|5950f07f931e9482|-1438633663||t19873.8674556466s|b91ad114fa11721a|728857167|qs|local|vector|||46.971||
 average_last_fit_2019|stem|5952cc3778f1a0aa|966e55f110e22d16|cee0d02625035931|1722910830|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_last_fit_2019*version=1709829212351981|t19789.6899425121s||13475824|rds|gcp|vector|||17.768||
 average_model_2019|stem|1042f2759c1a6b0a|7d1b057b155066d1|8903b272c8b804e0|1348366582|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_model_2019*version=1709829189736056|t19789.6894384819s||619847812|rds|gcp|vector|||33.845||
 average_recipe_2019|stem|c4f1a3817867300d|ea6ae6942e82e141|8b63f10dc62ceb87|1718918283|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_recipe_2019*version=1709823189254759|t19789.6199686941s||581525129|rds|gcp|vector|||0.626||
 average_split|stem|98cb6d9bc947296e|066908c9ebc5b172|7f84c7a1924e4e61|1029818450||t19849.801200929s|48f14561bfa6b2ee|13948173|qs|local|vector|||0.027||
 average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_split_2019*version=1709823071082785|t19789.6188669999s||13440796|rds|gcp|vector|||0.877||
-average_tuned|stem|52193673fbb25425|ec391d4efb706dd6|a22ca1f0d27a6861|2075245144||t19867.6072968592s|5c8f0cb1b3e3d980|717728702|qs|local|vector|||474.57|NAs introduced by coercion|
+average_tuned|stem|5911e84d28642c72|ec391d4efb706dd6|a22ca1f0d27a6861|2075245144||t19873.8606072749s|5c8f0cb1b3e3d980|717728702|qs|local|vector|||1076.824|NAs introduced by coercion|
 average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|83f60c44cc86edbf|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_tuned_2019*version=1709825403298014|t19789.6458604083s||13012935|rds|gcp|vector|||825.865|NAs introduced by coercion|
-average_vetiver|stem|da7e5646cbdfced7|d1e109611603a9ba|98425e508321c143|814172009||t0s|f4066a65ff755f48|0|file|local|vector|||7.629||
+average_vetiver|stem|da7e5646cbdfced7|d1e109611603a9ba|08b3ff67718d1a94|814172009||t0s|f4066a65ff755f48|0|file|local|vector|||16.505||
 average_wflow|stem|bc4b047d7462f379|f777060c66df0c68|d4081b09e24f2e29|-1979774709||t19849.8014224895s|d0eca0793555fbbf|620611353|qs|local|vector|||0.024||
 average_workflow_2019|stem|7ce04b6f7a61d0a8|98e0744e3ba3a743|7dff0f212583db1c|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_workflow_2019*version=1709823717969831|t19789.6260957681s||581525548|rds|gcp|vector|||0.003||
 averageweight|object|6315ec5b5c33ddb0|||||||||||||||
 averageweight_assess_split_2019|stem|17bea111fcbd4c4a|020c10cc1f83b721|71f37b120bb41ccb|572968638|bucket=bgg_data*key=models/objects/averageweight_assess_split_2019*version=1709600672493801|t19787.0448150537s||9134230|rds|gcp|vector|||0.016||
-averageweight_final|stem|19ee208f739ec1c8|36a4b2143f3267f1|a7b0672efc901e44|1930521591||t19867.5900449389s|83262f10169abe2b|519681478|qs|local|vector|||26.526||
-averageweight_fit|stem|db06367ddefb58a3|41a3e9be6d9446de|df8b4ae8944f7849|-27092590||t19867.5829147028s|ace96d2f1b262b30|518522400|qs|local|vector|||18.921||
+averageweight_final|stem|024fcde13e83533b|36a4b2143f3267f1|26265d640be0f5f8|1930521591||t19873.8691733737s|83262f10169abe2b|519681478|qs|local|vector|||32.065||
+averageweight_fit|stem|c572319c61399697|41a3e9be6d9446de|038387e92ab460ba|-27092590||t19873.847747077s|ace96d2f1b262b30|518522400|qs|local|vector|||21.527||
 averageweight_last_fit_2019|stem|68c66382800a95a1|5a1285fc8245a15b|e242805b5a0a7178|-540902471|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_last_fit_2019*version=1709823032190961|t19789.618421784s||9189058|rds|gcp|vector|||9.398||
 averageweight_metrics_2019|stem|1c4b746d9949dda6|dfc4d6606cb90750|30c6d4d69a9fbb7a|-854821502|bucket=bgg_data*key=models/objects/averageweight_metrics_2019*version=1709652223014546|t19787.6414680206s||260|rds|gcp|vector|||0.001||
 averageweight_model_2019|stem|4d88fd4af9e83414|3163a84308483699|ea59fb70055a0b61|110600965|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_model_2019*version=1709823020132251|t19789.6180568201s||439409703|rds|gcp|vector|||10.916||
@@ -40,10 +42,10 @@ averageweight_model_2021|stem|e4b94e2bd367008e|faccc051f7d91018|8050a38f64894f50
 averageweight_recipe_2019|stem|4132c8d0b720274f|3ac6a6e58682b6a1|8808579a687cde96|-1911270986|bucket=bgg_data*key=models/objects/averageweight_recipe_2019*version=1709669719531690|t19787.843665928s||413376051|rds|gcp|vector|||0.091||
 averageweight_split|stem|7b5b78e08915d9d5|e8a2ee4a75686a0b|c676effbd1d15726|-935408054||t19849.7994538452s|fcbe3da35663d683|9381398|qs|local|vector|||0.036||
 averageweight_split_2019|stem|cb0cbbb4342ed172|bb091a611080690f|8d929788ba52be4a|1166735688|bucket=bgg_data*key=models/objects/averageweight_split_2019*version=1709669618881256|t19787.8428006551s||9168416|rds|gcp|vector|||0.063||
-averageweight_tuned|stem|aa7dea4600ca5396|4cc6cb020e159d6d|5fc3711777cedab2|-646993965||t19867.5825810673s|cdce9c81b0c8272e|510480089|qs|local|vector|||224.914|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.. NAs introduced by coercion|
+averageweight_tuned|stem|872903a372cd6573|4cc6cb020e159d6d|5fc3711777cedab2|-646993965||t19873.8473668449s|4a6904222b0a3217|510480088|qs|local|vector|||252.708|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.. NAs introduced by coercion|
 averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_tuned_2019*version=1709822933002552|t19789.6172717144s||8870530|rds|gcp|vector|||79.172|NAs introduced by coercion|
 averageweight_tuning_split_2019|stem|cb0cbbb4342ed172|4fc991ad77544e97|8a8c4574d40239e3|2026635200|bucket=bgg_data*key=models/objects/averageweight_tuning_split_2019*version=1709652030592717|t19787.6392291343s||9168416|rds|gcp|vector|||0.261||
-averageweight_vetiver|stem|da7e5646cbdfced7|ac2051ab3595c9fa|b2a06eb104b51c1f|143165180||t0s|f4066a65ff755f48|0|file|local|vector|||5.311||
+averageweight_vetiver|stem|da7e5646cbdfced7|ac2051ab3595c9fa|e5e5f0f84b084a7d|143165180||t0s|f4066a65ff755f48|0|file|local|vector|||13.951||
 averageweight_wflow|stem|e05ea1b244627678|30c8c5142566f172|8ff3cb2a84701a9b|-1164597312||t19849.7995342371s||431719490|qs|local|vector|||0.004||unused arguments id_vars  id_vars, predictor_vars  predictor_vars, spline_vars  spline_vars
 averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_workflow_2019*version=1709822850235228|t19789.6161134202s||413376684|rds|gcp|vector|||0.009||
 bgg_hit_metrics|stem|4c0b247b1e6d2843|7fa501f73037a88b|54fe05568e40b99b|-573508956|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/bgg_hit_metrics*version=1710880426861006|t19801.8567910649s||369|qs|gcp|vector|||0.271||
@@ -65,7 +67,7 @@ control_race|function|175b7244c4a12dec|||||||||||||||
 convert_to_workflow_set|function|80a529f48d628883|||||||||||||||
 create_workflows|function|cc8a420fe9711fd4|||||||||||||||
 create_year_split|function|c658d02159a974ad|||||||||||||||
-details|stem|3d5302d2c93197f2|cbebc91f2363c006|7497e6d8f9b6132c|131261106||t19867.608807796s|6c088a07ec7dbe69|213|qs|local|vector|||0.083||
+details|stem|3d5302d2c93197f2|cbebc91f2363c006|72f4d3f3ad5d7a35|131261106||t19873.8684021189s|6c088a07ec7dbe69|213|qs|local|vector|||0.1||
 discrete_vars|function|80bc599945b9e2ed|||||||||||||||
 end_train_year|object|59e5e5a503986d8c|||||||||||||||
 extract_engine_name|function|8d44d6ae5f134199|||||||||||||||
@@ -89,6 +91,7 @@ games_imputed_2019|stem||51efdc0130cb1c9d|70a4e62a08fb492f|1434762926||t19787.08
 games_prepared|stem|7573e30d72e6e683|b8d3243d678b6ed9|c58bf783b3613488|270007526||t19865.7793409313s|c22f756e47811ae1|51704052|qs|local|vector|||21.723||
 games_raw|stem|a5906e07d34a0d41|9ce85d6596e11514|88357963c368fca0|-450562005||t19849.79929579s|49c1a1611838f3ff|71900504|qs|local|vector|||6.296||
 games_tidy|stem|7ec87ec688094c21|f2444485789fa2d8|1eb6ca5366be7937|-1430246907|bucket=bgg_data*key=models/objects/games_tidy*version=1709394396696375|t19784.6571041628s||57190694|rds|gcp|vector|||10.284||
+gcs_model_board|function|946293d22bff5ef0|||||||||||||||
 get_bayesaverage_method|function|1d97a67ebac9977b|||||||||||||||
 get_coefs.glmnet|function|803746b92f394aab|||||||||||||||
 get_glmnet_coefs|function|6fa17f92a9f77eaf|||||||||||||||
@@ -105,12 +108,16 @@ linear_model|stem|28486a85f3c43a88|d89ff8bec756dbb1|ef46db3751d8e999|-1612613828
 linear_models|function|da40c48ba42ed58a|||||||||||||||
 load_games|function|f570cc12ee567d75|||||||||||||||
 load_raw_games|function|a47f17afaebf928e|||||||||||||||
+make_bgg_link|function|f67da4d2d783ef4e|||||||||||||||
+make_hyperlink|function|360f6433539bb3d8|||||||||||||||
+make_image_link|function|80714b159c1006b3|||||||||||||||
 make_outcome_recipes|function|d552f78e6da342c3|||||||||||||||
 make_resamples|function|fd7caeb2aac782c2|||||||||||||||
 make_train_valid_split|function|ce208c8f422fe0c3|||||||||||||||
+make_web_image|function|f2d99a293ce1b03e|||||||||||||||
 metrics|stem|14ab53e24823a7f7|e36029763971d73b|aa3f858c3bd8b96c|1271126549||t19849.8097300471s|19e426cce5adb19f|489|qs|local|vector|||0.115||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
-model_board|object|2b8fe8bbee5ca3c7|||||||||||||||
+model_board|object|161b3f45b4b3694d|||||||||||||||
 model_report_2019|stem|58a5951ac4fe725a|ea5a3a0af35aa2a9|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19793.6542722148s|6bc3c877d2b39d85|3062309|file|local|vector|||4.073||
 model_spec|stem|b25db816d1e16ef1|74cd070e4244b9e3|ef46db3751d8e999|-990697664||t19849.7906828529s|cb2068761c31cd19|278|qs|local|vector|||1.685||
 my_class_metrics|function|0301b0be744e7be8|||||||||||||||
@@ -120,7 +127,7 @@ outcome_metrics_all|stem|b96f5739f1fcc872|92e99c6a659e7163|ef10f26a4cd7c86e|-280
 outcome_metrics_filtered|stem|3f00653a804f3a8c|041383a40f486afe|ef10f26a4cd7c86e|-1110596655|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/outcome_metrics_filtered*version=1710880427155842|t19801.8567944101s||606|qs|gcp|vector|||0.04||
 outcome_tuning_split|function|178e58002909c592|||||||||||||||
 pin_model|function|27e23f1c590a5ada|||||||||||||||
-pin_outcome_model|function|d3c7ed350c09fdf1|||||||||||||||
+pin_outcome_model|function|1036bf6cdbd73ed0|||||||||||||||
 pivot_estimates|function|30eef18b223de767|||||||||||||||
 pivot_outcomes|function|90829ebc094a3117|||||||||||||||
 plot_features.default|function|2b6e96f53de62596|||||||||||||||
@@ -135,7 +142,9 @@ predict_sim|function|ac7b02cc939ab133|||||||||||||||
 predict_usersrated|function|22dbf65a85b1c56b|||||||||||||||
 predictions|stem|c4968f60e0665585|8f328410e8f7c73e|89ea09e0626b1e77|995750475||t19849.8088329827s|de0ef3ef6e317955|5335901|qs|local|vector|||2.278||
 predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
+predictions_dt|function|dd078e4e5145493d|||||||||||||||
 predictor_vars|function|77713acf7598ed14|||||||||||||||
+prep_predictions_dt|function|733d85621bd1c938|||||||||||||||
 prepare_games|function|3984fdec328c8ba5|||||||||||||||
 prepare_outcome_recipe|function|41974a814771a0b8|||||||||||||||
 prepare_outcome_split|function|017d254ee6799faf|||||||||||||||
@@ -148,7 +157,7 @@ recipe_linear|function|8be4983eae687edc|||||||||||||||
 recipe_trees|function|b13ae956662c9c2a|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|3dbd1e8e0be20a89|7a073cf6fc3b0972|cc933c54f049368c|536393307|docs*index.qmd*results.qmd*_quarto.yml|t19867.6792956162s|4ba2d54d90c5907a|5993551|file|local|vector|||86.379||
+reports|stem|6b4b81d8d9f2e2fa|7a073cf6fc3b0972|cc933c54f049368c|536393307|docs*index.qmd*results.qmd*_quarto.yml|t19873.8731652013s||6512223|file|local|vector|||30.906||Error running quarto cli.Caused by error System command quarto failed
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||
@@ -168,17 +177,17 @@ split_imputed_2019|stem|df86a7dec504321c|f2a13092c3d2c4d8|01e3275e69841946|12523
 splits|object|264ad358cb1700d5|||||||||||||||
 table_predictions|function|84845bea2f3c5ebe|||||||||||||||
 targets_tracking_details|function|c9497a4cd9f6c4a9|||||||||||||||
-test_predictions|stem|8b3879a35c0e3874|a176ee61cd884594|1362f5dd07141b41|-1403965390||t19867.6107644489s|d66063fc5c1b7232|3880539|qs|local|vector|||3.379||
+test_predictions|stem|8b3879a35c0e3874|a176ee61cd884594|6aaea451932e4cf0|-1403965390||t19873.871308225s|d66063fc5c1b7232|3880539|qs|local|vector|||3.724||
 top_coefs_by_sign|function|8769a4336a983bbf|||||||||||||||
 trace_plot.glmnet|function|57a278ad60956cd1|||||||||||||||
 tracking|stem|da7e5646cbdfced7|6493417c313c956c|53e1caa0049bfd86|1621002234||t0s|f4066a65ff755f48|0|file|local|vector|||0.038||
 train_outcome_model|function|07b9287570047389|||||||||||||||
 train_outcome_wflow|function|56d812b3973ed5bc|||||||||||||||
 training_2015|stem||f953e6dfffa5452a|673de7466bebe0ff|-2011844015||t19786.6612559291s||0|rds|gcp|vector|||0.003||could not find function training_2015
-training_and_validation|stem|c0df1a155a02217e|84da5758e33a0c96|ded5b8bdc8a79e23|-337972277||t19867.5878741151s|a603cb42ed451597|46142651|qs|local|vector|||0.251||
+training_and_validation|stem|c0df1a155a02217e|84da5758e33a0c96|ded5b8bdc8a79e23|-337972277||t19873.8667309085s|a603cb42ed451597|46142651|qs|local|vector|||0.283||
 training_data_2019|stem|fa7fccca0084b7ad|8222fc98ecfddd59|122a8a4d8cbfdb30|-452326442|bucket=bgg_data*key=models/objects/training_data_2019*version=1709658674692814|t19787.7160655225s||41142335|rds|gcp|vector|||0.017||
 training_data_2021|stem|6420896b418a8714|69451bb58c0bc12b|ac6be7a89dd3c5a5|-1168025648|bucket=bgg_data*key=models/objects/training_data_2021*version=1709567721171424|t19786.6633352006s||46515188|rds|gcp|vector|||0.014||
-training_imputed|stem|3be67be0802c21ef|7214374ce6b52369|a002fedee0781313|-1251928409||t19867.5830877772s|3d24d36ac2b4d2cf|43520519|qs|local|vector|||10.915||
+training_imputed|stem|3be67be0802c21ef|7214374ce6b52369|99e5813d5e653d16|-1251928409||t19873.8479488021s|3d24d36ac2b4d2cf|43520519|qs|local|vector|||12.278||
 training_imputed_2019|stem|0996a879cdd9a0d5|e9c31fa48a52b8e9|53cd84600f11e7e3|228302738|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/training_imputed_2019*version=1709823064893982|t19789.6187739271s||41774710|rds|gcp|vector|||12.862||
 tree_models|function|5996000ebef87d97|||||||||||||||
 truncate_averageweight|function|f53f1fb6ddc6d804|||||||||||||||
@@ -186,23 +195,23 @@ tune_outcome_wflow|function|58986a3604251944|||||||||||||||
 tune_workflow|function|f8ae94f0d5ed140c|||||||||||||||
 tune_workflows|function|e507bb5e69113e7d|||||||||||||||
 tuning_grid|stem|996e2b1aa22412a2|b3ff6d01114a976e|ef46db3751d8e999|1796853018||t19849.7906829998s|b87462683b64d887|223|qs|local|vector|||0.006||
-tuning_plots|stem|41e30eb996bcca0e|8dc0ab87a4d0cb5d|594758cc20d379f3|-414874247||t19867.6674927178s|9824c588258fcee1|124835|qs|local|vector|||0.123||
-usersrated_final|stem|b9076d4727f9b400|3fdbd1fa4306f02a|4f6666cd9de7426d|318722018||t19867.6096327491s|8041c0302ea0f653|736375852|qs|local|vector|||56.397||
-usersrated_fit|stem|bf51398cbf4cd116|1447115050e82b49|fd77eea888ea0ecc|-463875767||t19867.607965134s|c52f84a28e3ba4ea|734061418|qs|local|vector|||43.523||
+tuning_plots|stem|41e30eb996bcca0e|8dc0ab87a4d0cb5d|6a54f5f96a9e382f|-414874247||t19873.8686616111s|9824c588258fcee1|124835|qs|local|vector|||0.16||
+usersrated_final|stem|dfd38a0af9146b68|3fdbd1fa4306f02a|61b1ec528dfec8b2|318722018||t19873.8708005971s|42a03644e6a0151b|737414126|qs|local|vector|||53.333||
+usersrated_fit|stem|48464791c4d45d5c|1447115050e82b49|0cd6cae8a3104823|-463875767||t19873.8682338534s|375594be4df72c02|735121821|qs|local|vector|||48.596||
 usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|81923f2fcd6c40a1|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_last_fit_2019*version=1709829270936118|t19789.6906080283s||13548762|rds|gcp|vector|||19.728||
 usersrated_model_2019|stem|5cc531eed5437a17|e937b13665c01f53|12ef504c9a1e5b76|1183094964|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_model_2019*version=1709829406676397|t19789.6918735263s||623211426|rds|gcp|vector|||21.232||
 usersrated_recipe_2019|stem|def63d1e8e484fc2|af770eb1bce17f47|36fd3f46878d8716|-1102203476|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_recipe_2019*version=1709823506910086|t19789.6226927836s||584764565|rds|gcp|vector|||0.089||
 usersrated_split|stem|214b154db4b24dd3|44053cc44027177f|7f84c7a1924e4e61|1122274177||t19849.8011979666s|091beb28b6d6dd87|14112471|qs|local|vector|||0.045||
 usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_split_2019*version=1709823075639287|t19789.6189207257s||13515637|rds|gcp|vector|||0.478||
-usersrated_tuned|stem|2c6d685607399430|af931f461366ff6f|a22ca1f0d27a6861|257239947||t19867.6016914262s|da70cea87af232f5|723000678|qs|local|vector|||481.283|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.. NAs introduced by coercion|
+usersrated_tuned|stem|94c1dde380cc5748|af931f461366ff6f|a22ca1f0d27a6861|257239947||t19873.866712212s|23c278b25e3ca72b|724064970|qs|local|vector|||515.687|NAs introduced by coercion|
 usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_tuned_2019*version=1709826567275317|t19789.6593248967s||13024371|rds|gcp|vector|||1159.845|NAs introduced by coercion|
-usersrated_vetiver|stem|da7e5646cbdfced7|1dd88f4e6441ee7d|5864c9f9badfbaca|-1686075036||t0s|f4066a65ff755f48|0|file|local|vector|||20.719||
+usersrated_vetiver|stem|da7e5646cbdfced7|1dd88f4e6441ee7d|82b8b91f87b6292b|-1686075036||t0s|f4066a65ff755f48|0|file|local|vector|||19.81||
 usersrated_wflow|stem|127b0865bcfcf482|94cd0c8a6d16505f|67055fb3f6de4eee|-883851043||t19849.8013162149s|02d38a8c646b6fff|627982673|qs|local|vector|||0.035||
 usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
-valid_metrics|stem|3dd5c4001e1ca927|48430632dfb2d35d|43dd038ea7063e37|27008866||t19867.6105504414s|780d91b267ec61d3|551|qs|local|vector|||0.131||
-valid_predictions|stem|a0296aaaaaf7826d|95c23fab2b56878a|a85bccc95acdf3d7|675843537||t19867.609774398s|fe9673800b77baec|5340380|qs|local|vector|||2.778||
+valid_metrics|stem|3dd5c4001e1ca927|48430632dfb2d35d|43dd038ea7063e37|27008866||t19873.8713099303s|780d91b267ec61d3|551|qs|local|vector|||0.104||
+valid_predictions|stem|a0296aaaaaf7826d|95c23fab2b56878a|4f82ab25be68a7f5|675843537||t19873.8709763792s|fe9673800b77baec|5340380|qs|local|vector|||4.441||
 valid_years|object|a26c7eb00fbd604a|||||||||||||||
-validation_imputed|stem|31f6382920320693|da31470742e9c38a|a002fedee0781313|-831156082||t19867.5831423216s|536b19d8c24d5aca|5210255|qs|local|vector|||1.498||
+validation_imputed|stem|31f6382920320693|da31470742e9c38a|99e5813d5e653d16|-831156082||t19873.8480150439s|536b19d8c24d5aca|5210255|qs|local|vector|||1.777||
 validation_imputed_2019|stem|e251e6c1d340902e|a543f37a20a4b014|53cd84600f11e7e3|-1068696117|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/validation_imputed_2019*version=1709823039571797|t19789.6185063628s||5460245|rds|gcp|vector|||1.451||
 write_tracking|function|8e3477cbfdc33911|||||||||||||||
 year_splits|object|e55f2adaf03ea742|||||||||||||||
