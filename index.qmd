@@ -33,20 +33,26 @@ library(qs)
 library(quarto)
 library(targets)
 library(tarchetypes)
-library(googleCloudStorageR)
 
-tar_source("src/data/load_data.R")
-tar_source("src/models/training.R")
-tar_source("src/models/assess.R")
-tar_source("src/visualizations/models.R")
-tar_source("src/models/tracking.R")
-tar_source("src/visualizations/tables.R")
+# authenticate
+googleCloudStorageR::gcs_auth(json_file = Sys.getenv("GCS_AUTH_FILE"))
 
+# set bucket
+googleCloudStorageR::gcs_global_bucket("bgg_models")
+
+# src
+tar_source("src")
+
+# load in objects
 tar_load(valid_predictions)
 tar_load(valid_metrics)
 tar_load(details)
 tar_load(tuning_plots)
 
+# model board
+model_board =  gcs_model_board()
+
+# games
 games = 
     get_games_from_gcp(
         bucket = "bgg_data"
@@ -76,25 +82,22 @@ targets::tar_visnetwork(targets_only =T)
 
 ```{r}
 
-model_board = pins::board_folder("models",
-                                 versioned = T)
-
 averageweight_fit = 
     vetiver_pin_read(
         model_board,
-        "bgg_averageweight"
+        "bgg_averageweight_"
     )
 
 average_fit = 
     vetiver_pin_read(
         model_board,
-        "bgg_average"
+        "bgg_average_"
     )
 
 usersrated_fit = 
     vetiver_pin_read(
         model_board,
-        "bgg_usersrated"
+        "bgg_usersrated_"
     )
 
 ```
