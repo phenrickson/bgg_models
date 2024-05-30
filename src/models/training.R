@@ -1,3 +1,14 @@
+gcs_model_board = function(bucket = googleCloudStorageR::gcs_get_global_bucket(),
+                           prefix = "model/",
+                           versioned = T,
+                           ...) {
+    
+    pins::board_gcs(bucket = bucket,
+                    prefix = prefix,
+                    versioned = versioned,
+                    ...)
+}
+
 finalize_model = function(wflow,
                           data,
                           ratings = 25,
@@ -26,7 +37,7 @@ pin_outcome_model = function(wflow,
                              data) {
     
     model_outcome = wflow |> extract_workflow_outcome()
-    model_name = paste0("bgg_", model_outcome)
+    model_name = paste0("bgg_", model_outcome, "_")
     model_metrics = metrics |> filter(outcome == model_outcome)
     model_data = data |> preprocess_outcome(outcome = model_outcome)
     model_tuning = tuning |> pluck("result", 1) |> select(-.predictions)

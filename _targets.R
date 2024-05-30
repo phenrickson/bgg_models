@@ -7,6 +7,15 @@
 library(targets)
 library(tarchetypes) # Load other packages as needed.
 
+# authenticate to gcs
+googleCloudStorageR:::set_scopes()
+
+# authenticate
+googleCloudStorageR::gcs_auth(json_file = Sys.getenv("GCS_AUTH_FILE"))
+
+# set bucket
+suppressMessages({googleCloudStorageR::gcs_global_bucket("bgg_models")})
+
 # packages
 tar_option_set(
     packages = c("dplyr",
@@ -25,16 +34,16 @@ tar_option_set(
     memory = "transient",
     format = "qs"
 )
-# create local model board
-model_board = pins::board_folder("models",
-                                 versioned = T)
 
+# # create local model board
+# model_board = pins::board_folder("models",
+#                                  versioned = T)
+# 
 # functions
-tar_source("src/data/load_data.R")
-tar_source("src/models/training.R")
-tar_source("src/models/assess.R")
-tar_source("src/visualizations/models.R")
-tar_source("src/models/tracking.R")
+suppressMessages({tar_source("src")})
+
+# model board
+model_board = gcs_model_board()
 
 # parameters for targets
 end_train_year = 2020
@@ -271,11 +280,11 @@ list(
                               tuning = usersrated_tuned,
                               board = model_board),
         format = "file"
-    ),
-    # render reports
-    tar_quarto(
-        name = reports,
-        path = ".",
-        quiet = F
     )
+    # # render reports
+    # tar_quarto(
+    #     name = reports,
+    #     path = ".",
+    #     quiet = F
+    # )
 )
