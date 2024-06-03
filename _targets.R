@@ -19,6 +19,7 @@ suppressMessages({googleCloudStorageR::gcs_global_bucket("bgg_models")})
 # packages
 tar_option_set(
     packages = c("dplyr",
+                 "purrr",
                  "bggUtils",
                  "tidymodels",
                  "gert",
@@ -75,6 +76,43 @@ list(
                 valid_years = valid_years
             )
     ),
+    # create model to predict hurdle
+    tar_target(
+        hurdle_tuned,
+        command = 
+            split |>
+            training() |>
+            add_hurdle() |>
+            train_outcome_wflow(outcome = 'hurdle',
+                                weights = 0,
+                                ratings = 0,
+                                valid_years = valid_years,
+                                recipe = recipe_hurdle,
+                                model_spec = lightgbm_spec() |> 
+                                    set_mode("classification"),
+                                metrics = tune_class_metrics(),
+                                grid = lightgbm_grid()),
+    ),
+    # get hurdle results and thresholds
+    tar_target(
+        hurdle_results,
+        command = 
+            hurdle_tuned |>
+            finalize_outcome_wflow(metric = 'roc_auc') |>
+            extract_tune_preds() |>
+            assess_class_threshold(class_metrics = my_class_metrics()),
+        packages = c("bonsai", "lightgbm")
+    ),
+    # finalize model
+    tar_target(
+        hurdle_fit,
+        command = 
+            hurdle_tuned |>
+            finalize_outcome_wflow(metric = 'mn_log_loss') |>
+            fit_outcome_wflow(data = 'all') |>
+            bundle_wflow()
+    ),
+    # identify threshold for hurdle model based on validation set
     # define tuning split given outcome
     tar_target(
         # build workflow
@@ -171,6 +209,20 @@ list(
             validation() |>
             impute_averageweight(model = bundle::unbundle(averageweight_fit))
     ),
+    # predict validation set
+    # predict with hurdle
+    tar_target(
+        name = valid_hurdle_predictions,
+        command = 
+            split |>
+            validation() |>
+            add_hurdle() |>
+            augment(new_data = _,
+                    hurdle_fit |>
+                        bundle::unbundle()
+            )
+    ),
+    # predict with average + usersrated
     tar_target(
         name = valid_predictions,
         command = 
@@ -178,6 +230,21 @@ list(
             predict_bayesaverage(average_model = bundle::unbundle(average_fit),
                                  usersrated_model = bundle::unbundle(usersrated_fit))
     ),
+    # assess hurdle results
+    tar_target(
+        valid_hurdle_metrics,
+        command = 
+            valid_hurdle_predictions |>
+            select(-.pred_class) |>
+            add_pred_class(threshold = best_thresh) |>
+            class_metrics(
+                truth = hurdle,
+                estimate = .pred_class,
+                .pred_yes,
+                event_level = 'second'
+            )
+    ),
+    # assess results
     tar_target(
         name = valid_metrics,
         command =
