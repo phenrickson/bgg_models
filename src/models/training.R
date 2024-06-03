@@ -524,6 +524,37 @@ recipe_trees = function(data,
         step_corr(all_numeric_predictors(), threshold = 0.95)
 }
 
+recipe_hurdle = function(data,
+                        outcome,
+                        ids = id_vars(),
+                        predictors = predictor_vars(),
+                        threshold = 0.001,
+                        ...) {
+    
+    data |>
+        build_recipe(
+            outcome = {{outcome}},
+            ids = ids,
+            predictors = predictors
+        ) |>
+        # standard preprocessing
+        add_preprocessing() |>
+        # simple imputation for numeric
+        add_imputation() |>
+        # create dummies
+        # include most mechanics
+        add_dummies(mechanics) %>%
+        # include all categories
+        add_dummies(categories) %>%
+        # include some families
+        add_dummies(families,
+                    ...) |>
+        # remove zero variance
+        step_zv(all_numeric_predictors()) |>
+        # remove highly correlated
+        step_corr(all_numeric_predictors(), threshold = 0.95)
+}
+
 glmnet_spec = function() {
     linear_reg(
         engine = "glmnet",

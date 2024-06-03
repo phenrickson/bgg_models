@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|d2db26530b65c3fd|||||||||||||||
+.Random.seed|object|879dab2481fc1d12|||||||||||||||
 add_bgg_dummies|function|824802374d6e7999|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_bgg_preprocessing|function|ce3e0c811d3f3eaa|||||||||||||||
@@ -8,14 +8,17 @@ add_corr|function|a7156d710f1b0e97|||||||||||||||
 add_discrete|function|60a12d53a6f50d6f|||||||||||||||
 add_dt_colors|function|b494898d9b2791ac|||||||||||||||
 add_dummies|function|5a1a5f38d7146b7a|||||||||||||||
+add_hurdle|function|b44fb4aee459d9d7|||||||||||||||
 add_imputation|function|d7e0fe505e85875a|||||||||||||||
 add_linear_preprocessing|function|14df0c7084be0ae2|||||||||||||||
 add_normalize|function|018fb725693409ab|||||||||||||||
 add_pca|function|8c452f8029397e22|||||||||||||||
+add_pred_class|function|53af8b8a2c98c27b|||||||||||||||
 add_preprocessing|function|fb5dd94e05d8c1c3|||||||||||||||
 add_splines|function|d3994b6070149280|||||||||||||||
 add_zv|function|62f17e0c706b36f4|||||||||||||||
 assess_bgg_hit|function|d3e9bb6f2821f897|||||||||||||||
+assess_class_threshold|function|7293a623b44a802b|||||||||||||||
 assess_outcomes|function|4aa23d70c2931237|||||||||||||||
 assess_outcomes_by_threshold|function|9480f8490961652a|||||||||||||||
 average|object|d2d6eec4a76fa9a1|||||||||||||||
@@ -74,12 +77,15 @@ extract_engine_name|function|8d44d6ae5f134199|||||||||||||||
 extract_model_features|function|d6ca855a6acef6f1|||||||||||||||
 extract_model_name|function|8d44d6ae5f134199|||||||||||||||
 extract_model_type|function|1ac8d097da2342a5|||||||||||||||
+extract_tune_preds|function|69bb6ebfeee87dfa|||||||||||||||
 extract_vetiver_features|function|99b9ee7a30bc1961|||||||||||||||
 extract_vetiver_model|function|c3438c55143cac72|||||||||||||||
 extract_workflow_details|function|ba25e442749a4e00|||||||||||||||
 extract_workflow_engine|function|46a58ef44c40bca6|||||||||||||||
 extract_workflow_outcome|function|b403d83e3104c449|||||||||||||||
 extract_workflow_params|function|299697067ddba8c1|||||||||||||||
+f1_meas|function|8dd341c13b2c6745|||||||||||||||
+f2_meas|function|940313c37937d7cd|||||||||||||||
 families_allow_list|function|3a72e45e8de0f52d|||||||||||||||
 families_remove_list|function|b64f4cac38642f43|||||||||||||||
 file|stem|2e80923fb90fe5a2|d3a8a37159e570e2|ef46db3751d8e999|1735323524|bucket=bgg_data*key=models/objects/file*stage=data/raw/games.qs*version=1709236894139379|t19782.8339628553s|49c1a1611838f3ff|71900504|file|gcp|vector|||0.477||
@@ -99,6 +105,9 @@ get_glmnet_objs|function|1ae011e77111aa64|||||||||||||||
 get_tuning_plots|function|524906dd1e723d97|||||||||||||||
 glmnet_grid|function|636d57d8983d2434|||||||||||||||
 glmnet_spec|function|6766ad55dedeb0ad|||||||||||||||
+hurdle_fit|stem|cf2e2c2ccb3ba87c|69a0cbf732b9f0c0|910a450e8a321966|1050600724||t19874.8710709358s|30171509deee0ad2|1409979191|qs|local|vector|||31.285||
+hurdle_results|stem|80af0288588c7be4|dba39aabc397aa46|e86e7244922e7d84|926157763||t19874.9394380818s|c68bdf558919c010|6327|qs|local|vector|||3.791|While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes|
+hurdle_tuned|stem|d97504a5eb17ed11|f464542001f1de41|c36b3f660747e684|1401014309||t19874.6111462035s|eff2b7d7679e4b9e|1373767158|qs|local|vector|||330.228|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.. NAs introduced by coercion|
 id_vars|function|7935a09cd8bd8f92|||||||||||||||
 impute_averageweight|function|ded824f4ce6f9523|||||||||||||||
 imputed|object|dfa1f17495b73bca|||||||||||||||
@@ -120,7 +129,7 @@ model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|r
 model_board|object|161b3f45b4b3694d|||||||||||||||
 model_report_2019|stem|58a5951ac4fe725a|ea5a3a0af35aa2a9|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19793.6542722148s|6bc3c877d2b39d85|3062309|file|local|vector|||4.073||
 model_spec|stem|b25db816d1e16ef1|74cd070e4244b9e3|ef46db3751d8e999|-990697664||t19849.7906828529s|cb2068761c31cd19|278|qs|local|vector|||1.685||
-my_class_metrics|function|0301b0be744e7be8|||||||||||||||
+my_class_metrics|function|ca1089acec686103|||||||||||||||
 my_reg_metrics|function|e5db268998260914|||||||||||||||
 outcome_assess_split|function|25f4c23213763c54|||||||||||||||
 outcome_metrics_all|stem|b96f5739f1fcc872|92e99c6a659e7163|ef10f26a4cd7c86e|-280475123|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/outcome_metrics_all*version=1710880426366870|t19801.8567852948s||606|qs|gcp|vector|||0.083||
@@ -153,6 +162,7 @@ preprocess_bgg_games|function|2d36728550076d07|||||||||||||||
 preprocess_games|function|0a9bfe60224904ff|||||||||||||||
 preprocess_outcome|function|642a780b9dac68d4|||||||||||||||
 publisher_allow_list|function|df51b4c498aa1c39|||||||||||||||
+recipe_hurdle|function|d933c4bbd94e4fb4|||||||||||||||
 recipe_linear|function|8be4983eae687edc|||||||||||||||
 recipe_trees|function|b13ae956662c9c2a|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
@@ -191,6 +201,7 @@ training_imputed|stem|3be67be0802c21ef|7214374ce6b52369|99e5813d5e653d16|-125192
 training_imputed_2019|stem|0996a879cdd9a0d5|e9c31fa48a52b8e9|53cd84600f11e7e3|228302738|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/training_imputed_2019*version=1709823064893982|t19789.6187739271s||41774710|rds|gcp|vector|||12.862||
 tree_models|function|5996000ebef87d97|||||||||||||||
 truncate_averageweight|function|f53f1fb6ddc6d804|||||||||||||||
+tune_class_metrics|function|7d0d651b2fe5c77a|||||||||||||||
 tune_outcome_wflow|function|58986a3604251944|||||||||||||||
 tune_workflow|function|f8ae94f0d5ed140c|||||||||||||||
 tune_workflows|function|e507bb5e69113e7d|||||||||||||||
@@ -208,6 +219,7 @@ usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|83
 usersrated_vetiver|stem|da7e5646cbdfced7|1dd88f4e6441ee7d|82b8b91f87b6292b|-1686075036||t0s|f4066a65ff755f48|0|file|local|vector|||19.81||
 usersrated_wflow|stem|127b0865bcfcf482|94cd0c8a6d16505f|67055fb3f6de4eee|-883851043||t19849.8013162149s|02d38a8c646b6fff|627982673|qs|local|vector|||0.035||
 usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
+valid_hurdle_predictions|stem|a3377288630e4bb8|59fb331b52985f27|4c1f365f1404d9bc|2131539577||t19874.9412953913s|7da3ae477baa7df8|5285395|qs|local|vector|||4.779||
 valid_metrics|stem|3dd5c4001e1ca927|48430632dfb2d35d|43dd038ea7063e37|27008866||t19873.8713099303s|780d91b267ec61d3|551|qs|local|vector|||0.104||
 valid_predictions|stem|a0296aaaaaf7826d|95c23fab2b56878a|4f82ab25be68a7f5|675843537||t19873.8709763792s|fe9673800b77baec|5340380|qs|local|vector|||4.441||
 valid_years|object|a26c7eb00fbd604a|||||||||||||||

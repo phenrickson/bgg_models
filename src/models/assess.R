@@ -1,13 +1,125 @@
+f2_meas = function() {
+    
+    metric_tweak("f2_meas", f_meas, beta = 2)
+    
+}
+
+f1_meas = function() {
+    
+     metric_tweak("f1_meas", f_meas)
+}
+
+extract_tune_preds = function(tuned,
+                              outcome = 'hurdle') {
+    
+    params = 
+        tuned |>
+        pluck("params", 1)
+    
+    split = 
+        tuned |>
+        pluck("split", 1)
+    
+    data = 
+        split |>
+        validation() |> 
+        select(-any_of({{outcome}}))
+    
+    preds = 
+        tuned |>
+        pluck("result", 1) |>
+        collect_predictions(parameters = params) |>
+        bind_cols(data)
+    
+    tuned |>
+        add_column(tune_preds = list(preds)) |>
+        select(outcome, wflow_id, tune_preds) |>
+        unnest(tune_preds)
+    
+}
+
+add_pred_class = function(data,
+                          threshold) {
+    
+    data |>
+        mutate(.pred_class = case_when(.pred_yes > threshold ~ 'yes',
+                                       TRUE ~ 'no'),
+               .pred_class = factor(.pred_class, levels = c("no", "yes"))
+        )
+}
+
+
+assess_class_threshold = function(preds,
+                                  outcome = 'hurdle',
+                                  threshold = seq(0, 1, 0.01),
+                                  class_metrics = my_class_metrics,
+                                  event_level = 'second') {
+    
+    map_df(
+        threshold,
+        ~ preds |>
+            add_pred_class(threshold = .x) |>
+            group_by(threshold = .x) |>
+            class_metrics(
+                truth = {{outcome}},
+                estimate = .pred_class,
+                event_level = 'second',
+                ...
+            )
+    )
+    
+}
+
+plot_class_results = function(results) {
+    
+    
+    thresh =
+        results |>
+        select_class_threshold()
+    
+    results |>
+        ggplot(aes(x=threshold, 
+                   color = .metric,
+                   y=.estimate))+
+        geom_line()+
+        facet_grid(.metric~.)+
+        theme_light()+
+        scale_colour_viridis_d()+
+        geom_vline(data = thresh,
+                   aes(xintercept = threshold,
+                       color = .metric),
+                   linetype = 'dashed',
+                   alpha = 0.8)+
+        guides(color = 'none')
+    
+}
+
+select_class_threshold = function(results) {
+    
+    results |>
+        group_by(.metric) |>
+        slice_max(n=1, .estimate, with_ties = F)
+    
+}
+
 my_class_metrics = function() {
     
     yardstick::metric_set(
         yardstick::bal_accuracy,
         yardstick::kap,
         yardstick::mcc,
-        yardstick::f_meas,
+        f1_meas(),
+        f2_meas(),
         yardstick::precision,
-        yardstick::recall
+        yardstick::recall,
+        yardstick::j_index
     )
+}
+
+tune_class_metrics = function() {
+    yardstick::metric_set(yardstick::roc_auc,
+                          yardstick::mn_log_loss,
+                          yardstick::pr_auc)
 }
 
 my_reg_metrics = function() {
@@ -102,7 +214,7 @@ assess_outcomes = function(data,
         ) |>
         mutate(across(c(.estimate),
                       ~ round(.x, digits = 3)
-                      )
+        )
         )
     
 }
