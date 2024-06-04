@@ -1,6 +1,6 @@
 # Model Results
 
-2024-05-30
+2024-06-04
 
 # pipeline
 
@@ -74,7 +74,7 @@ workflow objects
 
 <div>
 
-<div id="zotzypkjmf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="hsnnqludgt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | name                |                time |  seconds |
@@ -94,7 +94,7 @@ workflow details
 
 <div>
 
-<div id="ctugvvecif" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="sdztshexwo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | outcome       | wflow_id | min_n | tree_depth | .config               |
@@ -113,7 +113,7 @@ workflow details
 
 <div>
 
-<div id="nmskksiaga" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="wuviqpfmkp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       |     rmse |     mae |    mape |   rsq |   ccc |
@@ -135,7 +135,7 @@ workflow details
 
 <div>
 
-<div id="ndmhrbllhd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="wifyudfocs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 | minratings | outcome       | yearpublished |     rmse |     mae |    mape |   rsq |   ccc |
