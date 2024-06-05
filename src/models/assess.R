@@ -163,7 +163,8 @@ pivot_outcomes = function(predictions,
             select(yearpublished,
                    game_id, 
                    name, 
-                   starts_with(".pred")
+                   starts_with(".pred"),
+                   -starts_with(".pred_hurdle")
             ) |>
             pivot_longer(
                 cols = c(starts_with(".pred")),
