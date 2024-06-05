@@ -22,6 +22,8 @@ tar_option_set(
                  "purrr",
                  "bggUtils",
                  "tidymodels",
+                 "lightgbm",
+                 "bonsai",
                  "gert",
                  "quarto",
                  "qs"),
@@ -102,6 +104,14 @@ list(
             extract_tune_preds() |>
             assess_class_threshold(class_metrics = my_class_metrics()),
         packages = c("bonsai", "lightgbm")
+    ),
+    tar_target(
+        hurdle_threshold,
+        command = 
+            hurdle_results |>
+            filter(.metric == 'f2_meas') |>
+            slice_max(.estimate, n = 1, with_ties = F) |>
+            pull(threshold)
     ),
     # finalize model
     tar_target(
@@ -207,21 +217,11 @@ list(
         command =
             split |>
             validation() |>
-            impute_averageweight(model = bundle::unbundle(averageweight_fit))
+            impute_averageweight(model = bundle::unbundle(averageweight_fit)) |>
+            predict_hurdle(model = bundle::unbundle(hurdle_fit),
+                           threshold = hurdle_threshold)
     ),
     # predict validation set
-    # predict with hurdle
-    tar_target(
-        name = valid_hurdle_predictions,
-        command = 
-            split |>
-            validation() |>
-            add_hurdle() |>
-            augment(new_data = _,
-                    hurdle_fit |>
-                        bundle::unbundle()
-            )
-    ),
     # predict with average + usersrated
     tar_target(
         name = valid_predictions,
@@ -234,15 +234,16 @@ list(
     tar_target(
         valid_hurdle_metrics,
         command = 
-            valid_hurdle_predictions |>
-            select(-.pred_class) |>
-            add_pred_class(threshold = best_thresh) |>
-            class_metrics(
-                truth = hurdle,
-                estimate = .pred_class,
-                .pred_yes,
-                event_level = 'second'
-            )
+            {
+                class_metrics = my_class_metrics()
+                valid_predictions |>
+                    group_by(outcome = 'hurdle') |>
+                    class_metrics(
+                        truth = hurdle,
+                        estimate = .pred_hurdle_class,
+                        event_level = 'second'
+                    )
+            }
     ),
     # assess results
     tar_target(
@@ -305,6 +306,16 @@ list(
             finalize_model(data = training_and_validation)
     ),
     tar_target(
+        name = hurdle_final,
+        command = 
+            hurdle_fit |>
+            bundle::unbundle() |>
+            finalize_model(data = training_and_validation |> add_hurdle(),
+                           ratings = 0,
+                           weights = 0),
+        packages = c("lightgbm")
+    ),
+    tar_target(
         name = test_predictions,
         command = 
             split |>
@@ -346,6 +357,19 @@ list(
                               data = training_and_validation,
                               tuning = usersrated_tuned,
                               board = model_board),
+        format = "file"
+    ),
+    tar_target(
+        name = hurdle_vetiver,
+        command = 
+            hurdle_final |>
+            bundle::unbundle() |>
+            pin_outcome_model(metrics = valid_hurdle_metrics,
+                              data = training_and_validation |> add_hurdle(),
+                              tuning = hurdle_tuned,
+                              board = model_board,
+                              ratings = 0,
+                              weights = 0),
         format = "file"
     )
     # # render reports

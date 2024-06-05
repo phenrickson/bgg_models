@@ -9,6 +9,19 @@ gcs_model_board = function(bucket = googleCloudStorageR::gcs_get_global_bucket()
                     ...)
 }
 
+predict_hurdle = function(data, model, threshold, ...) {
+    
+    data |>
+        add_hurdle(...) |>
+        augment(new_data = _,
+                model) |>
+        select(-.pred_class, -.pred_no) |>
+        add_pred_class(threshold = threshold) |>
+        rename(.pred_hurdle_yes = .pred_yes,
+               .pred_hurdle_class = .pred_class)
+    
+}
+
 finalize_model = function(wflow,
                           data,
                           ratings = 25,
@@ -34,12 +47,13 @@ pin_outcome_model = function(wflow,
                              board,
                              tuning,
                              metrics,
-                             data) {
+                             data,
+                             ...) {
     
     model_outcome = wflow |> extract_workflow_outcome()
     model_name = paste0("bgg_", model_outcome, "_")
     model_metrics = metrics |> filter(outcome == model_outcome)
-    model_data = data |> preprocess_outcome(outcome = model_outcome)
+    model_data = data |> preprocess_outcome(outcome = model_outcome, ...)
     model_tuning = tuning |> pluck("result", 1) |> select(-.predictions)
     
     model_metadata = 
@@ -1235,23 +1249,6 @@ predict_usersrated = function(data,
         rename(.pred_usersrated = .pred)
     
 }
-
-predict_hurdle = 
-    function(data,
-             workflow) {
-        
-        workflow %>%
-            # predict with hurdle
-            augment(data,
-                    type = 'prob') %>%
-            # rename pred to hurdle
-            rename(pred_hurdle = .pred_yes) %>%
-            # remove extraneous predictions
-            select(-.pred_no,
-                   -.pred_class)
-        
-    }
-
 
 simulate_outcomes = function(data,
                              averageweight_fit,

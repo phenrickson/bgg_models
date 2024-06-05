@@ -1908,6 +1908,24 @@
       ],
       "Hash": "b8552d117e1b808b09a832f589b79035"
     },
+    "lightgbm": {
+      "Package": "lightgbm",
+      "Version": "4.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Matrix",
+        "R",
+        "R6",
+        "data.table",
+        "graphics",
+        "jsonlite",
+        "methods",
+        "parallel",
+        "utils"
+      ],
+      "Hash": "3557a7d44ebdac1cda4cc5b5cbcb7716"
+    },
     "listenv": {
       "Package": "listenv",
       "Version": "0.9.1",

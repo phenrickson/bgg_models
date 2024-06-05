@@ -37,13 +37,6 @@ prep_predictions_dt = function(predictions,
     predictions |>
         arrange(desc(.pred_bayesaverage)) |>
         filter(!is.na(thumbnail)) |>
-        inner_join(
-            games |>
-                bggUtils:::unnest_statistics() |>
-                filter(owned > 1) |>
-                select(game_id),
-            by = join_by(game_id)
-        ) |>
         mutate(across(starts_with(".pred"), ~ round(.x, 2))) |>
         mutate(name = make_hyperlink(make_bgg_link(game_id), 
                                      mytext = paste(name, paste0("(",yearpublished, ")")))) |>
