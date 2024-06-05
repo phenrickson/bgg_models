@@ -1,0 +1,9 @@
+"","outcome",".metric",".estimator",".estimate"
+"1","hurdle","bal_accuracy","binary",0.7453
+"2","hurdle","kap","binary",0.3825
+"3","hurdle","mcc","binary",0.4375
+"4","hurdle","f1_meas","binary",0.6036
+"5","hurdle","f2_meas","binary",0.7425
+"6","hurdle","precision","binary",0.4602
+"7","hurdle","recall","binary",0.8769
+"8","hurdle","j_index","binary",0.4906

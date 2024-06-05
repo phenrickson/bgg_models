@@ -245,6 +245,14 @@ list(
                     )
             }
     ),
+    tar_target(
+        hurdle_tracking,
+        command = 
+            valid_hurdle_metrics |>
+            mutate(.estimate = round(.estimate, 4)) |>
+            write.csv(file = 'targets-runs/hurdle.csv'),
+        format = 'file'
+    ),
     # assess results
     tar_target(
         name = valid_metrics,
@@ -371,11 +379,11 @@ list(
                               ratings = 0,
                               weights = 0),
         format = "file"
+    ),
+    # render reports
+    tar_quarto(
+        name = reports,
+        path = ".",
+        quiet = F
     )
-    # # render reports
-    # tar_quarto(
-    #     name = reports,
-    #     path = ".",
-    #     quiet = F
-    # )
 )
