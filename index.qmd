@@ -49,6 +49,8 @@ tar_load(valid_metrics)
 tar_load(details)
 tar_load(tuning_plots)
 tar_load(hurdle_threshold)
+tar_load(valid_hurdle_metrics)
+tar_load(hurdle_results)
 
 # model board
 model_board =  gcs_model_board()
@@ -102,7 +104,7 @@ usersrated_fit =
     )
 
 hurdle_fit = 
-        vetiver_pin_read(
+    vetiver_pin_read(
         model_board,
         "bgg_hurdle_"
     )
@@ -110,6 +112,10 @@ hurdle_fit =
 ```
 
 ## Assessment
+
+### BGG Ratings
+
+I assess the model's predictions for different BGG outcomes for all games in the validation set.
 
 ```{r}
 #| message: false
@@ -122,8 +128,17 @@ valid_predictions |>
             select(game_id, usersrated),
         by = join_by(game_id)
     ) |>
-    plot_predictions(alpha = usersrated)+
-    theme(legend.title = element_text())
+    left_join(
+        valid_predictions |>
+            select(game_id, hurdle, .pred_hurdle_yes)
+    ) |>
+    mutate(hurdle = case_when(hurdle == 'yes' ~ '>25 ratings',
+                              hurdle == 'no' ~ '<25 ratings')) |>
+    plot_predictions(color = hurdle,
+                     alpha = 0.25)+
+    theme(legend.title = element_text())+
+    scale_color_manual(values = c("grey60","navy"))+
+    guides(colour = guide_legend(override.aes = list(alpha=1)))
 
 ```
 
@@ -140,6 +155,51 @@ targets_tracking_details(metrics = valid_metrics,
 
 ```
 
+### Hurdle
+
+I first predict whether games are expected to receive enough ratings to be assigned a geek rating (25 ratings). This is a classification model which assigns a probability to a game; in order to classify games, I need to determine the appropriate threshold 
+
+I select this threshold by examining performance across a variety of classification metrics. I select the threshold that maximizes the (F2 measure) in order to minimize false negatives, as I'm interested in using the hurdle model to filter out games that are very unlikely to receive ratings, where including a game that is worse than missing a game.
+
+```{r}
+
+hurdle_results |> 
+    plot_class_results()+
+    theme(panel.grid.major = element_blank())
+
+```
+
+```{r}
+
+valid_predictions |>
+    conf_mat(hurdle,
+             .pred_hurdle_class) |>
+    autoplot(type = 'heatmap')
+
+```
+
+```{r}
+
+prob_metrics = metric_set(yardstick::roc_auc,
+                          yardstick::pr_auc)
+
+prob_hurdle_metrics = valid_predictions |>
+    group_by(outcome = 'hurdle') |>
+    prob_metrics(truth = hurdle,
+                 .pred_hurdle_yes,
+                 event_level = 'second')
+
+valid_hurdle_metrics |>
+    bind_rows(prob_hurdle_metrics) |>
+    gt::gt() |>
+    gt::tab_options(quarto.disable_processing = T) |>
+    gt::fmt_number(columns = c(".estimate"),
+                   decimals = 3) |>
+    gtExtras::gt_theme_espn()
+
+```
+
+
 ## Tuning
 
 ::: {.panel-tabset}
@@ -151,37 +211,36 @@ targets_tracking_details(metrics = valid_metrics,
 #| results: asis
 #| echo: false
 tuning_plots[[1]]+
-        labs(title = 'Average Weight')
-
+    labs(title = 'Average Weight')
+    
 ```
-
+    
 ### Average Rating
-
+    
 ```{r}
 #| fig-height: 7
 #| results: asis
 #| echo: false
 tuning_plots[[2]]+
     labs(title = 'Average Rating')
-
+    
 ```
-
-
+    
 ### Users Rated
-
+    
 ```{r}
 #| fig-height: 7
 #| results: asis
 #| echo: false
 tuning_plots[[3]]+
     labs(title = 'Users Rated')
-
+    
 ```
-
+    
 :::
-
+    
 ## Features
-
+    
 ```{r}
 #| message: false
 #| warning: false
@@ -280,9 +339,13 @@ predictions =
 
 ```
 
-Predictions for games expected to achieve at least 25 ratings.
+
+## Upcoming Games
+
+This table displays predicted BGG outcomes for games that are expected to achieve at least 25 user ratings.
 
 ```{r}
+#| echo: false
 
 # table
 predictions |>
@@ -296,42 +359,44 @@ predictions |>
 
 ```
 
-Probabilities for games on whether they will achieve 25 ratings.
+
+## Hurdle
+
+This table displays predicted probabilities for whether games will achieve enough ratings (25) to be assigned a Geek Rating.
 
 ```{r}
-
+#| echo: false
 predictions |>
     filter(yearpublished >= 2024) |>
     filter(.pred_hurdle_class == 'yes') |>
     arrange(desc(.pred_hurdle_yes)) |>
     filter(!is.na(thumbnail)) |>
     mutate(name = make_hyperlink(make_bgg_link(game_id), 
-                                     mytext = paste(name, paste0("(",yearpublished, ")")))) |>
+                                 mytext = paste(name, paste0("(",yearpublished, ")")))) |>
     mutate(Image = make_image_link(thumbnail),
-            Game = name,
-            Description = stringr::str_trunc(description, width = 150),
-            `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
-            Hurdle = hurdle,
-            `Ratings` = usersrated,
-            .keep = 'none') |>
+           Game = name,
+           Description = stringr::str_trunc(description, width = 150),
+           `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
+           `Ratings` = usersrated,
+           .keep = 'none') |>
     DT::datatable(escape=F,
-                      rownames = F,
-                      extensions = c('Responsive'),
-                      class = list(stripe =F),
-                      filter = list(position = 'top'),
-                      options = list(pageLength = 15,
-                                     initComplete = htmlwidgets::JS(
-                                         "function(settings, json) {",
-                                         paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
-                                         "}"),
-                                     scrollX=F,
-                                     columnDefs = list(
-                                         list(className = 'dt-center',
-                                              visible=T,
-                                              targets = c("Image", "Pr(Hurdle)", "Hurdle", "Ratings")
-                                         )
+                  rownames = F,
+                  extensions = c('Responsive'),
+                  class = list(stripe =F),
+                  filter = list(position = 'top'),
+                  options = list(pageLength = 15,
+                                 initComplete = htmlwidgets::JS(
+                                     "function(settings, json) {",
+                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
+                                     "}"),
+                                 scrollX=F,
+                                 columnDefs = list(
+                                     list(className = 'dt-center',
+                                          visible=T,
+                                          targets = c("Image", "Pr(Hurdle)", "Ratings")
                                      )
-                      )
-        ) 
+                                 )
+                  )
+    ) 
 
 ```
