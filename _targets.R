@@ -19,8 +19,11 @@ suppressMessages({googleCloudStorageR::gcs_global_bucket("bgg_models")})
 # packages
 tar_option_set(
     packages = c("dplyr",
+                 "purrr",
                  "bggUtils",
                  "tidymodels",
+                 "lightgbm",
+                 "bonsai",
                  "gert",
                  "quarto",
                  "qs"),
@@ -75,6 +78,51 @@ list(
                 valid_years = valid_years
             )
     ),
+    # create model to predict hurdle
+    tar_target(
+        hurdle_tuned,
+        command = 
+            split |>
+            training() |>
+            add_hurdle() |>
+            train_outcome_wflow(outcome = 'hurdle',
+                                weights = 0,
+                                ratings = 0,
+                                valid_years = valid_years,
+                                recipe = recipe_hurdle,
+                                model_spec = lightgbm_spec() |> 
+                                    set_mode("classification"),
+                                metrics = tune_class_metrics(),
+                                grid = lightgbm_grid()),
+    ),
+    # get hurdle results and thresholds
+    tar_target(
+        hurdle_results,
+        command = 
+            hurdle_tuned |>
+            finalize_outcome_wflow(metric = 'roc_auc') |>
+            extract_tune_preds() |>
+            assess_class_threshold(class_metrics = my_class_metrics()),
+        packages = c("bonsai", "lightgbm")
+    ),
+    tar_target(
+        hurdle_threshold,
+        command = 
+            hurdle_results |>
+            filter(.metric == 'f2_meas') |>
+            slice_max(.estimate, n = 1, with_ties = F) |>
+            pull(threshold)
+    ),
+    # finalize model
+    tar_target(
+        hurdle_fit,
+        command = 
+            hurdle_tuned |>
+            finalize_outcome_wflow(metric = 'mn_log_loss') |>
+            fit_outcome_wflow(data = 'all') |>
+            bundle_wflow()
+    ),
+    # identify threshold for hurdle model based on validation set
     # define tuning split given outcome
     tar_target(
         # build workflow
@@ -169,8 +217,12 @@ list(
         command =
             split |>
             validation() |>
-            impute_averageweight(model = bundle::unbundle(averageweight_fit))
+            impute_averageweight(model = bundle::unbundle(averageweight_fit)) |>
+            predict_hurdle(model = bundle::unbundle(hurdle_fit),
+                           threshold = hurdle_threshold)
     ),
+    # predict validation set
+    # predict with average + usersrated
     tar_target(
         name = valid_predictions,
         command = 
@@ -178,6 +230,30 @@ list(
             predict_bayesaverage(average_model = bundle::unbundle(average_fit),
                                  usersrated_model = bundle::unbundle(usersrated_fit))
     ),
+    # assess hurdle results
+    tar_target(
+        valid_hurdle_metrics,
+        command = 
+            {
+                class_metrics = my_class_metrics()
+                valid_predictions |>
+                    group_by(outcome = 'hurdle') |>
+                    class_metrics(
+                        truth = hurdle,
+                        estimate = .pred_hurdle_class,
+                        event_level = 'second'
+                    )
+            }
+    ),
+    tar_target(
+        hurdle_tracking,
+        command = 
+            valid_hurdle_metrics |>
+            mutate(.estimate = round(.estimate, 4)) |>
+            write.csv(file = 'targets-runs/hurdle.csv'),
+        format = 'file'
+    ),
+    # assess results
     tar_target(
         name = valid_metrics,
         command =
@@ -238,6 +314,16 @@ list(
             finalize_model(data = training_and_validation)
     ),
     tar_target(
+        name = hurdle_final,
+        command = 
+            hurdle_fit |>
+            bundle::unbundle() |>
+            finalize_model(data = training_and_validation |> add_hurdle(),
+                           ratings = 0,
+                           weights = 0),
+        packages = c("lightgbm")
+    ),
+    tar_target(
         name = test_predictions,
         command = 
             split |>
@@ -280,6 +366,25 @@ list(
                               tuning = usersrated_tuned,
                               board = model_board),
         format = "file"
+    ),
+    tar_target(
+        name = hurdle_vetiver,
+        command = 
+            hurdle_final |>
+            bundle::unbundle() |>
+            pin_outcome_model(metrics = valid_hurdle_metrics,
+                              data = training_and_validation |> add_hurdle(),
+                              tuning = hurdle_tuned,
+                              board = model_board,
+                              ratings = 0,
+                              weights = 0),
+        format = "file"
+    ),
+    # render reports
+    tar_quarto(
+        name = reports,
+        path = ".",
+        quiet = F
     )
     # # render reports
     # tar_quarto(

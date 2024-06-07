@@ -20,3 +20,12 @@ prepare_games = function(data) {
         filter(!is.na(yearpublished))
 }
 
+# add hurdle
+add_hurdle = function(data, ratings = 25) {
+    
+    data |>
+        mutate(hurdle = case_when(usersrated >= ratings ~ 'yes',
+                                  TRUE ~ 'no'),
+               hurdle = factor(hurdle, levels = c("no", "yes")))
+    
+}

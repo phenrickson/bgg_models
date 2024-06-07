@@ -9,6 +9,19 @@ gcs_model_board = function(bucket = googleCloudStorageR::gcs_get_global_bucket()
                     ...)
 }
 
+predict_hurdle = function(data, model, threshold, ...) {
+    
+    data |>
+        add_hurdle(...) |>
+        augment(new_data = _,
+                model) |>
+        select(-.pred_class, -.pred_no) |>
+        add_pred_class(threshold = threshold) |>
+        rename(.pred_hurdle_yes = .pred_yes,
+               .pred_hurdle_class = .pred_class)
+    
+}
+
 finalize_model = function(wflow,
                           data,
                           ratings = 25,
@@ -34,12 +47,13 @@ pin_outcome_model = function(wflow,
                              board,
                              tuning,
                              metrics,
-                             data) {
+                             data,
+                             ...) {
     
     model_outcome = wflow |> extract_workflow_outcome()
     model_name = paste0("bgg_", model_outcome, "_")
     model_metrics = metrics |> filter(outcome == model_outcome)
-    model_data = data |> preprocess_outcome(outcome = model_outcome)
+    model_data = data |> preprocess_outcome(outcome = model_outcome, ...)
     model_tuning = tuning |> pluck("result", 1) |> select(-.predictions)
     
     model_metadata = 
@@ -518,6 +532,37 @@ recipe_trees = function(data,
         add_imputation() |>
         # create dummies
         add_bgg_dummies() |>
+        # remove zero variance
+        step_zv(all_numeric_predictors()) |>
+        # remove highly correlated
+        step_corr(all_numeric_predictors(), threshold = 0.95)
+}
+
+recipe_hurdle = function(data,
+                        outcome,
+                        ids = id_vars(),
+                        predictors = predictor_vars(),
+                        threshold = 0.001,
+                        ...) {
+    
+    data |>
+        build_recipe(
+            outcome = {{outcome}},
+            ids = ids,
+            predictors = predictors
+        ) |>
+        # standard preprocessing
+        add_preprocessing() |>
+        # simple imputation for numeric
+        add_imputation() |>
+        # create dummies
+        # include most mechanics
+        add_dummies(mechanics) %>%
+        # include all categories
+        add_dummies(categories) %>%
+        # include some families
+        add_dummies(families,
+                    ...) |>
         # remove zero variance
         step_zv(all_numeric_predictors()) |>
         # remove highly correlated
@@ -1204,23 +1249,6 @@ predict_usersrated = function(data,
         rename(.pred_usersrated = .pred)
     
 }
-
-predict_hurdle = 
-    function(data,
-             workflow) {
-        
-        workflow %>%
-            # predict with hurdle
-            augment(data,
-                    type = 'prob') %>%
-            # rename pred to hurdle
-            rename(pred_hurdle = .pred_yes) %>%
-            # remove extraneous predictions
-            select(-.pred_no,
-                   -.pred_class)
-        
-    }
-
 
 simulate_outcomes = function(data,
                              averageweight_fit,
