@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|a7b39d0e11555e6e|||||||||||||||
+.Random.seed|object|b19fb91fa37c6b0f|||||||||||||||
 add_bgg_dummies|function|824802374d6e7999|||||||||||||||
 add_bgg_hit|function|b371a6c32ebf1d63|||||||||||||||
 add_bgg_preprocessing|function|ce3e0c811d3f3eaa|||||||||||||||
@@ -18,7 +18,7 @@ add_preprocessing|function|fb5dd94e05d8c1c3|||||||||||||||
 add_splines|function|d3994b6070149280|||||||||||||||
 add_zv|function|62f17e0c706b36f4|||||||||||||||
 assess_bgg_hit|function|d3e9bb6f2821f897|||||||||||||||
-assess_class_threshold|function|7293a623b44a802b|||||||||||||||
+assess_class_threshold|function|e3fc172114921e42|||||||||||||||
 assess_outcomes|function|4aa23d70c2931237|||||||||||||||
 assess_outcomes_by_threshold|function|d290fdcdccd3a4ec|||||||||||||||
 average|object|d2d6eec4a76fa9a1|||||||||||||||
@@ -93,6 +93,7 @@ fill_colorbar|function|552336ff9de86eb9|||||||||||||||
 finalize_model|function|adaf9de3c7c2f928|||||||||||||||
 finalize_outcome_wflow|function|9ba876e4b9f575d7|||||||||||||||
 fit_outcome_wflow|function|601a8586cfb24960|||||||||||||||
+games_active|stem|4c25f54dd0f826cb|d0555a0cf77701e9|ef46db3751d8e999|-1362997322||t19881.753258702s|4da3fcdde4816490|73162461|qs|local|vector|||6.919||
 games_imputed_2019|stem||51efdc0130cb1c9d|70a4e62a08fb492f|1434762926||t19787.0876926725s||0|rds|gcp|vector|||0.004||object aerageweight_model not found
 games_prepared|stem|7573e30d72e6e683|b8d3243d678b6ed9|c58bf783b3613488|270007526||t19865.7793409313s|c22f756e47811ae1|51704052|qs|local|vector|||21.723||
 games_raw|stem|a5906e07d34a0d41|9ce85d6596e11514|88357963c368fca0|-450562005||t19849.79929579s|49c1a1611838f3ff|71900504|qs|local|vector|||6.296||
@@ -107,7 +108,7 @@ glmnet_grid|function|636d57d8983d2434|||||||||||||||
 glmnet_spec|function|6766ad55dedeb0ad|||||||||||||||
 hurdle_final|stem|d56b542a6a96bad2|ef431b9624f92f6c|097f74abf5e4f482|-974387279||t19879.9066626335s|0474a358f8cec6d7|1417423150|qs|local|vector|||31.787||
 hurdle_fit|stem|cf2e2c2ccb3ba87c|69a0cbf732b9f0c0|910a450e8a321966|1050600724||t19874.8710709358s|30171509deee0ad2|1409979191|qs|local|vector|||31.285||
-hurdle_results|stem|80af0288588c7be4|dba39aabc397aa46|e86e7244922e7d84|926157763||t19874.9394380818s|c68bdf558919c010|6327|qs|local|vector|||3.791|While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes|
+hurdle_results|stem|80af0288588c7be4|dba39aabc397aa46|e821a89131ee4cae|926157763||t19881.753411541s|c68bdf558919c010|6327|qs|local|vector|||2.637|While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes. While computing binary precision, no predicted events were detected i.e.true_positive  false_positive  0.Precision is undefined in this case, and NA will be returned.Note that 3018 true events actually occurred for the problematic event level,yes|
 hurdle_threshold|stem|c0149db6ea73cb77|964f45929be40ca1|aec8b4b6d7aa3e3b|332876545||t19879.8734653679s|6efc4bfe9d27bd5a|46|qs|local|vector|||0.917||
 hurdle_tracking|stem|da7e5646cbdfced7|c52926fdb902175b|2e6d6424b988a977|849070966||t0s|f4066a65ff755f48|0|file|local|vector|||0.002||
 hurdle_tuned|stem|d97504a5eb17ed11|f464542001f1de41|c36b3f660747e684|1401014309||t19874.6111462035s|eff2b7d7679e4b9e|1373767158|qs|local|vector|||330.228|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.. NAs introduced by coercion|
@@ -147,7 +148,7 @@ plot_class_results|function|04b4940d9fb41242|||||||||||||||
 plot_features.default|function|2b6e96f53de62596|||||||||||||||
 plot_features.lightgbm|function|5c417a94b4e2b891|||||||||||||||
 plot_model_features|function|e1786f666bad47fc|||||||||||||||
-plot_predictions|function|7b474d37252d397d|||||||||||||||
+plot_predictions|function|4ec53c4e115a8289|||||||||||||||
 predict_average|function|6d27ae4de4ab4ed6|||||||||||||||
 predict_bayesaverage|function|1138a629a889cff9|||||||||||||||
 predict_hurdle|function|078b9ea0e3f6ed93|||||||||||||||
@@ -172,7 +173,7 @@ recipe_linear|function|8be4983eae687edc|||||||||||||||
 recipe_trees|function|b13ae956662c9c2a|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|de50f18e6719e3cf|61d60b1ca2615575|22a109975daa7f7d|536393307|docs*index.qmd*results.qmd*_quarto.yml|t19879.9562485002s|abc422ad9bba06db|10642|file|local|vector|||139.851||
+reports|stem|38e38d906d425e6a|7de44fe58577d07d|4d9b1c8f5152460f|536393307|docs*index.qmd*_quarto.yml|t19881.8133740706s|864a2395120d898b|8274408|file|local|vector|||120.857||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|a2a52dfe4e065e93|||||||||||||||
 round_usersrated|function|8efbe1db0e6dc629|||||||||||||||

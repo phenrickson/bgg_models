@@ -2,4 +2,3 @@ project:
   output-dir: docs
   render:
   - index.qmd
-  - results.qmd

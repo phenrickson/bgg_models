@@ -63,8 +63,7 @@ assess_class_threshold = function(preds,
             class_metrics(
                 truth = {{outcome}},
                 estimate = .pred_class,
-                event_level = 'second',
-                ...
+                event_level = 'second'
             )
     )
     
@@ -279,6 +278,7 @@ assess_bgg_hit = function(data,
 }
 
 plot_predictions =  function(data,
+                             alpha = 0.8,
                              ...) {
     
     data |>
@@ -291,12 +291,13 @@ plot_predictions =  function(data,
         ggplot(aes(x=.pred, 
                    ...,
                    y=actual)) +
-        geom_point(position = ggforce::position_jitternormal(sd_y = 0.05))+
+        geom_point(position = ggforce::position_jitternormal(sd_y = 0.05),
+                   alpha = alpha)+
         facet_wrap(outcome ~.,
                    scales = "free")+
         geom_abline(slope = 1,
                     linetype = 'dashed',
-                    alpha = 0.8)+
+                    alpha = alpha)+
         theme_bgg()+
         ggpubr::stat_cor(p.accuracy = 0.01,
                          show.legend = FALSE)+
