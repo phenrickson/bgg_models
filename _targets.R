@@ -384,12 +384,7 @@ list(
     tar_quarto(
         name = reports,
         path = ".",
-        quiet = F
+        quiet = F,
+        cue = tar_cue(mode = 'always')
     )
-    # # render reports
-    # tar_quarto(
-    #     name = reports,
-    #     path = ".",
-    #     quiet = F
-    # )
 )
