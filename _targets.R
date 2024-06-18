@@ -22,6 +22,7 @@ tar_option_set(
                  "purrr",
                  "bggUtils",
                  "tidymodels",
+                 "glmnet",
                  "lightgbm",
                  "bonsai",
                  "gert",
@@ -163,11 +164,12 @@ list(
             train_outcome_wflow(outcome = 'average',
                                 ratings = 25,
                                 valid_years = valid_years,
-                                recipe = recipe_trees,
-                                model_spec = lightgbm_spec(),
-                                grid = lightgbm_grid(),
+                                recipe = recipe_linear,
+                                model_spec = glmnet_spec(),
+                                grid = glmnet_grid(),
                                 ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()))
+                                predictors = c("est_averageweight", predictor_vars()),
+                                splines = c("est_averageweight", spline_vars()))
     ),
     # now train usersrated
     tar_target(
@@ -177,21 +179,22 @@ list(
             train_outcome_wflow(outcome = 'usersrated',
                                 ratings = 25,
                                 valid_years = valid_years,
-                                recipe = recipe_trees,
-                                model_spec = lightgbm_spec(),
-                                grid = lightgbm_grid(),
+                                recipe = recipe_linear,
+                                model_spec = glmnet_spec(),
+                                grid = glmnet_grid(),
                                 ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()))
+                                predictors = c("est_averageweight", predictor_vars()),
+                                splines = c("est_averageweight", spline_vars()))
     ),
-    # extract tuning plots
-    tar_target(
-        name = tuning_plots,
-        command =
-            bind_rows(averageweight_tuned,
-                      average_tuned,
-                      usersrated_tuned) |>
-            get_tuning_plots()
-    ),
+    # # extract tuning plots
+    # tar_target(
+    #     name = tuning_plots,
+    #     command =
+    #         bind_rows(averageweight_tuned,
+    #                   average_tuned,
+    #                   usersrated_tuned) |>
+    #         get_tuning_plots()
+    # ),
     # fit models to whole of training
     # average
     tar_target(
