@@ -229,11 +229,21 @@ top_coefs_by_sign = function(coefs,
 }
 
 coef_plot.glmnet = function(coefs,
+                            top_n = 50,
                             minlength = 50,
                             limits = c(-0.05,0.05),
                             midpoint = 0,
                             facet_by_sign = F,
                             ...) {
+    
+    
+    if (is.null(top_n)) {
+        coefs = coefs
+    } else {
+        coefs = coefs |>
+            filter(estimate != 0) |>
+            slice_max(order_by = abs(estimate), n = top_n, with_ties = F)
+    }
     
     present_coefs = 
         coefs |>
