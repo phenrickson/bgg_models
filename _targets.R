@@ -382,11 +382,66 @@ list(
                               weights = 0),
         format = "file"
     ),
-    # render reports
-    tar_quarto(
-        name = reports,
-        path = ".",
-        quiet = F,
-        cue = tar_cue(mode = 'always')
+    tar_target(
+        active_games,
+        get_games_from_gcp(bucket = "bgg_data") |>
+            prepare_games ()
+    ),
+    tar_target(
+        upcoming_games,
+        command = 
+            active_games |>
+            filter(yearpublished > end_train_year + valid_years + 1)
+    ),
+    tar_target(
+        predictions,
+        command = 
+            {
+                averageweight_fit = 
+                    vetiver::vetiver_pin_read(
+                        model_board,
+                        "bgg_averageweight_"
+                    )
+                
+                average_fit = 
+                    vetiver::vetiver_pin_read(
+                        model_board,
+                        "bgg_average_"
+                    )
+                
+                usersrated_fit = 
+                    vetiver::vetiver_pin_read(
+                        model_board,
+                        "bgg_usersrated_"
+                    )
+                
+                hurdle_fit = 
+                    vetiver::vetiver_pin_read(
+                        model_board,
+                        "bgg_hurdle_"
+                    )
+                
+                upcoming_games |>
+                    impute_averageweight(
+                        model = averageweight_fit
+                    ) |>
+                    predict_hurdle(
+                        model = hurdle_fit,
+                        threshold = hurdle_threshold
+                    ) |>
+                    predict_bayesaverage(
+                        average_model = average_fit,
+                        usersrated_model = usersrated_fit
+                    )
+            }
     )
+    # # render reports
+    # tar_quarto(
+    #     name = reports,
+    #     path = ".",
+    #     quiet = F,
+    #     cue = tar_cue(mode = 'always')
+    # ),
+    # predict games
+    
 )

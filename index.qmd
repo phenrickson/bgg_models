@@ -52,7 +52,8 @@ tar_load(valid_hurdle_metrics)
 tar_load(hurdle_results)
 
 # model board
-model_board =  gcs_model_board()
+model_board = pins::board_folder("models",
+                                 versioned = T)
 
 # games
 games = 

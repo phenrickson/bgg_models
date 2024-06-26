@@ -1,5 +1,6 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|6975006e97bb59ee|||||||||||||||
+.Random.seed|object|bcb62e76b0e3d1dc|||||||||||||||
+active_games|stem|74fe8e51c1d31ed9|4ad2650659f47588|e217be28a8077b96|227921881||t19900.872464696s|c9ea347abb6abf1c|52843840|qs|local|vector|||17.572||
 add_bgg_dummies|function|74c7bbe02214262e|||||||||||||||
 add_bgg_hit|function|bccc49a84cdee1c5|||||||||||||||
 add_bgg_preprocessing|function|d6e4d95866672a9d|||||||||||||||
@@ -155,7 +156,7 @@ predict_hurdle|function|f6ee984e96c29cfc|||||||||||||||
 predict_outcomes|function|a8d63589ade285b9|||||||||||||||
 predict_sim|function|7c37a7b3f0b8a0db|||||||||||||||
 predict_usersrated|function|2cc90b6e43c1dbf2|||||||||||||||
-predictions|stem|c4968f60e0665585|8f328410e8f7c73e|89ea09e0626b1e77|995750475||t19849.8088329827s|de0ef3ef6e317955|5335901|qs|local|vector|||2.278||
+predictions|stem|f1bc56901f993747|87ea93f339b8fe5a|584c5bfab2cfb729|995750475||t19900.8733702034s|c19ec670cbd0c338|2192674|qs|local|vector|||56.211||
 predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
 predictions_dt|function|d24aea2259778c49|||||||||||||||
 predictor_vars|function|e0394bebad18e577|||||||||||||||
@@ -174,7 +175,7 @@ recipe_linear|function|254c5404857ad9b0|||||||||||||||
 recipe_trees|function|c82e3c7060be56f4|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|52b007ccdaf473f2|f15043b4871d6dfe|d6b194596a0ad9d1|536393307|docs*index.qmd*_quarto.yml|t19900.8556148883s|08618eada99bb93f|7693609|file|local|vector|||102.032||
+reports|stem|9e2e44177f1c20af|f15043b4871d6dfe|d6b194596a0ad9d1|536393307|docs*index.qmd*_quarto.yml|t19900.8672796557s|837f037308bc165f|7728481|file|local|vector|||92.974||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|9f0cda529028d8d9|||||||||||||||
 round_usersrated|function|2341be080cd7e1b3|||||||||||||||
@@ -215,6 +216,7 @@ tune_workflow|function|f3e3a2f8b18aba14|||||||||||||||
 tune_workflows|function|5ea299842a3872f5|||||||||||||||
 tuning_grid|stem|996e2b1aa22412a2|b3ff6d01114a976e|ef46db3751d8e999|1796853018||t19849.7906829998s|b87462683b64d887|223|qs|local|vector|||0.006||
 tuning_plots|stem|2edf8a4a7b42794b|ce7b37f45fcd96fe|a5127055856f7809|-414874247||t19892.8229935203s|c6337d24d54f00ec|1918850720|qs|local|vector|||0.206||
+upcoming_games|stem|d6b8e7d7f78f533a|3c26b0f6573d8bf1|377e73e38ff49649|-117231983||t19900.8724731944s|5f9e37bfc98f08e7|2084169|qs|local|vector|||0.346||
 usersrated_final|stem|ccc9da2923497422|6293365029dd23b2|bd98203436e272eb|318722018||t19900.853500783s|f54de3c1c46719c4|658986564|qs|local|vector|||64.317||
 usersrated_fit|stem|1b4d18c41f88f942|fbd294b4cc7a2d64|5594a0153bc7f67c|-463875767||t19900.8494378585s|94a848dda92eb6de|656486590|qs|local|vector|||61.956||
 usersrated_last_fit_2019|stem|c167a8d84294ad03|2f0ae9404e7415ad|81923f2fcd6c40a1|-1688329540|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_last_fit_2019*version=1709829270936118|t19789.6906080283s||13548762|rds|gcp|vector|||19.728||
