@@ -38,16 +38,15 @@ tar_option_set(
     memory = "transient",
     format = "qs"
 )
-
 # # create local model board
-# model_board = pins::board_folder("models",
-#                                  versioned = T)
-# 
+model_board = pins::board_folder("models",
+                                 versioned = T)
+
 # functions
 suppressMessages({tar_source("src")})
 
-# model board
-model_board = gcs_model_board()
+# # model board
+# model_board = gcs_model_board()
 
 # parameters for targets
 end_train_year = 2020

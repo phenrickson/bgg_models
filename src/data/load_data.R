@@ -11,11 +11,25 @@ load_games = function(object_name = "raw/objects/games",
     
 }
 
+# customizing publishers allow
+publishers_allow = function() {
+    
+    c(25624,
+      bggUtils:::publishers_allow_list()
+    )
+}
+
 # function to preprocess games
-prepare_games = function(data) {
+prepare_games = function(data,
+                         publisher_allow = publishers_allow(),
+                         families_allow = bggUtils:::families_allow_list(),
+                         families_remove = bggUtils:::families_remove_list(),
+                         ...) {
     data |>
         # apply preprocessing via bggUtils function
-        bggUtils::preprocess_bgg_games() |>
+        bggUtils::preprocess_bgg_games(publisher_allow = publisher_allow,
+                                       families_allow = families_allow,
+                                       families_remove = families_remove) |>
         # remove games missing yearpublished
         filter(!is.na(yearpublished))
 }
