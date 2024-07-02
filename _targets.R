@@ -434,14 +434,12 @@ list(
                         usersrated_model = usersrated_fit
                     )
             }
+    ),
+    # render reports
+    tar_quarto(
+        name = reports,
+        path = ".",
+        quiet = F,
+        cue = tar_cue(mode = 'always')
     )
-    # # render reports
-    # tar_quarto(
-    #     name = reports,
-    #     path = ".",
-    #     quiet = F,
-    #     cue = tar_cue(mode = 'always')
-    # ),
-    # predict games
-    
 )
