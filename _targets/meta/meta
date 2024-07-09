@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|a0b8d9c66516a0ee|||||||||||||||
+.Random.seed|object|06bd782e5de3445d|||||||||||||||
 active_games|stem|74fe8e51c1d31ed9|4ad2650659f47588|e217be28a8077b96|227921881||t19900.872464696s|c9ea347abb6abf1c|52843840|qs|local|vector|||17.572||
 add_bgg_dummies|function|74c7bbe02214262e|||||||||||||||
 add_bgg_hit|function|bccc49a84cdee1c5|||||||||||||||
@@ -96,7 +96,7 @@ finalize_outcome_wflow|function|11a16de8f3e328f7|||||||||||||||
 fit_outcome_wflow|function|7b4b19d89699e484|||||||||||||||
 games_active|stem|4c25f54dd0f826cb|d0555a0cf77701e9|ef46db3751d8e999|-1362997322||t19881.753258702s|4da3fcdde4816490|73162461|qs|local|vector|||6.919||
 games_imputed_2019|stem||51efdc0130cb1c9d|70a4e62a08fb492f|1434762926||t19787.0876926725s||0|rds|gcp|vector|||0.004||object aerageweight_model not found
-games_prepared|stem|8eda21672e7c7a80|27979539048b25d2|29b3821f81cbd8da|270007526||t19900.8348427741s|73314ffce8c3861d|51704129|qs|local|vector|||24.505||
+games_prepared|stem|8eda21672e7c7a80|27979539048b25d2|29b3821f81cbd8da|270007526||t19913.6747606257s|73314ffce8c3861d|51704129|qs|local|vector|||32.335||
 games_raw|stem|ff2b930f6810c2e1|0cdb855afac4020e|7e934aa151b82ac3|-450562005||t19892.7714874429s|c4f6f9893799272f|71900509|qs|local|vector|||6.005||
 games_tidy|stem|7ec87ec688094c21|f2444485789fa2d8|1eb6ca5366be7937|-1430246907|bucket=bgg_data*key=models/objects/games_tidy*version=1709394396696375|t19784.6571041628s||57190694|rds|gcp|vector|||10.284||
 gcs_model_board|function|daa3c094a6f06294|||||||||||||||
@@ -175,7 +175,7 @@ recipe_linear|function|ac2af0861ab333a8|||||||||||||||
 recipe_trees|function|6cedb7a83d9afc12|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|739f5c646a1e2cca|f15043b4871d6dfe|1cacc25262242219|536393307|docs*index.qmd*_quarto.yml|t19902.0091536356s|6a429119557cd2e9|7606872|file|local|vector|||87.967||
+reports|stem|8364b199aaca4255|f15043b4871d6dfe|1cacc25262242219|536393307|docs*index.qmd*_quarto.yml|t19913.6762043885s|25f0b8c90c44d82e|7655578|file|local|vector|||122.402||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|9f0cda529028d8d9|||||||||||||||
 round_usersrated|function|2341be080cd7e1b3|||||||||||||||
@@ -185,7 +185,7 @@ sim_averageweight|function|8173d3fd6086b936|||||||||||||||
 simulate_outcomes|function|7dc8bd965fa92836|||||||||||||||
 source|stem|2e80923fb90fe5a2|d3a8a37159e570e2|ef46db3751d8e999|1538448232|bucket=bgg_data*key=models/objects/source*stage=data/raw/games.qs*version=1709236822936796|t19782.8316662859s|49c1a1611838f3ff|71900504|file|gcp|vector|||0.469||
 spline_vars|function|4acc4bb3dcb1fe30|||||||||||||||
-split|stem|1530094affa69c6a|e7638c80274b836a|64e62ff46bf11e1b|-1148405872||t19900.8348675165s|9a28bc5602dbd7ed|51729316|qs|local|vector|||0.62||
+split|stem|1530094affa69c6a|e7638c80274b836a|64e62ff46bf11e1b|-1148405872||t19913.6747865941s|9a28bc5602dbd7ed|51729316|qs|local|vector|||0.485||
 split_2015|stem|053135911926b4a4|5ca7d5d94becc48a|95732e51d82cf73c|193674460|bucket=bgg_data*key=models/objects/split_2015*version=1709567499105521|t19786.6608290897s||57443877|rds|gcp|vector|||0.034||
 split_2017|stem|09f38084a41ba77c|c443852f5d817c07|95732e51d82cf73c|1922538466|bucket=bgg_data*key=models/objects/split_2017*version=1709567508278102|t19786.6609380281s||57440942|rds|gcp|vector|||0.023||
 split_2018|stem|80ea367d24636cd9|330c3e338bbcd05e|95732e51d82cf73c|-226699577|bucket=bgg_data*key=models/objects/split_2018*version=1709599629594801|t19787.0327259586s||57442291|rds|gcp|vector|||0.419||
