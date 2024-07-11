@@ -728,7 +728,7 @@ add_bgg_dummies = function(recipe,
                            mechanics_threshold = 1,
                            categories_threshold = 1,
                            families_threshold = 100,
-                           publishers_threshold = 15,
+                           publishers_threshold = 5,
                            designers_threshold = 10,
                            artists_threshold = 15,
                            components_threshold = 25,
@@ -773,9 +773,7 @@ add_preprocessing = function(recipe) {
     recipe %>%
         # indicate missingness in numeric features
         step_indicate_na(all_numeric_predictors(),
-                         prefix = "missing") %>%
-        # indicate missingness in image, description, or thumbnail
-        step_indicate_na(image, thumbnail,
+                         all_nominal_predictors(),
                          prefix = "missing") %>%
         update_role(image, thumbnail,
                     new_role = "id") %>%
