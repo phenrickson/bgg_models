@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.4.0",
+    "Version": "4.4.1",
     "Repositories": [
       {
         "Name": "BioCsoft",
@@ -480,10 +480,11 @@
     },
     "bonsai": {
       "Package": "bonsai",
-      "Version": "0.2.1",
+      "Version": "0.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
+        "R",
         "cli",
         "dials",
         "dplyr",
@@ -495,7 +496,7 @@
         "tibble",
         "utils"
       ],
-      "Hash": "c086fa23dfeac2d2b95f758dfa917c3d"
+      "Hash": "28e1934b2e6deb9b18cc033dc8bbc054"
     },
     "boot": {
       "Package": "boot",

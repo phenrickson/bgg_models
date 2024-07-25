@@ -68,6 +68,8 @@ pin_outcome_model = function(wflow,
             metadata = model_metadata
         )
     
+    model_name
+    
 }
 
 pin_model = function(model,

@@ -344,8 +344,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = averageweight_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = average_vetiver,
@@ -355,8 +354,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = average_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = usersrated_vetiver,
@@ -366,8 +364,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = usersrated_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = hurdle_vetiver,
@@ -379,8 +376,7 @@ list(
                               tuning = hurdle_tuned,
                               board = model_board,
                               ratings = 0,
-                              weights = 0),
-        format = "file"
+                              weights = 0)
     ),
     tar_target(
         active_games,
@@ -400,25 +396,25 @@ list(
                 averageweight_fit = 
                     vetiver::vetiver_pin_read(
                         model_board,
-                        "bgg_averageweight_"
+                        averageweight_vetiver
                     )
                 
                 average_fit = 
                     vetiver::vetiver_pin_read(
                         model_board,
-                        "bgg_average_"
+                        average_vetiver
                     )
                 
                 usersrated_fit = 
                     vetiver::vetiver_pin_read(
                         model_board,
-                        "bgg_usersrated_"
+                        usersrated_vetiver
                     )
                 
                 hurdle_fit = 
                     vetiver::vetiver_pin_read(
                         model_board,
-                        "bgg_hurdle_"
+                        hurdle_vetiver
                     )
                 
                 upcoming_games |>
@@ -435,11 +431,17 @@ list(
                     )
             }
     ),
-    # render reports
-    tar_quarto(
-        name = reports,
-        path = ".",
-        quiet = F,
-        cue = tar_cue(mode = 'always')
+    # run report
+    tar_target(
+        report,
+        "index.qmd" |>
+        render_report(predictions = predictions)
+    ),
+    # upload to gcp
+    tar_target(
+        upload,
+        command = 
+            report |>
+            upload_report()
     )
 )

@@ -50,6 +50,7 @@ tar_load(details)
 tar_load(hurdle_threshold)
 tar_load(valid_hurdle_metrics)
 tar_load(hurdle_results)
+tar_load(predictions)
 
 # model board
 model_board = pins::board_folder("models",
@@ -260,50 +261,9 @@ usersrated_plot
 
 :::
 
-# Predictions
-
-```{r}
-#| message: false
-#| warning: false
-#| include: false
-
-end_train_year = max(average_fit$metadata$user$data$yearpublished) +1
-
-upcoming_ids = 
-    games |>
-    bggUtils:::unnest_info() |>
-    filter(yearpublished > end_train_year) |>
-    pull(game_id)
-
-upcoming_games = 
-    games |>
-    filter(game_id %in% upcoming_ids) |>
-    bggUtils::preprocess_bgg_games()
-
-```
-
-```{r}
-# predict games
-predictions = 
-    upcoming_games |>
-    impute_averageweight(
-        model = averageweight_fit
-    ) |>
-    predict_hurdle(
-        model = hurdle_fit,
-        threshold = hurdle_threshold
-    ) |>
-    predict_bayesaverage(
-        average_model = average_fit,
-        usersrated_model = usersrated_fit
-    )
-
-```
-
-
 ## Upcoming Games
 
-This table displays predicted BGG outcomes for games that are expected to achieve at least 25 user ratings.
+This table displays predicted BGG outcomes for upcoming games that are expected to achieve at least 25 user ratings.
 
 ```{r}
 #| echo: false
