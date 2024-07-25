@@ -217,6 +217,20 @@
       ],
       "Hash": "f6baa1e06fb6c3724f601a764266cb0d"
     },
+    "RcppArmadillo": {
+      "Package": "RcppArmadillo",
+      "Version": "0.12.8.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "a535dd90aa8ec9a2e63a8f79b4a1bf43"
+    },
     "RcppEigen": {
       "Package": "RcppEigen",
       "Version": "0.3.4.0.0",
@@ -325,6 +339,23 @@
         "utils"
       ],
       "Hash": "4f57884290cc75ab22f4af9e9d4ca862"
+    },
+    "aorsf": {
+      "Package": "aorsf",
+      "Version": "0.1.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R6",
+        "Rcpp",
+        "RcppArmadillo",
+        "collapse",
+        "data.table",
+        "lifecycle",
+        "utils"
+      ],
+      "Hash": "759167e07dc9ce177a96bc94f331f761"
     },
     "askpass": {
       "Package": "askpass",
@@ -480,10 +511,11 @@
     },
     "bonsai": {
       "Package": "bonsai",
-      "Version": "0.2.1",
+      "Version": "0.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
+        "R",
         "cli",
         "dials",
         "dplyr",
@@ -495,7 +527,7 @@
         "tibble",
         "utils"
       ],
-      "Hash": "c086fa23dfeac2d2b95f758dfa917c3d"
+      "Hash": "28e1934b2e6deb9b18cc033dc8bbc054"
     },
     "boot": {
       "Package": "boot",
@@ -725,6 +757,17 @@
         "R"
       ],
       "Hash": "61e097f35917d342622f21cdc79c256e"
+    },
+    "collapse": {
+      "Package": "collapse",
+      "Version": "2.0.15",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp"
+      ],
+      "Hash": "2d950286bf1719b26f0835c0434edd68"
     },
     "colorspace": {
       "Package": "colorspace",

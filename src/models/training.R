@@ -31,7 +31,7 @@ finalize_model = function(wflow,
     outcome = 
         wflow |>
         extract_workflow_outcome()
-        
+    
     processed = 
         data |>
         preprocess_outcome(outcome = outcome,
@@ -85,7 +85,7 @@ pin_model = function(model,
         vetiver::vetiver_pin_write(
             board = board
         )
-
+    
 }
 
 # function to fid models by outcome, recipe, and model type
@@ -539,11 +539,11 @@ recipe_trees = function(data,
 }
 
 recipe_hurdle = function(data,
-                        outcome,
-                        ids = id_vars(),
-                        predictors = predictor_vars(),
-                        threshold = 0.001,
-                        ...) {
+                         outcome,
+                         ids = id_vars(),
+                         predictors = predictor_vars(),
+                         threshold = 0.001,
+                         ...) {
     
     data |>
         build_recipe(
@@ -588,30 +588,40 @@ glmnet_grid = function() {
 }
 
 lightgbm_spec = function(trees = 500, ...) {
-        
-        
-        require(bonsai)
-        
-        parsnip::boost_tree(
-                mode = "regression",
-                trees = trees,
-                min_n = tune(),
-                tree_depth = tune(),
-                ...) |>
-                set_engine("lightgbm")
+    
+    
+    require(bonsai)
+    
+    parsnip::boost_tree(
+        mode = "regression",
+        trees = trees,
+        min_n = tune(),
+        tree_depth = tune(),
+        ...) |>
+        set_engine("lightgbm")
+}
+
+aorsf_spec = function() {
+    
+    rand_forest(
+        mtry = tune(),
+        min_n = tune()
+    ) %>%
+        set_engine("aorsf") %>%
+        set_mode("regression")
 }
 
 lightgbm_grid = 
-        function(size = 15) {
-                
-                grid_max_entropy(
-                        x = dials::parameters(
-                                min_n(), # 2nd important
-                                tree_depth() # 3rd most important
-                        ),
-                        size = size
-                )
-        }
+    function(size = 15) {
+        
+        grid_max_entropy(
+            x = dials::parameters(
+                min_n(), # 2nd important
+                tree_depth() # 3rd most important
+            ),
+            size = size
+        )
+    }
 
 
 # function to build a recipe and apply series of steps given an outcome

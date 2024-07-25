@@ -25,6 +25,7 @@ tar_option_set(
                  "glmnet",
                  "lightgbm",
                  "bonsai",
+                 "aorsf",
                  "gert",
                  "quarto",
                  "qs"),
@@ -153,7 +154,8 @@ list(
         command =
             split |>
             training() |>
-            impute_averageweight(model = bundle::unbundle(averageweight_fit))
+            impute_averageweight(model = bundle::unbundle(averageweight_fit)) |>
+            mutate(across(c(publishers, designers, artists, families)))
     ),
     # # now train average and usersrated models
     tar_target(
@@ -164,8 +166,8 @@ list(
                                 ratings = 25,
                                 valid_years = valid_years,
                                 recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
+                                model_spec = aorsf_spec(),
+                                grid = 5,
                                 ids = id_vars(),
                                 predictors = c("est_averageweight", predictor_vars()),
                                 splines = c("est_averageweight", spline_vars()))
@@ -179,8 +181,8 @@ list(
                                 ratings = 25,
                                 valid_years = valid_years,
                                 recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
+                                model_spec = aorsf_spec(),
+                                grid = 5,
                                 ids = id_vars(),
                                 predictors = c("est_averageweight", predictor_vars()),
                                 splines = c("est_averageweight", spline_vars()))
@@ -334,112 +336,5 @@ list(
             predict_bayesaverage(average_model = unbundle(average_final),
                                  usersrated_model = unbundle(usersrated_final)),
         packages = c("bundle")
-    ),
-    ## vetiver versions of models
-    tar_target(
-        name = averageweight_vetiver,
-        command = 
-            averageweight_final |>
-            bundle::unbundle() |>
-            pin_outcome_model(metrics = valid_metrics,
-                              data = training_and_validation,
-                              tuning = averageweight_tuned,
-                              board = model_board),
-        format = "file"
-    ),
-    tar_target(
-        name = average_vetiver,
-        command = 
-            average_final |>
-            bundle::unbundle() |>
-            pin_outcome_model(metrics = valid_metrics,
-                              data = training_and_validation,
-                              tuning = average_tuned,
-                              board = model_board),
-        format = "file"
-    ),
-    tar_target(
-        name = usersrated_vetiver,
-        command = 
-            usersrated_final |>
-            bundle::unbundle() |>
-            pin_outcome_model(metrics = valid_metrics,
-                              data = training_and_validation,
-                              tuning = usersrated_tuned,
-                              board = model_board),
-        format = "file"
-    ),
-    tar_target(
-        name = hurdle_vetiver,
-        command = 
-            hurdle_final |>
-            bundle::unbundle() |>
-            pin_outcome_model(metrics = valid_hurdle_metrics,
-                              data = training_and_validation |> add_hurdle(),
-                              tuning = hurdle_tuned,
-                              board = model_board,
-                              ratings = 0,
-                              weights = 0),
-        format = "file"
-    ),
-    tar_target(
-        active_games,
-        get_games_from_gcp(bucket = "bgg_data") |>
-            prepare_games ()
-    ),
-    tar_target(
-        upcoming_games,
-        command = 
-            active_games |>
-            filter(yearpublished > end_train_year + valid_years + 1)
-    ),
-    tar_target(
-        predictions,
-        command = 
-            {
-                averageweight_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_averageweight_"
-                    )
-                
-                average_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_average_"
-                    )
-                
-                usersrated_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_usersrated_"
-                    )
-                
-                hurdle_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_hurdle_"
-                    )
-                
-                upcoming_games |>
-                    impute_averageweight(
-                        model = averageweight_fit
-                    ) |>
-                    predict_hurdle(
-                        model = hurdle_fit,
-                        threshold = hurdle_threshold
-                    ) |>
-                    predict_bayesaverage(
-                        average_model = average_fit,
-                        usersrated_model = usersrated_fit
-                    )
-            }
-    ),
-    # render reports
-    tar_quarto(
-        name = reports,
-        path = ".",
-        quiet = F,
-        cue = tar_cue(mode = 'always')
     )
 )
