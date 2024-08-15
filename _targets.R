@@ -39,8 +39,9 @@ tar_option_set(
     format = "qs"
 )
 # # create local model board
-model_board = pins::board_folder("models",
-                                 versioned = T)
+model_board = pins::board_gcs("bgg_models",
+                              prefix = "model/bgg/",
+                              versioned = T)
 
 # functions
 suppressMessages({tar_source("src")})
@@ -344,8 +345,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = averageweight_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = average_vetiver,
@@ -355,8 +355,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = average_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = usersrated_vetiver,
@@ -366,8 +365,7 @@ list(
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = usersrated_tuned,
-                              board = model_board),
-        format = "file"
+                              board = model_board)
     ),
     tar_target(
         name = hurdle_vetiver,
@@ -379,8 +377,7 @@ list(
                               tuning = hurdle_tuned,
                               board = model_board,
                               ratings = 0,
-                              weights = 0),
-        format = "file"
+                              weights = 0)
     ),
     tar_target(
         active_games,
@@ -393,34 +390,27 @@ list(
             active_games |>
             filter(yearpublished > end_train_year + valid_years + 1)
     ),
+    # use trained models to predict new games
     tar_target(
         predictions,
-        command = 
+        command =
             {
-                averageweight_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_averageweight_"
-                    )
+                averageweight_fit =
+                    pin_read_model(model_board,
+                                   averageweight_vetiver)
                 
-                average_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_average_"
-                    )
+                average_fit =
+                    pin_read_model(model_board,
+                                   average_vetiver)
                 
-                usersrated_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_usersrated_"
-                    )
+                usersrated_fit =
+                    pin_read_model(model_board,
+                                   usersrated_vetiver)
                 
-                hurdle_fit = 
-                    vetiver::vetiver_pin_read(
-                        model_board,
-                        "bgg_hurdle_"
-                    )
-                
+                hurdle_fit =
+                    pin_read_model(model_board,
+                                   hurdle_vetiver)
+
                 upcoming_games |>
                     impute_averageweight(
                         model = averageweight_fit

@@ -31,7 +31,7 @@ finalize_model = function(wflow,
     outcome = 
         wflow |>
         extract_workflow_outcome()
-        
+    
     processed = 
         data |>
         preprocess_outcome(outcome = outcome,
@@ -51,7 +51,7 @@ pin_outcome_model = function(wflow,
                              ...) {
     
     model_outcome = wflow |> extract_workflow_outcome()
-    model_name = paste0("bgg_", model_outcome, "_")
+    model_name = paste0(model_outcome, "_", "bgg") #paste0("bgg_", model_outcome, "_")
     model_metrics = metrics |> filter(outcome == model_outcome)
     model_data = data |> preprocess_outcome(outcome = model_outcome, ...)
     model_tuning = tuning |> pluck("result", 1) |> select(-.predictions)
@@ -76,7 +76,6 @@ pin_model = function(model,
                      metadata,
                      ...) {
     
-    
     model |>
         vetiver::vetiver_model(
             model_name = model_name,
@@ -85,7 +84,28 @@ pin_model = function(model,
         vetiver::vetiver_pin_write(
             board = board
         )
+    
+    meta =
+        pins::pin_meta(
+            board = board,
+            name = model_name
+        )
+    
+    tibble(
+        hash = meta$pin_hash,
+        name = model_name,
+        version = meta$local$version
+    )
+}
 
+
+pin_read_model = function(board,
+                          metadata) {
+    
+    vetiver::vetiver_pin_read(board, 
+                              name = metadata$name, 
+                              version = metadata$version)
+    
 }
 
 # function to fid models by outcome, recipe, and model type
@@ -539,11 +559,11 @@ recipe_trees = function(data,
 }
 
 recipe_hurdle = function(data,
-                        outcome,
-                        ids = id_vars(),
-                        predictors = predictor_vars(),
-                        threshold = 0.001,
-                        ...) {
+                         outcome,
+                         ids = id_vars(),
+                         predictors = predictor_vars(),
+                         threshold = 0.001,
+                         ...) {
     
     data |>
         build_recipe(
@@ -588,30 +608,30 @@ glmnet_grid = function() {
 }
 
 lightgbm_spec = function(trees = 500, ...) {
-        
-        
-        require(bonsai)
-        
-        parsnip::boost_tree(
-                mode = "regression",
-                trees = trees,
-                min_n = tune(),
-                tree_depth = tune(),
-                ...) |>
-                set_engine("lightgbm")
+    
+    
+    require(bonsai)
+    
+    parsnip::boost_tree(
+        mode = "regression",
+        trees = trees,
+        min_n = tune(),
+        tree_depth = tune(),
+        ...) |>
+        set_engine("lightgbm")
 }
 
 lightgbm_grid = 
-        function(size = 15) {
-                
-                grid_max_entropy(
-                        x = dials::parameters(
-                                min_n(), # 2nd important
-                                tree_depth() # 3rd most important
-                        ),
-                        size = size
-                )
-        }
+    function(size = 15) {
+        
+        grid_max_entropy(
+            x = dials::parameters(
+                min_n(), # 2nd important
+                tree_depth() # 3rd most important
+            ),
+            size = size
+        )
+    }
 
 
 # function to build a recipe and apply series of steps given an outcome
