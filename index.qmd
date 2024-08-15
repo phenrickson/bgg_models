@@ -327,6 +327,8 @@ This table displays predicted probabilities for whether games will achieve enoug
 
 ```{r}
 #| echo: false
+#| message: false
+#| warning: false
 predictions |>
     filter(yearpublished >= 2024) |>
     filter(.pred_hurdle_class == 'yes') |>

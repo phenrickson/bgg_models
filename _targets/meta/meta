@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|06bd782e5de3445d|||||||||||||||
+.Random.seed|object|b655c3879b61681e|||||||||||||||
 active_games|stem|74fe8e51c1d31ed9|4ad2650659f47588|e217be28a8077b96|227921881||t19900.872464696s|c9ea347abb6abf1c|52843840|qs|local|vector|||17.572||
 add_bgg_dummies|function|74c7bbe02214262e|||||||||||||||
 add_bgg_hit|function|bccc49a84cdee1c5|||||||||||||||
@@ -32,7 +32,7 @@ average_split|stem|98cb6d9bc947296e|066908c9ebc5b172|7f84c7a1924e4e61|1029818450
 average_split_2019|stem|a02238df9db841cb|1267542319b59be5|3a25cd467bfa5e2e|1936830640|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_split_2019*version=1709823071082785|t19789.6188669999s||13440796|rds|gcp|vector|||0.877||
 average_tuned|stem|bd33a4e91f520d96|d474082f0836cd74|c2cf054d7e90be20|2075245144||t19901.9682157755s|b8d9edbf858044df|624952985|qs|local|vector|||203.109||
 average_tuned_2019|stem|204389a2b01d65b9|c7f8725a4baaa445|83f60c44cc86edbf|-337580546|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_tuned_2019*version=1709825403298014|t19789.6458604083s||13012935|rds|gcp|vector|||825.865|NAs introduced by coercion|
-average_vetiver|stem|08d5f59e833de599|4ca6ec6066b4c7d4|e6644989f27fb335|814172009||t0s|a10b0861f057ffab|0|file|local|vector|||19.665||
+average_vetiver|stem|e014e79a7abc0256|4ca6ec6066b4c7d4|8bd5af1610a47b36|814172009||t19950.6168493372s|fed8ce58542d9c7c|167|qs|local|vector|||50.279||
 average_wflow|stem|bc4b047d7462f379|f777060c66df0c68|d4081b09e24f2e29|-1979774709||t19849.8014224895s|d0eca0793555fbbf|620611353|qs|local|vector|||0.024||
 average_workflow_2019|stem|7ce04b6f7a61d0a8|98e0744e3ba3a743|7dff0f212583db1c|1154273135|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/average_workflow_2019*version=1709823717969831|t19789.6260957681s||581525548|rds|gcp|vector|||0.003||
 averageweight|object|6315ec5b5c33ddb0|||||||||||||||
@@ -49,7 +49,7 @@ averageweight_split_2019|stem|cb0cbbb4342ed172|bb091a611080690f|8d929788ba52be4a
 averageweight_tuned|stem|7dc800ad094857cf|d18fa8408bbc3505|65e9d99d9b173c21|-646993965||t19901.9606650983s|710f5435509e3f6c|434372124|qs|local|vector|||247.793|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectoutcome   Now  data  selectall_ofoutcomeSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.|
 averageweight_tuned_2019|stem|ec7efd14ad0f4c11|969803e0aa41c4ee|c17bd15290aa8ef2|-1561450121|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_tuned_2019*version=1709822933002552|t19789.6172717144s||8870530|rds|gcp|vector|||79.172|NAs introduced by coercion|
 averageweight_tuning_split_2019|stem|cb0cbbb4342ed172|4fc991ad77544e97|8a8c4574d40239e3|2026635200|bucket=bgg_data*key=models/objects/averageweight_tuning_split_2019*version=1709652030592717|t19787.6392291343s||9168416|rds|gcp|vector|||0.261||
-averageweight_vetiver|stem|08d5f59e833de599|4eca1f28f2ab4a63|42f30bb02b0ff522|143165180||t0s|a10b0861f057ffab|0|file|local|vector|||6.79||
+averageweight_vetiver|stem|e7e273c0964ef5fc|4eca1f28f2ab4a63|a50e10a6beba8dd9|143165180||t19950.6175035111s|f8c1d755d5d31832|173|qs|local|vector|||16.386||
 averageweight_wflow|stem|e05ea1b244627678|30c8c5142566f172|8ff3cb2a84701a9b|-1164597312||t19849.7995342371s||431719490|qs|local|vector|||0.004||unused arguments id_vars  id_vars, predictor_vars  predictor_vars, spline_vars  spline_vars
 averageweight_workflow_2019|stem|3e524193ad09224e|5534f01e2125fb58|90265c72db89d0e8|885843097|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/averageweight_workflow_2019*version=1709822850235228|t19789.6161134202s||413376684|rds|gcp|vector|||0.009||
 bgg_hit_metrics|stem|4c0b247b1e6d2843|7fa501f73037a88b|54fe05568e40b99b|-573508956|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/bgg_hit_metrics*version=1710880426861006|t19801.8567910649s||369|qs|gcp|vector|||0.271||
@@ -113,7 +113,7 @@ hurdle_results|stem|fc9d42f5f4d9324e|ec98d80eb7ddb9f3|d0265dd7c1511659|926157763
 hurdle_threshold|stem|e82e1045fcdd0a30|336b4e5797160cab|0a0759e0b6cc55da|332876545||t19901.9657636871s|c3d3b541ede7844e|46|qs|local|vector|||0.002||
 hurdle_tracking|stem|08d5f59e833de599|97fb7b7ecb56c431|0ab5c7ea710e112c|849070966||t0s|a10b0861f057ffab|0|file|local|vector|||0.007||
 hurdle_tuned|stem|6da7a60df223e010|9280692f1f6c65b8|4aaf49e401458520|1401014309||t19901.9644580279s|05064bfc8acf1853|1176375555|qs|local|vector|||310.289||
-hurdle_vetiver|stem|08d5f59e833de599|3deaf0b3ba439455|45f5de7dd97f774b|2114649142||t0s|a10b0861f057ffab|0|file|local|vector|||40.797||
+hurdle_vetiver|stem|6b4eebeae1791761|3deaf0b3ba439455|cbc7e07cfb1568e7|2114649142||t19950.6161565911s|3410934fb1a4c4db|166|qs|local|vector|||61.795||
 id_vars|function|8e9e88d72ddc9d3c|||||||||||||||
 impute_averageweight|function|0feb1c3cdfca0306|||||||||||||||
 imputed|object|dfa1f17495b73bca|||||||||||||||
@@ -132,7 +132,7 @@ make_train_valid_split|function|fe175421519cd285|||||||||||||||
 make_web_image|function|100cf929d3f96823|||||||||||||||
 metrics|stem|14ab53e24823a7f7|e36029763971d73b|aa3f858c3bd8b96c|1271126549||t19849.8097300471s|19e426cce5adb19f|489|qs|local|vector|||0.115||
 model|stem||ae83bc723fe2997c|ef46db3751d8e999|808688450||t19782.8322424349s||0|rds|gcp|vector|||0.004||data must be a data.frame, environment, or list
-model_board|object|f16cc23bd71d21aa|||||||||||||||
+model_board|object|3c272a17ed6decf8|||||||||||||||
 model_report_2019|stem|58a5951ac4fe725a|ea5a3a0af35aa2a9|2adc45e475337a53|-1624426928|model_report.html*model_report.Rmd|t19793.6542722148s|6bc3c877d2b39d85|3062309|file|local|vector|||4.073||
 model_spec|stem|b25db816d1e16ef1|74cd070e4244b9e3|ef46db3751d8e999|-990697664||t19849.7906828529s|cb2068761c31cd19|278|qs|local|vector|||1.685||
 my_class_metrics|function|21c87480b4f50a66|||||||||||||||
@@ -141,8 +141,9 @@ outcome_assess_split|function|a647b7c89b938a2d|||||||||||||||
 outcome_metrics_all|stem|b96f5739f1fcc872|92e99c6a659e7163|ef10f26a4cd7c86e|-280475123|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/outcome_metrics_all*version=1710880426366870|t19801.8567852948s||606|qs|gcp|vector|||0.083||
 outcome_metrics_filtered|stem|3f00653a804f3a8c|041383a40f486afe|ef10f26a4cd7c86e|-1110596655|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/outcome_metrics_filtered*version=1710880427155842|t19801.8567944101s||606|qs|gcp|vector|||0.04||
 outcome_tuning_split|function|5ac74eb13c964a7e|||||||||||||||
-pin_model|function|cc2afee86e7d3fdf|||||||||||||||
-pin_outcome_model|function|48c3a4dd6f3987e1|||||||||||||||
+pin_model|function|94a75d68b5ad64e6|||||||||||||||
+pin_outcome_model|function|dd1d74a48f275792|||||||||||||||
+pin_read_model|function|7049002b548d2f9a|||||||||||||||
 pivot_estimates|function|5433d180d2a1b206|||||||||||||||
 pivot_outcomes|function|50b4b1f4186a8547|||||||||||||||
 plot_class_results|function|163eb08caa3f9ea8|||||||||||||||
@@ -156,7 +157,7 @@ predict_hurdle|function|f6ee984e96c29cfc|||||||||||||||
 predict_outcomes|function|a8d63589ade285b9|||||||||||||||
 predict_sim|function|7c37a7b3f0b8a0db|||||||||||||||
 predict_usersrated|function|2cc90b6e43c1dbf2|||||||||||||||
-predictions|stem|f1bc56901f993747|87ea93f339b8fe5a|584c5bfab2cfb729|995750475||t19900.8733702034s|c19ec670cbd0c338|2192674|qs|local|vector|||56.211||
+predictions|stem|9a01bf42e7eca161|0ea8ba4f4ffd5301|c92be9e1dc122f0d|995750475||t19950.6245596818s|a6d34dd26cfa3e69|2192557|qs|local|vector|||66.079||
 predictions_2019|stem|db9e88c7cf60e5ef|8194e1a236efb7ce|f36c28e9459da7a1|-2002231822|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/predictions_2019*version=1709829411524179|t19789.692255876s||5687470|rds|gcp|vector|||2.43||
 predictions_dt|function|d24aea2259778c49|||||||||||||||
 predictor_vars|function|e0394bebad18e577|||||||||||||||
@@ -175,7 +176,7 @@ recipe_linear|function|ac2af0861ab333a8|||||||||||||||
 recipe_trees|function|6cedb7a83d9afc12|||||||||||||||
 reg_metrics|stem|1ca3f6b05a88ca07|d3f70096de853445|b6dcc6a249e15312|-1596937686||t19839.7841557195s|dd0210555a6a8a3a|25485|qs|local|vector|||1.338||
 report|stem|db008d88648db469|137425f81601e604|ef46db3751d8e999|787668912|results_files*results.md*results.qmd|t19866.8732496078s||145568|file|local|vector|||1.411||unused argument output_dir  docs
-reports|stem|8364b199aaca4255|f15043b4871d6dfe|1cacc25262242219|536393307|docs*index.qmd*_quarto.yml|t19913.6762043885s|25f0b8c90c44d82e|7655578|file|local|vector|||122.402||
+reports|stem|0fada249fbfa2777|f15043b4871d6dfe|1cacc25262242219|536393307|docs*index.qmd*_quarto.yml|t19950.6274791896s|8c94951b07e9180b|7856031|file|local|vector|||88.449||
 results|stem|9627f387d611a966|8300b10a468df582|f36f2f8b6bb4b71f|-322906963||t19842.7520791573s|813a0d7697333517|548|qs|local|vector|||0.025||
 retrain_years|object|9f0cda529028d8d9|||||||||||||||
 round_usersrated|function|2341be080cd7e1b3|||||||||||||||
@@ -226,7 +227,7 @@ usersrated_split|stem|214b154db4b24dd3|44053cc44027177f|7f84c7a1924e4e61|1122274
 usersrated_split_2019|stem|7998d71b18338aef|6174feee7f8caad2|3a25cd467bfa5e2e|-2020394115|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_split_2019*version=1709823075639287|t19789.6189207257s||13515637|rds|gcp|vector|||0.478||
 usersrated_tuned|stem|cecdfdab63768309|676753c0cdf52986|c2cf054d7e90be20|257239947||t19901.9707451003s|7a37216b19501e2d|630836354|qs|local|vector|||209.637||
 usersrated_tuned_2019|stem|3a685d630fd16f3a|20a468a1ae7fcf9c|997aa397c3595ee6|8331713|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_tuned_2019*version=1709826567275317|t19789.6593248967s||13024371|rds|gcp|vector|||1159.845|NAs introduced by coercion|
-usersrated_vetiver|stem|08d5f59e833de599|04d8f69ee6e9decd|f290fce67c9e78b8|-1686075036||t0s|a10b0861f057ffab|0|file|local|vector|||7.318||
+usersrated_vetiver|stem|b8a4101372d8b525|04d8f69ee6e9decd|c47e01d8e0b21c34|-1686075036||t19950.6172444748s|a18f12223504ab15|170|qs|local|vector|||25.254||
 usersrated_wflow|stem|127b0865bcfcf482|94cd0c8a6d16505f|67055fb3f6de4eee|-883851043||t19849.8013162149s|02d38a8c646b6fff|627982673|qs|local|vector|||0.035||
 usersrated_workflow_2019|stem|a6279c56483b5bdf|6dfbcc2a15efbc59|8b12bba5ae4a33d1|-587846464|bucket=bgg_data*key=bgg_data/bgg_models/model/glmnet/objects/usersrated_workflow_2019*version=1709824573657101|t19789.6304263608s||584764992|rds|gcp|vector|||0.012||
 valid_hurdle_metrics|stem|4fbb6b827f1fe513|fb1558d53db2865b|12ddb79b591e3ee4|-2081794246||t19901.9756758057s|0bf64ef51e816249|272|qs|local|vector|||0.065||
