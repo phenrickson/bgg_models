@@ -22,6 +22,33 @@ predict_hurdle = function(data, model, threshold, ...) {
     
 }
 
+prepare_wflow = function(wflow) {
+    
+    if (inherits(wflow, "bundled_workflow") == T) {
+        
+        wflow = 
+            wflow |> bundle::unbundle()
+    }
+    
+    engine = 
+        wflow |>
+        hardhat::extract_fit_engine()
+    
+    if (inherits(engine, "lgb.Booster")) {
+        
+        # restore
+        fit = 
+            engine |>
+            lightgbm::lgb.restore_handle()
+        
+        # add back to workflow
+        wflow$fit$fit$fit = fit
+        
+    }
+    
+    wflow
+}
+
 finalize_model = function(wflow,
                           data,
                           ratings = 25,
@@ -74,6 +101,7 @@ pin_model = function(model,
                      model_name,
                      board,
                      metadata,
+                     check_renv = T,
                      ...) {
     
     model |>
@@ -82,7 +110,8 @@ pin_model = function(model,
             metadata = metadata
         ) |>
         vetiver::vetiver_pin_write(
-            board = board
+            board = board,
+            check_renv = check_renv
         )
     
     meta =

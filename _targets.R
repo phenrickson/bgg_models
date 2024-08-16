@@ -341,7 +341,7 @@ list(
         name = averageweight_vetiver,
         command = 
             averageweight_final |>
-            bundle::unbundle() |>
+            prepare_wflow() |>
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = averageweight_tuned,
@@ -351,7 +351,7 @@ list(
         name = average_vetiver,
         command = 
             average_final |>
-            bundle::unbundle() |>
+            prepare_wflow() |>
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = average_tuned,
@@ -361,7 +361,7 @@ list(
         name = usersrated_vetiver,
         command = 
             usersrated_final |>
-            bundle::unbundle() |>
+            prepare_wflow() |>
             pin_outcome_model(metrics = valid_metrics,
                               data = training_and_validation,
                               tuning = usersrated_tuned,
@@ -371,7 +371,7 @@ list(
         name = hurdle_vetiver,
         command = 
             hurdle_final |>
-            bundle::unbundle() |>
+            prepare_wflow() |>
             pin_outcome_model(metrics = valid_hurdle_metrics,
                               data = training_and_validation |> add_hurdle(),
                               tuning = hurdle_tuned,
