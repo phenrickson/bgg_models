@@ -53,6 +53,11 @@ tar_load(hurdle_threshold)
 tar_load(valid_hurdle_metrics)
 tar_load(hurdle_results)
 
+# find valid_years
+valid_years = 
+valid_predictions |> 
+    summarize(min_year = min(yearpublished),
+              max_year = max(yearpublished))
 # model board
 model_board = pins::board_folder("models",
                                  versioned = T)
@@ -63,6 +68,7 @@ games =
         bucket = "bgg_data"
     )
 
+# set ggplot theme
 theme_set(bggUtils::theme_bgg())
 ```
 
@@ -73,6 +79,9 @@ theme_set(bggUtils::theme_bgg())
 <!-- #   cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T), "```"), sep = "\n") -->
 <!-- # ``` -->
 
+I use historical data from BoardGameGeek (BGG) to train a number of predictive models for boardgames. I first classify games based on their probability of achieving a minimum number of ratings on BGG. I then estimate each game's complexity (average weight) in order to predicts its number of user ratings and average rating. I then use these estimates to compute the expected Geek Rating.
+
+The following (somewhat messy) visualization displays the status of the current pipeline used to train models and predict new games.
 
 ```{r}
 #| fig-align: center
@@ -83,7 +92,7 @@ targets::tar_visnetwork(targets_only =T)
 
 ```
 
-# Models
+<!-- # Models -->
 
 ```{r}
 #| message: false
@@ -116,9 +125,13 @@ hurdle_fit =
 
 ## Assessment
 
-### BGG Ratings
+How did the models perform in predicting games?
 
-I assess the model's predictions for different BGG outcomes for all games in the validation set.
+I used a training-validation approach based around the year in which games were published. I creating a training set of games published prior to **`r valid_years$min_year`** and evaluated its performance in predicting games published from **`r valid_years$min_year`** to **`r valid_years$max_year`**.
+
+I used a training-validation approach based around the year in which games were published. I creating a training set of games published prior to **`r valid_years$min_year`** and evaluated its performance in predicting games published from **`r valid_years$min_year`** to **`r valid_years$max_year`**.
+
+### BGG Ratings
 
 ```{r}
 #| message: false
