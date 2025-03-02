@@ -46,12 +46,81 @@ model_board = pins::board_gcs("bgg_models",
 # functions
 suppressMessages({tar_source("src")})
 
+# settings for models
+# hurdle model
+tune_hurdle = function(data, ...) {
+    
+    data |>
+        add_hurdle() |>
+        train_outcome_wflow(outcome = 'hurdle',
+                            weights = 0,
+                            ratings = 0,
+                            valid_years = valid_years,
+                            recipe = recipe_hurdle,
+                            model_spec = lightgbm_spec() |> 
+                                set_mode("classification"),
+                            metrics = tune_class_metrics(),
+                            grid = lightgbm_grid())
+}
+
+# averageweight
+tune_averageweight = function(data, ...) {
+    
+    data |>
+        train_outcome_wflow(outcome = 'averageweight',
+                            weights = 5,
+                            valid_years = valid_years,
+                            recipe = recipe_trees,
+                            model_spec = lightgbm_spec(),
+                            grid = lightgbm_grid())
+}
+
+# average
+tune_average = function(data, ...) {
+    
+    data |>
+        train_outcome_wflow(outcome = 'average',
+                            ratings = 25,
+                            valid_years = valid_years,
+                            recipe = recipe_linear,
+                            model_spec = glmnet_spec(),
+                            grid = glmnet_grid(),
+                            ids = id_vars(),
+                            predictors = c("est_averageweight", predictor_vars()),
+                            splines = c("est_averageweight", spline_vars()))
+}
+
+# user ratings
+tune_usersrated = function(data, ...) {
+    
+    data |>
+        train_outcome_wflow(outcome = 'usersrated',
+                            ratings = 25,
+                            valid_years = valid_years,
+                            recipe = recipe_linear,
+                            model_spec = glmnet_spec(),
+                            grid = glmnet_grid(),
+                            ids = id_vars(),
+                            predictors = c("est_averageweight", predictor_vars()),
+                            splines = c("est_averageweight", spline_vars()))
+}
+
+# finalize model and bundle
+fit_and_bundle = function(tuned) {
+    
+    tuned |>
+        finalize_outcome_wflow() |>
+        fit_outcome_wflow(data = 'all') |>
+        bundle_wflow()
+}
+
 # # model board
 # model_board = gcs_model_board()
 
 # parameters for targets
-end_train_year = 2020
+end_train_year = 2021
 valid_years = 2
+generation = "1740875193707566"
 retrain_years = valid_years - 1
 
 # Replace the target list below with your own:
@@ -60,7 +129,7 @@ list(
     tar_target(
         games_raw,
         command = 
-            load_games(generation = "1708980495752949"),
+            load_games(generation = generation),
         packages = c("googleCloudStorageR")
     ),
     tar_target(
@@ -85,16 +154,7 @@ list(
         command = 
             split |>
             training() |>
-            add_hurdle() |>
-            train_outcome_wflow(outcome = 'hurdle',
-                                weights = 0,
-                                ratings = 0,
-                                valid_years = valid_years,
-                                recipe = recipe_hurdle,
-                                model_spec = lightgbm_spec() |> 
-                                    set_mode("classification"),
-                                metrics = tune_class_metrics(),
-                                grid = lightgbm_grid()),
+            tune_hurdle()
     ),
     # get hurdle results and thresholds
     tar_target(
@@ -103,8 +163,7 @@ list(
             hurdle_tuned |>
             finalize_outcome_wflow(metric = 'roc_auc') |>
             extract_tune_preds() |>
-            assess_class_threshold(class_metrics = my_class_metrics()),
-        packages = c("bonsai", "lightgbm")
+            assess_class_threshold(class_metrics = my_class_metrics())
     ),
     tar_target(
         hurdle_threshold,
@@ -131,22 +190,14 @@ list(
         command = 
             split |>
             training() |>
-            train_outcome_wflow(outcome = 'averageweight',
-                                weights = 5,
-                                valid_years = valid_years,
-                                recipe = recipe_trees,
-                                model_spec = lightgbm_spec(),
-                                grid = lightgbm_grid()),
-        packages = c("bonsai", "lightgbm")
+            tune_averageweight()
     ),
     # now fit model
     tar_target(
         averageweight_fit,
         command = 
             averageweight_tuned |>
-            finalize_outcome_wflow() |>
-            fit_outcome_wflow(data = 'all') |>
-            bundle_wflow()
+            fit_and_bundle()
     ),
     # use model to impute averageweight for training set
     tar_target(
@@ -161,58 +212,29 @@ list(
         name = average_tuned,
         command =
             training_imputed |>
-            train_outcome_wflow(outcome = 'average',
-                                ratings = 25,
-                                valid_years = valid_years,
-                                recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
-                                ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()),
-                                splines = c("est_averageweight", spline_vars()))
+            tune_average()
     ),
     # now train usersrated
     tar_target(
         name = usersrated_tuned,
         command = 
             training_imputed |>
-            train_outcome_wflow(outcome = 'usersrated',
-                                ratings = 25,
-                                valid_years = valid_years,
-                                recipe = recipe_linear,
-                                model_spec = glmnet_spec(),
-                                grid = glmnet_grid(),
-                                ids = id_vars(),
-                                predictors = c("est_averageweight", predictor_vars()),
-                                splines = c("est_averageweight", spline_vars()))
+            tune_usersrated()
     ),
-    # # extract tuning plots
-    # tar_target(
-    #     name = tuning_plots,
-    #     command =
-    #         bind_rows(averageweight_tuned,
-    #                   average_tuned,
-    #                   usersrated_tuned) |>
-    #         get_tuning_plots()
-    # ),
     # fit models to whole of training
     # average
     tar_target(
         name = average_fit,
         command = 
             average_tuned |>
-            finalize_outcome_wflow() |>
-            fit_outcome_wflow(data = 'all') |>
-            bundle_wflow()
+            fit_and_bundle()
     ),
     # usersrated
     tar_target(
         name = usersrated_fit,
         command = 
             usersrated_tuned |>
-            finalize_outcome_wflow() |>
-            fit_outcome_wflow(data = 'all') |>
-            bundle_wflow()
+            fit_and_bundle()
     ),
     ## now predict the validation set
     tar_target(
@@ -378,58 +400,59 @@ list(
                               board = model_board,
                               ratings = 0,
                               weights = 0)
-    ),
-    tar_target(
-        active_games,
-        get_games_from_gcp(bucket = "bgg_data") |>
-            prepare_games ()
-    ),
-    tar_target(
-        upcoming_games,
-        command = 
-            active_games |>
-            filter(yearpublished > end_train_year + valid_years + 1)
-    ),
-    # use trained models to predict new games
-    tar_target(
-        predictions,
-        command =
-            {
-                averageweight_fit =
-                    pin_read_model(model_board,
-                                   averageweight_vetiver)
-                
-                average_fit =
-                    pin_read_model(model_board,
-                                   average_vetiver)
-                
-                usersrated_fit =
-                    pin_read_model(model_board,
-                                   usersrated_vetiver)
-                
-                hurdle_fit =
-                    pin_read_model(model_board,
-                                   hurdle_vetiver)
-
-                upcoming_games |>
-                    impute_averageweight(
-                        model = averageweight_fit
-                    ) |>
-                    predict_hurdle(
-                        model = hurdle_fit,
-                        threshold = hurdle_threshold
-                    ) |>
-                    predict_bayesaverage(
-                        average_model = average_fit,
-                        usersrated_model = usersrated_fit
-                    )
-            }
-    ),
-    # render reports
-    tar_quarto(
-        name = reports,
-        path = ".",
-        quiet = F,
-        cue = tar_cue(mode = 'always')
     )
+    # tar_target(
+    #     active_games,
+    #     get_games_from_gcp(bucket = "bgg_data") |>
+    #         prepare_games (),
+    #     cue = tar_cue(mode = "always")
+    # ),
+    # tar_target(
+    #     upcoming_games,
+    #     command = 
+    #         active_games |>
+    #         filter(yearpublished > end_train_year + valid_years + 1)
+    # ),
+    # # use trained models to predict new games
+    # tar_target(
+    #     predictions,
+    #     command =
+    #         {
+    #             averageweight_fit =
+    #                 pin_read_model(model_board,
+    #                                averageweight_vetiver)
+    #             
+    #             average_fit =
+    #                 pin_read_model(model_board,
+    #                                average_vetiver)
+    #             
+    #             usersrated_fit =
+    #                 pin_read_model(model_board,
+    #                                usersrated_vetiver)
+    #             
+    #             hurdle_fit =
+    #                 pin_read_model(model_board,
+    #                                hurdle_vetiver)
+    #             
+    #             upcoming_games |>
+    #                 impute_averageweight(
+    #                     model = averageweight_fit
+    #                 ) |>
+    #                 predict_hurdle(
+    #                     model = hurdle_fit,
+    #                     threshold = hurdle_threshold
+    #                 ) |>
+    #                 predict_bayesaverage(
+    #                     average_model = average_fit,
+    #                     usersrated_model = usersrated_fit
+    #                 )
+    #         }
+    # )
+    # # render reports
+    # tar_quarto(
+    #     name = reports,
+    #     path = ".",
+    #     quiet = F,
+    #     cue = tar_cue(mode = 'always')
+    # )
 )
