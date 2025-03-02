@@ -1,9 +1,9 @@
 "","outcome",".metric",".estimator",".estimate"
-"1","hurdle","bal_accuracy","binary",0.7544
-"2","hurdle","kap","binary",0.4015
-"3","hurdle","mcc","binary",0.4533
-"4","hurdle","f1_meas","binary",0.6139
-"5","hurdle","f2_meas","binary",0.7484
-"6","hurdle","precision","binary",0.4723
-"7","hurdle","recall","binary",0.8766
-"8","hurdle","j_index","binary",0.5087
+"1","hurdle","bal_accuracy","binary",0.7732
+"2","hurdle","kap","binary",0.4557
+"3","hurdle","mcc","binary",0.4943
+"4","hurdle","f1_meas","binary",0.6499
+"5","hurdle","f2_meas","binary",0.7641
+"6","hurdle","precision","binary",0.5203
+"7","hurdle","recall","binary",0.8655
+"8","hurdle","j_index","binary",0.5465
