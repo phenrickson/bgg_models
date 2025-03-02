@@ -1,0 +1,118 @@
+---
+title: "What's in a Board Game?"
+author: "Phil Henrickson"
+subtitle: "Predicting BoardGameGeek Ratings for Upcoming Games"
+format: 
+    clean-revealjs:
+        chalkboard: 
+            src: drawings.json
+        message: false
+        warning: false
+css: styles.css
+editor: source
+execute: 
+  freeze: true
+---
+
+```{r}
+#| include: false
+#| message: false
+#| warning: false
+#| 
+# packages
+library(targets)
+library(tidyverse)
+library(tidymodels)
+
+# source code
+tar_source("src")
+
+```
+
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+
+# data
+# raw pull from bgg
+tar_load(games_raw)
+# split for train/valid/test
+tar_load(split)
+
+# get training set
+train_data = 
+    split |> 
+    training()
+
+# get validation set
+valid_data = 
+    split |>
+    validation()
+
+# full data
+full_data = 
+    bind_rows(train_data, valid_data)
+
+theme_set(theme_light()+theme(legend.position = 'top'))
+```
+
+# Data
+
+As of my most recent data job, there are **`r nrow(games_raw)`** individual games on BGG. For each of these games, I have information about the game (playing time, mechanisms, components, publishers, artists, designers, etc), as well as information voted on by the BGG community (average rating, average weight).
+
+```{r}
+
+full_data |>
+    sample_n(1000) |>
+    visdat::vis_dat()
+
+```
+## BGG Ratings
+
+The data is at the game level, where I observe the BGG community’s aggregated ratings for individual games. This means I do not have data on the underlying ratings for games, only the average, standard deviation, or sum of the distribution.
+
+I examine four different community outcomes for games: average weight rating (complexity), number of user ratings, average user rating, and geek rating. Only a subset of games have received enough votes by the BGG community to receive a geek rating, which is a bayesian average based on the number of ratings as well as the average rating. 
+
+```{r}
+#| message: false
+
+full_data |>
+    filter_geek() |>
+    log_ratings() |>
+    plot_outcomes_distributions()
+
+```
+
+What is the relationship between these ratings?
+
+```{r}
+
+full_data |>
+    plot_outcomes_relationships()
+    
+```
+
+Each of these BGG outcomes (average weight, average, user ratings) is related to each other in some way, which is important to keep in mind as we think about modeling these outcomes. The average weight tends to be highly correlated with the average rating, while not being correlated with the number of user ratings. The geek rating is a function of the average and user ratings, which means it is also then correlated with the average weight.
+
+```{r}
+
+full_data |>
+    add_game_types(games_raw) |>
+    group_by(game_type) |>
+    count()
+
+```
