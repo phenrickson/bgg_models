@@ -1,0 +1,7 @@
+default:
+  bucket: "bgg_models"
+  prefix: "dev"
+
+production:
+  bucket: "bgg_models"
+  prefix: "prod"
