@@ -1,21 +1,6 @@
 ---
 title: "Predicting Upcoming Board Games"
 subtitle: "Predictive Models for BoardGameGeek Ratings"
-author: "Phil Henrickson"
-date: today
-date-format: short
-format: 
-        html:
-                code-fold: true
-                code-overflow: scroll
-                code-summary: 'Show the code'
-                self-contained: true
-                toc: true
-                fig-align: center
-                theme: cerulean
-                message: false
-                warning: false
-                echo: false
 editor: source
 ---
 ```{r}
@@ -26,26 +11,27 @@ options(knitr.duplicate.label = "allow")
 
 ```{r}
 #| include: false
+#| label: load packages and targets
 library(dplyr)
 library(bggUtils)
 library(tidymodels)
 library(vetiver)
 library(gert)
-library(qs)
+library(qs2)
 library(quarto)
 library(targets)
 library(tarchetypes)
 
-# authenticate
-googleCloudStorageR::gcs_auth(json_file = Sys.getenv("GCS_AUTH_FILE"))
-
-# set bucket
-googleCloudStorageR::gcs_global_bucket("bgg_models")
-
-# src
+# load src code
 tar_source("src")
 
-# load in objects
+# project settings
+config <- config::get()
+
+# authenticate
+authenticate_to_gcs()
+
+# load in objects from pipeline
 tar_load(valid_predictions)
 tar_load(valid_metrics)
 tar_load(details)
@@ -59,21 +45,23 @@ valid_years =
     summarize(min_year = min(yearpublished),
               max_year = max(yearpublished))
 
-# model board
-model_board = pins::board_gcs("bgg_models",
-                              prefix = "model/bgg/",
-                              versioned = T)
-
-# games
-games = 
-    get_games_from_gcp(
-        bucket = "bgg_data"
-    )
-
 # set ggplot theme
 theme_set(bggUtils::theme_bgg())
 ```
 
+```{r}
+#| include: false
+#| label: load games from gcs
+
+# load games from gcp
+games = 
+    get_games_from_gcp(bucket = "bgg_data")
+
+# prepare games with preprocessor
+active_games = 
+    games |>
+    prepare_games()
+```
 
 # Pipeline
 
@@ -81,7 +69,7 @@ theme_set(bggUtils::theme_bgg())
 <!-- #   cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T), "```"), sep = "\n") -->
 <!-- # ``` -->
 
-I use historical data from BoardGameGeek (BGG) to train a number of predictive models for boardgames. I first classify games based on their probability of achieving a minimum number of ratings on BGG. I then estimate each game's complexity (average weight) in order to predicts its number of user ratings and average rating. I then use these estimates to compute the expected Geek Rating.
+I use historical data from BoardGameGeek (BGG) to train a number of predictive models for community ratings. I first classify games based on their probability of achieving a minimum number of ratings on BGG. I then estimate each game's complexity (average weight) in order to predicts its number of user ratings and average rating. I then use these estimates to predict the expected Geek Rating.
 
 The following (somewhat messy) visualization displays the status of the current pipeline used to train models and predict new games.
 
@@ -100,6 +88,8 @@ targets::tar_visnetwork(targets_only =T)
 #| message: false
 #| warning: false
 #| label: load models
+
+model_board = gcs_model_board(bucket = config$bucket, prefix = config$board)
 
 tar_load(averageweight_vetiver)
 tar_load(average_vetiver)
@@ -127,17 +117,7 @@ hurdle_fit =
 ```{r}
 #| message: false
 #| warning: false
-#| label: load games
-active_games = 
-    get_games_from_gcp(bucket = "bgg_data") |>
-    prepare_games()
-
-```
-
-```{r}
-#| message: false
-#| warning: false
-#| label: predict games
+#| label: filter to upcoming games
 
 end_valid_year = valid_years$max_year 
 
@@ -152,14 +132,55 @@ upcoming_games =
 How did the models perform in predicting games?
 
 I used a training-validation approach based around the year in which games were published. I creating a training set of games published prior to **`r valid_years$min_year`** and evaluated its performance in predicting games published from **`r valid_years$min_year`** to **`r valid_years$max_year`**.
+<!-- 
+```{r}
+plot_games_by_split = function(data) {
 
-I used a training-validation approach based around the year in which games were published. I creating a training set of games published prior to **`r valid_years$min_year`** and evaluated its performance in predicting games published from **`r valid_years$min_year`** to **`r valid_years$max_year`**.
+plot_data =
+    data |>
+        bggUtils:::unnest_outcomes() |>
+        inner_join(
+            data |>
+                bggUtils:::unnest_info()
+        ) |>
+        add_hurdle() |>
+        mutate(
+            yearpublished = case_when(
+                yearpublished < 1960 ~ 1959,
+                TRUE ~ yearpublished
+            )
+        ) |>
+        mutate(
+            hurdle = case_when(
+                hurdle == 'yes' ~ '>25 ratings',
+                hurdle == 'no' ~ '<25 ratings'
+            )
+        ) |>
+        group_by(yearpublished, hurdle) |>
+        count()
+
+plot_data |>
+        ggplot(aes(x = yearpublished, y = n, fill = hurdle)) +
+        geom_col()+
+        scale_color_manual(values = c("grey60","navy"))
+}
+
+plot_games_by_split(games)
+```
+ -->
 
 ### BGG Ratings
+
+How did the model perform in predicting new games? I evaluate the model primarily on games that achieved at least 25 ratings.
+
+::: {.panel-tabset}
 
 ```{r}
 #| message: false
 #| warning: false
+#| label: display plots for predictions from validation set
+
+plot_data = 
 valid_predictions |>
     pivot_outcomes() |>
     left_join(
@@ -173,14 +194,45 @@ valid_predictions |>
             select(game_id, hurdle, .pred_hurdle_yes)
     ) |>
     mutate(hurdle = case_when(hurdle == 'yes' ~ '>25 ratings',
-                              hurdle == 'no' ~ '<25 ratings')) |>
+                              hurdle == 'no' ~ '<25 ratings'))
+
+plot_hurdle_yes = 
+plot_data |>
+    filter(hurdle == '>25 ratings') |>
     plot_predictions(color = hurdle,
-                     alpha = 0.25)+
-    theme(legend.title = element_text())+
-    scale_color_manual(values = c("grey60","navy"))+
-    guides(colour = guide_legend(override.aes = list(alpha=1)))
+                     alpha = 0.15)+
+    scale_color_manual(values = c("navy"))+
+    guides(color = 'none')
+
+plot_hurdle_no =
+plot_data |>
+    filter(hurdle == '<25 ratings') |>
+    plot_predictions(color = hurdle,
+                     alpha = 0.15)+
+    scale_color_manual(values = c("coral"))+
+    guides(color = 'none')
 
 ```
+
+#### Games with >25 Ratings
+
+```{r}
+#| warning: false
+#| message: false
+plot_hurdle_yes
+
+```
+
+#### Games with <25 Ratings
+
+```{r}
+#| warning: false
+#| message: false
+plot_hurdle_no
+
+```
+
+:::
 
 ```{r}
 
@@ -195,7 +247,7 @@ targets_tracking_details(metrics = valid_metrics,
 
 ```
 
-Predictions for games in the validation set.
+What were the top predictions in the validation set?
 
 ```{r}
 
@@ -206,21 +258,42 @@ valid_predictions |>
     predictions_dt(games = games) |>
     add_colors()
 
-
 ```
 
 ### Hurdle
 
-I first predict whether games are expected to receive enough ratings to be assigned a geek rating (25 ratings). This is a classification model which assigns a probability to a game; in order to classify games, I need to determine the appropriate threshold 
+I use a hurdle model to predict whether games are expected to receive enough ratings to be assigned a geek rating (25 ratings). This is a classification model which assigns a probability to a game; in order to classify games, I need to determine the appropriate threshold.
 
-I select this threshold by examining performance across a variety of classification metrics. I select the threshold that maximizes the (F2 measure) in order to minimize false negatives, as I'm interested in using the hurdle model to filter out games that are very unlikely to receive ratings, where including a game that is worse than missing a game.
+I set the threshold at `r hurdle_threshold` - this is the point that maximizes the (F2 measure) and minimizes false negatives. For the purpose of this model, including a game that did not receive a Geek rating is much worse than missing a game that did.
+
+::: {.panel-tabset}
+
+#### Threshold
+
+```{r}
+
+valid_predictions |> 
+    ggplot(aes(x=.pred_hurdle_yes, fill = hurdle))+
+    geom_density(alpha = 0.5)+
+    scale_color_manual()+
+    theme(legend.title = element_text())+
+    xlab("Pr(User Ratings >= 25)")+
+    scale_fill_manual(values = c("coral", "navy"))+
+    guides(fill = guide_legend(title = 'User Ratings >=25'))+
+    geom_vline(xintercept = hurdle_threshold,
+               linetype = 'dotted')
+```
+
+
+#### Metrics
 
 ```{r}
 
 prob_metrics = metric_set(yardstick::roc_auc,
                           yardstick::pr_auc)
 
-prob_hurdle_metrics = valid_predictions |>
+prob_hurdle_metrics = 
+    valid_predictions |>
     group_by(outcome = 'hurdle') |>
     prob_metrics(truth = hurdle,
                  .pred_hurdle_yes,
@@ -236,9 +309,21 @@ valid_hurdle_metrics |>
 
 ```
 
+#### Confusion Matrix
+
+```{r}
+
+valid_predictions |>
+    conf_mat(hurdle, .pred_hurdle_class) |>
+    autoplot(type = 'heatmap')
+
+```
+
+:::
+
 ## Features
 
-Which features were influential for predicting each outcome?
+Which features were influential for predicting each BGG outcome?
 
 ```{r}
 #| message: false
@@ -300,7 +385,6 @@ usersrated_plot
 
 # Predictions
 
-
 ```{r}
 # predict games
 predictions = 
@@ -318,7 +402,6 @@ predictions =
     )
 
 ```
-
 
 ## Upcoming Games
 
@@ -346,36 +429,9 @@ This table displays predicted probabilities for whether games will achieve enoug
 #| echo: false
 #| message: false
 #| warning: false
+
 predictions |>
     filter(.pred_hurdle_class == 'yes') |>
-    arrange(desc(.pred_hurdle_yes)) |>
-    filter(!is.na(thumbnail)) |>
-    mutate(name = make_hyperlink(make_bgg_link(game_id), 
-                                 mytext = paste(name, paste0("(",yearpublished, ")")))) |>
-    mutate(Image = make_image_link(thumbnail),
-           Game = name,
-           Description = stringr::str_trunc(description, width = 150),
-           `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
-           `Ratings` = usersrated,
-           .keep = 'none') |>
-    DT::datatable(escape=F,
-                  rownames = F,
-                  extensions = c('Responsive'),
-                  class = list(stripe =F),
-                  filter = list(position = 'top'),
-                  options = list(pageLength = 15,
-                                 initComplete = htmlwidgets::JS(
-                                     "function(settings, json) {",
-                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
-                                     "}"),
-                                 scrollX=F,
-                                 columnDefs = list(
-                                     list(className = 'dt-center',
-                                          visible=T,
-                                          targets = c("Image", "Pr(Hurdle)", "Ratings")
-                                     )
-                                 )
-                  )
-    ) 
+    hurdle_dt()
 
 ```

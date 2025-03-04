@@ -124,3 +124,37 @@ add_colors = function(dt) {
                       high_color = 'orange',
                       seq = seq(0.8, 5, 0.1))
 }
+
+hurdle_dt = function(data) {
+
+    data |>
+    arrange(desc(.pred_hurdle_yes)) |>
+    filter(!is.na(thumbnail)) |>
+    mutate(name = make_hyperlink(make_bgg_link(game_id), 
+                                 mytext = paste(name, paste0("(",yearpublished, ")")))) |>
+    mutate(Image = make_image_link(thumbnail),
+           Game = name,
+           Description = stringr::str_trunc(description, width = 150),
+           `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
+           `Ratings` = usersrated,
+           .keep = 'none') |>
+    DT::datatable(escape=F,
+                  rownames = F,
+                  extensions = c('Responsive'),
+                  class = list(stripe =F),
+                  filter = list(position = 'top'),
+                  options = list(pageLength = 15,
+                                 initComplete = htmlwidgets::JS(
+                                     "function(settings, json) {",
+                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
+                                     "}"),
+                                 scrollX=F,
+                                 columnDefs = list(
+                                     list(className = 'dt-center',
+                                          visible=T,
+                                          targets = c("Image", "Pr(Hurdle)", "Ratings")
+                                     )
+                                 )
+                  )
+    ) 
+}
