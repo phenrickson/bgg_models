@@ -36,39 +36,10 @@ jobs:
         env:
           RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
           GITHUB_PAT: ${{ secrets.GH_PAT}}
-      - name: check status of config
-        run: |
-          cfg = config::get()
-          str(cfg)
-        shell: Rscript {0}
-      - name: check model board
-        run: |
-          targets::tar_load_globals()
-          str(gcs_model_board(bucket = config$bucket, prefix = config$board))
-        shell: Rscript {0}
+      - name: Render and Publish
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
         env:
-          GITHUB_PAT: ${{ secrets.GH_PAT}}
-          GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
-      - name: check outdated or not
-        run: |
-          targets::tar_outdated()
-        shell: Rscript {0}
-        env:
-          GITHUB_PAT: ${{ secrets.GH_PAT}}
-          GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
-      # - name: Run targets
-      #   run: |
-      #       targets::tar_make()
-      #   shell: Rscript {0}
-      #   env:
-      #     GITHUB_PAT: ${{ secrets.GH_PAT}}
-      #     GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
-
-      # - name: Render and Publish
-      #   uses: quarto-dev/quarto-actions/publish@v2
-      #   with:
-      #     target: gh-pages
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
-      #     GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE }}
