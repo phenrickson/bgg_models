@@ -23,7 +23,6 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
           use-public-rspm: true
-          
       - name: Install additional Linux dependencies
         if: runner.os == 'Linux'
         run: |
@@ -37,16 +36,14 @@ jobs:
         env:
           RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
           GITHUB_PAT: ${{ secrets.GH_PAT}}
-
-    #   - name: check pipeline status
-    #     run: |
-    #         targets::tar_load_globals()
-    #         targets::tar_outdated()
-
-    #     shell: Rscript {0}
-    #     env:
-    #       GITHUB_PAT: ${{ secrets.GH_PAT}}
-    #       GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
+      - name: check pipeline status
+        run: |
+            targets::tar_load_globals()
+            targets::tar_outdated()
+        shell: Rscript {0}
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT}}
+          GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
 
     #   - name: Render and Publish
     #     uses: quarto-dev/quarto-actions/publish@v2
