@@ -2,7 +2,7 @@ name: render quarto
 
 on:
   workflow_dispatch:
-  pull:
+  pull_request:
     branches: [ "main"]
   
 jobs:
