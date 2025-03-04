@@ -1,7 +1,9 @@
 default:
   bucket: "bgg_models"
   prefix: "dev"
+  board: "dev/model"
 
 production:
   bucket: "bgg_models"
   prefix: "prod"
+  board: prod/model
