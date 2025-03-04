@@ -49,6 +49,13 @@ jobs:
         env:
           GITHUB_PAT: ${{ secrets.GH_PAT}}
           GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
+      - name: check outdated or not
+        run: |
+          targets::tar_outdated()
+              shell: Rscript {0}
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT}}
+          GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
       # - name: Run targets
       #   run: |
       #       targets::tar_make()

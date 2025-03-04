@@ -76,6 +76,7 @@ fit_and_bundle = function(tuned) {
 gcs_model_board = function(
     bucket = googleCloudStorageR::gcs_get_global_bucket(),
     prefix,
+    cache = "~/.cache/pins/gcs-bgg_models",
     versioned = T,
     ...
 ) {
@@ -83,6 +84,7 @@ gcs_model_board = function(
         bucket = bucket,
         prefix = prefix,
         versioned = versioned,
+        cache = cache,
         ...
     )
 }

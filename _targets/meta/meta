@@ -174,11 +174,11 @@ add_splines|function|59746afbedafca3d
 add_pca|function|2a77d61a356d7661
 check_workflow_class|function|6c648b676dab193f
 publishers_allow|function|5f76c3fdb5e26c79
-gcs_model_board|function|0316d4a315a2bd91
+gcs_model_board|function|467386e68f82401b
 preprocess_outcome|function|4f56a504ad52bb77
 assess_outcomes|function|952ba12fb8095cdd
 predict_sim|function|7c37a7b3f0b8a0db
-.Random.seed|object|c247522d19db2f69
+.Random.seed|object|35b25872a2e7e8c8
 build_outcome_workflow|function|a159d4b0ca2ac1d1
 plot_predictions|function|6367a9c2100dc77e
 make_web_image|function|100cf929d3f96823
@@ -245,7 +245,7 @@ tune_averageweight|function|511dc7705f5efafe
 tune_usersrated|function|891f8f8b33ba4a1e
 tune_average|function|0a5e867abe178102
 tune_hurdle|function|94597010ce10625b
-hurdle_vetiver|stem|d87cb4a7c9f55e22|061a9e055b10c2c4|dc0ffd7e3f81d311|2114649142|bucket=bgg_models*key=dev/objects/hurdle_vetiver*version=1741124473426652|t20151.9036285914s||0|qs|gcp|vector|||64.905||
-usersrated_vetiver|stem|3d7cb388a4bbf1fa|c1862d62b26522e1|a5ba9d783e6a8431|-1686075036|bucket=bgg_models*key=dev/objects/usersrated_vetiver*version=1741124545761386|t20151.9044681984s||0|qs|gcp|vector|||18.744||
-average_vetiver|stem|3e1728475baa4e3a|7ad6e6c7d03b8ab8|c875742190cc6be3|814172009|bucket=bgg_models*key=dev/objects/average_vetiver*version=1741124613381525|t20151.905248462s||0|qs|gcp|vector|||19.387||
-averageweight_vetiver|stem|9ff95220f421077a|48de0bcdcf79d955|5e905346bae20aed|143165180|bucket=bgg_models*key=dev/objects/averageweight_vetiver*version=1741124661486773|t20151.905805168s||0|qs|gcp|vector|||12.796||
+hurdle_vetiver|stem|82543d2a46245978|061a9e055b10c2c4|93b31e2165dedfa3|2114649142|bucket=bgg_models*key=dev/objects/hurdle_vetiver*version=1741126407998910|t20151.9260211532s||0|qs|gcp|vector|||57.911||
+usersrated_vetiver|stem|c458cee4bfaddd42|c1862d62b26522e1|919c547b41cbcc6e|-1686075036|bucket=bgg_models*key=dev/objects/usersrated_vetiver*version=1741126477245875|t20151.9268199202s||0|qs|gcp|vector|||19.683||
+average_vetiver|stem|e61992bb64b0d4dc|7ad6e6c7d03b8ab8|150f6fdb23aaec39|814172009|bucket=bgg_models*key=dev/objects/average_vetiver*version=1741126546861892|t20151.9276254949s||0|qs|gcp|vector|||20.546||
+averageweight_vetiver|stem|bde8d659043814d2|48de0bcdcf79d955|2d184bb101e13683|143165180|bucket=bgg_models*key=dev/objects/averageweight_vetiver*version=1741126595195084|t20151.9281861826s||0|qs|gcp|vector|||12.037||
