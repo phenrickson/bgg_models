@@ -52,7 +52,7 @@ jobs:
       - name: check outdated or not
         run: |
           targets::tar_outdated()
-              shell: Rscript {0}
+        shell: Rscript {0}
         env:
           GITHUB_PAT: ${{ secrets.GH_PAT}}
           GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
