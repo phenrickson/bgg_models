@@ -43,9 +43,6 @@ suppressMessages({
 # authenticate to gcs
 authenticate_to_gcs()
 
-# create model board
-model_board = gcs_model_board(bucket = config$bucket, prefix = config$board)
-
 # parameters for targets
 end_train_year = 2021
 valid_years = 2
@@ -262,8 +259,7 @@ list(
                 data = training_and_validation |> add_hurdle(),
                 ratings = 0,
                 weights = 0
-            ),
-        packages = c("lightgbm")
+            )
     ),
     tar_target(
         name = test_predictions,
@@ -285,7 +281,10 @@ list(
                 metrics = valid_metrics,
                 data = training_and_validation,
                 tuning = averageweight_tuned,
-                board = model_board
+                board = gcs_model_board(
+                    bucket = config$bucket,
+                    prefix = config$board
+                )
             )
     ),
     tar_target(
@@ -296,7 +295,10 @@ list(
                 metrics = valid_metrics,
                 data = training_and_validation,
                 tuning = average_tuned,
-                board = model_board
+                board = gcs_model_board(
+                    bucket = config$bucket,
+                    prefix = config$board
+                )
             )
     ),
     tar_target(
@@ -307,7 +309,10 @@ list(
                 metrics = valid_metrics,
                 data = training_and_validation,
                 tuning = usersrated_tuned,
-                board = model_board
+                board = gcs_model_board(
+                    bucket = config$bucket,
+                    prefix = config$board
+                )
             )
     ),
     tar_target(
@@ -318,7 +323,10 @@ list(
                 metrics = valid_hurdle_metrics,
                 data = training_and_validation |> add_hurdle(),
                 tuning = hurdle_tuned,
-                board = model_board,
+                board = gcs_model_board(
+                    bucket = config$bucket,
+                    prefix = config$board
+                ),
                 ratings = 0,
                 weights = 0
             )
