@@ -28,7 +28,7 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y libgit2-dev libglpk40 libmagick++-dev
-          
+          sudo apt install cmake libcurl4-openssl-dev libglpk-dev libnode-dev pandoc
       - name: Setup renv and install packages
         uses: r-lib/actions/setup-renv@v2
         with:
@@ -44,11 +44,11 @@ jobs:
           GITHUB_PAT: ${{ secrets.GH_PAT}}
           GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE}}
 
-    #   - name: Render and Publish
-    #     uses: quarto-dev/quarto-actions/publish@v2
-    #     with:
-    #       target: gh-pages
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #       CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
-    #       GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE }}
+      # - name: Render and Publish
+      #   uses: quarto-dev/quarto-actions/publish@v2
+      #   with:
+      #     target: gh-pages
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+      #     GCS_AUTH_FILE: ${{ secrets.GCS_AUTH_FILE }}
