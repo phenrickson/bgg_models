@@ -36,10 +36,9 @@ jobs:
         env:
           RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
           GITHUB_PAT: ${{ secrets.GH_PAT}}
-      - name: check pipeline status
+      - name: run pipeline
         run: |
-            targets::tar_load_globals()
-            targets::tar_outdated()
+            targets::tar_make()
         shell: Rscript {0}
         env:
           GITHUB_PAT: ${{ secrets.GH_PAT}}
