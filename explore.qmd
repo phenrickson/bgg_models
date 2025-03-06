@@ -1,0 +1,661 @@
+---
+title: "Explore BGG Model Predictions"
+subtitle: "Interactive exploration of board game predictions"
+format: 
+  html:
+    page-layout: full
+    code-fold: true
+---
+
+```{r setup}
+#| include: false
+#| echo: false
+options(knitr.duplicate.label = "allow")
+
+# Load required packages
+library(dplyr)
+library(bggUtils)
+library(tidymodels)
+library(vetiver)
+library(gert)
+library(qs2)
+library(quarto)
+library(targets)
+library(tarchetypes)
+library(DT)
+library(plotly)
+library(crosstalk)
+library(htmltools)
+library(stringr)
+library(forcats)
+
+# Load source code
+tar_source("src")
+
+# Project settings
+config <- config::get()
+
+# Authenticate
+authenticate_to_gcs()
+
+# Load objects from pipeline
+tar_load(valid_predictions)
+tar_load(valid_metrics)
+tar_load(details)
+tar_load(hurdle_threshold)
+tar_load(valid_hurdle_metrics)
+tar_load(hurdle_results)
+
+# Find valid_years
+valid_years = 
+    valid_predictions |> 
+    summarize(min_year = min(yearpublished),
+              max_year = max(yearpublished))
+
+# Set ggplot theme
+theme_set(bggUtils::theme_bgg())
+
+# Load games from GCP
+games = get_games_from_gcp(bucket = "bgg_data")
+
+# Prepare games with preprocessor
+active_games = prepare_games(games)
+
+# Load models
+model_board = gcs_model_board(bucket = config$bucket, prefix = config$board)
+
+tar_load(averageweight_vetiver)
+tar_load(average_vetiver)
+tar_load(usersrated_vetiver)
+tar_load(hurdle_vetiver)
+
+averageweight_fit = pin_read_model(model_board, averageweight_vetiver)
+average_fit = pin_read_model(model_board, average_vetiver)
+usersrated_fit = pin_read_model(model_board, usersrated_vetiver)
+hurdle_fit = pin_read_model(model_board, hurdle_vetiver)
+
+# Filter to upcoming games
+end_valid_year = valid_years$max_year 
+
+upcoming_games = 
+    active_games |>
+    filter(yearpublished > end_valid_year)
+
+# Generate predictions
+predictions = 
+    upcoming_games |>
+    impute_averageweight(
+        model = averageweight_fit
+    ) |>
+    predict_hurdle(
+        model = hurdle_fit,
+        threshold = hurdle_threshold
+    ) |>
+    predict_bayesaverage(
+        average_model = average_fit,
+        usersrated_model = usersrated_fit
+    )
+
+# Prepare data for interactive exploration
+prepare_interactive_data <- function(predictions, games) {
+  # Extract categories, mechanics, publishers, etc. from games using bggUtils functions
+  game_categories <- bggUtils:::unnest_categories(games)
+  game_mechanics <- bggUtils:::unnest_mechanics(games)
+  game_publishers <- bggUtils:::unnest_publishers(games)
+  game_designers <- bggUtils:::unnest_designers(games)
+  
+  # Add a flag for first-time predictions
+  # This is a placeholder - the user will implement the actual logic
+  predictions_with_flag <- predictions |>
+    mutate(first_time_prediction = sample(c(TRUE, FALSE), n(), replace = TRUE, prob = c(0.2, 0.8)))
+  
+  # Combine with predictions
+  predictions_with_flag |>
+    left_join(game_categories, by = "game_id") |>
+    left_join(game_mechanics, by = "game_id") |>
+    left_join(game_publishers, by = "game_id") |>
+    left_join(game_designers, by = "game_id")
+}
+
+# Prepare the interactive data
+interactive_data <- prepare_interactive_data(predictions, games)
+
+# Get unique values for filters
+unique_categories <- interactive_data |>
+  filter(!is.na(categories)) |>
+  count(categories, sort = TRUE) |>
+  filter(n >= 5) |>  # Only include categories with at least 5 games
+  pull(categories)
+
+unique_mechanics <- interactive_data |>
+  filter(!is.na(mechanics)) |>
+  count(mechanics, sort = TRUE) |>
+  filter(n >= 5) |>  # Only include mechanics with at least 5 games
+  pull(mechanics)
+
+unique_publishers <- interactive_data |>
+  filter(!is.na(publishers)) |>
+  count(publishers, sort = TRUE) |>
+  filter(n >= 5) |>  # Only include publishers with at least 5 games
+  pull(publishers)
+
+unique_designers <- interactive_data |>
+  filter(!is.na(designers)) |>
+  count(designers, sort = TRUE) |>
+  filter(n >= 5) |>  # Only include designers with at least 5 games
+  pull(designers)
+
+# Year range
+min_year <- min(interactive_data$yearpublished, na.rm = TRUE)
+max_year <- max(interactive_data$yearpublished, na.rm = TRUE)
+
+# Enhanced table function for interactive filtering
+interactive_predictions_dt <- function(data, highlight_new = TRUE) {
+  # Format data for display
+  display_data <- data |>
+    arrange(desc(.pred_bayesaverage)) |>
+    filter(!is.na(thumbnail)) |>
+    mutate(across(starts_with(".pred"), ~ round(.x, 2))) |>
+    mutate(
+      # Add a visual indicator for first-time predictions
+      name_with_indicator = case_when(
+        first_time_prediction == TRUE ~ paste0(
+          "<span style='background-color: #ffeb3b; padding: 2px 5px; border-radius: 3px; margin-right: 5px; font-size: 0.8em;'>NEW</span>", 
+          name
+        ),
+        TRUE ~ name
+      )
+    ) |>
+    mutate(
+      name_with_link = make_hyperlink(make_bgg_link(game_id), 
+                                     mytext = paste(name_with_indicator, paste0("(",yearpublished, ")"))),
+      Rank = row_number(),
+      Image = make_image_link(thumbnail),
+      Game = name_with_link,
+      `Average Weight` = .pred_averageweight,
+      `Average Rating` = .pred_average,
+      `Users Rated` = .pred_usersrated,
+      `Geek Rating` = .pred_bayesaverage,
+      `Hurdle Prob` = .pred_hurdle_yes,
+      .keep = 'none'
+    )
+  
+  # Define columns to display
+  cols <- c("Rank", "Image", "Game", "Average Weight", "Average Rating", "Users Rated", "Geek Rating", "Hurdle Prob")
+  
+  # Create the datatable
+  dt <- datatable(
+    display_data,
+    escape = FALSE,
+    rownames = FALSE,
+    extensions = c('Responsive', 'Buttons'),
+    class = list(stripe = FALSE),
+    filter = list(position = 'top'),
+    options = list(
+      pageLength = 15,
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'excel'),
+      initComplete = htmlwidgets::JS(
+        "function(settings, json) {",
+        paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
+        "}"
+      ),
+      scrollX = TRUE,
+      columnDefs = list(
+        list(
+          className = 'dt-center',
+          visible = TRUE,
+          targets = cols
+        )
+      )
+    )
+  )
+  
+  # Add color formatting
+  dt |>
+    add_dt_colors(column = 'Geek Rating', seq = seq(5, 9, 0.1)) |>
+    add_dt_colors(column = 'Average Rating', seq = seq(6, 10, 0.1)) |>
+    add_dt_colors(column = 'Users Rated', seq = c(0, 100, 500, seq(1000, 10000, 1000), 15000, 25000, 50000)) |>
+    add_dt_colors(column = 'Average Weight', 
+                  low_color = 'deepskyblue1',
+                  mid_color = 'white',
+                  high_color = 'orange',
+                  seq = seq(0.8, 5, 0.1)) |>
+    add_dt_colors(column = 'Hurdle Prob', 
+                  low_color = 'white',
+                  high_color = 'green',
+                  seq = seq(0, 1, 0.1))
+}
+
+# Function to apply filters to the dataset
+apply_filters <- function(data, year_range, categories, mechanics, publishers, designers, 
+                         complexity_range, rating_range, users_range, hurdle_prob,
+                         first_time_only = FALSE) {
+  filtered_data <- data
+  
+  # Apply year filter
+  filtered_data <- filtered_data |>
+    filter(yearpublished >= year_range[1] & yearpublished <= year_range[2])
+  
+  # Apply category filter if selected
+  if (!is.null(categories) && length(categories) > 0) {
+    filtered_data <- filtered_data |>
+      filter(categories %in% !!categories)
+  }
+  
+  # Apply mechanics filter if selected
+  if (!is.null(mechanics) && length(mechanics) > 0) {
+    filtered_data <- filtered_data |>
+      filter(mechanics %in% !!mechanics)
+  }
+  
+  # Apply publisher filter if selected
+  if (!is.null(publishers) && length(publishers) > 0) {
+    filtered_data <- filtered_data |>
+      filter(publishers %in% !!publishers)
+  }
+  
+  # Apply designer filter if selected
+  if (!is.null(designers) && length(designers) > 0) {
+    filtered_data <- filtered_data |>
+      filter(designers %in% !!designers)
+  }
+  
+  # Apply complexity filter
+  filtered_data <- filtered_data |>
+    filter(.pred_averageweight >= complexity_range[1] & .pred_averageweight <= complexity_range[2])
+  
+  # Apply rating filter
+  filtered_data <- filtered_data |>
+    filter(.pred_average >= rating_range[1] & .pred_average <= rating_range[2])
+  
+  # Apply users rated filter
+  filtered_data <- filtered_data |>
+    filter(.pred_usersrated >= users_range[1] & .pred_usersrated <= users_range[2])
+  
+  # Apply hurdle probability filter
+  filtered_data <- filtered_data |>
+    filter(.pred_hurdle_yes >= hurdle_prob)
+  
+  # Filter to first-time predictions if selected
+  if (first_time_only) {
+    filtered_data <- filtered_data |>
+      filter(first_time_prediction == TRUE)
+  }
+  
+  # Return distinct games (in case of duplicates from category/mechanic/publisher joins)
+  filtered_data |>
+    distinct(game_id, .keep_all = TRUE)
+}
+
+# Function to create distribution plot
+plot_distribution <- function(data, metric, title) {
+  p <- ggplot(data, aes_string(x = metric)) +
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "navy", alpha = 0.7) +
+    geom_density(color = "red", size = 1) +
+    labs(title = title, x = metric, y = "Density") +
+    theme_bgg()
+  
+  ggplotly(p)
+}
+
+# Function to create category comparison plot
+plot_category_comparison <- function(data, category_var, metric, top_n = 10) {
+  # Get top categories by count
+  top_categories <- data |>
+    filter(!is.na(!!sym(category_var))) |>
+    count(!!sym(category_var), sort = TRUE) |>
+    head(top_n) |>
+    pull(!!sym(category_var))
+  
+  # Filter data to top categories and calculate mean metric
+  plot_data <- data |>
+    filter(!!sym(category_var) %in% top_categories) |>
+    group_by(!!sym(category_var)) |>
+    summarize(
+      mean_value = mean(!!sym(metric), na.rm = TRUE),
+      count = n(),
+      .groups = "drop"
+    ) |>
+    arrange(desc(mean_value))
+  
+  # Create plot
+  p <- ggplot(plot_data, aes(x = reorder(!!sym(category_var), mean_value), y = mean_value)) +
+    geom_col(aes(fill = count), show.legend = TRUE) +
+    coord_flip() +
+    labs(
+      title = paste("Average", metric, "by", category_var),
+      x = category_var,
+      y = paste("Average", metric),
+      fill = "Count"
+    ) +
+    theme_bgg() +
+    scale_fill_viridis_c()
+  
+  ggplotly(p)
+}
+```
+
+## Interactive Explorer
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# Create a shared data object for crosstalk
+shared_data <- SharedData$new(
+  interactive_data |>
+    # Format data for display
+    mutate(
+      # Add a visual indicator for first-time predictions
+      name_with_indicator = case_when(
+        first_time_prediction == TRUE ~ paste0(
+          "<span style='background-color: #ffeb3b; padding: 2px 5px; border-radius: 3px; margin-right: 5px; font-size: 0.8em;'>NEW</span>", 
+          name
+        ),
+        TRUE ~ name
+      ),
+      name_with_link = paste0(
+        "<a href='https://boardgamegeek.com/boardgame/", game_id, "' target='_blank'>",
+        name_with_indicator, " (", yearpublished, ")</a>"
+      ),
+      Image = paste0("<img src='", thumbnail, "' height='52'>"),
+      across(starts_with(".pred"), ~ round(.x, 2))
+    ) |>
+    rename(
+      `Average Weight` = .pred_averageweight,
+      `Average Rating` = .pred_average,
+      `Users Rated` = .pred_usersrated,
+      `Geek Rating` = .pred_bayesaverage,
+      `Hurdle Prob` = .pred_hurdle_yes
+    ),
+  ~game_id
+)
+
+# Create filter controls
+# First-time predictions checkbox
+first_time_filter <- filter_checkbox(
+  "first_time_prediction", "First-time Predictions Only",
+  shared_data,
+  ~first_time_prediction
+)
+
+year_filter <- filter_slider(
+  "yearpublished", "Year Published", 
+  shared_data, 
+  min = min_year, max = max_year,
+  step = 1
+)
+
+weight_filter <- filter_slider(
+  "Average Weight", "Predicted Complexity", 
+  shared_data, 
+  min = 1, max = 5,
+  step = 0.1
+)
+
+rating_filter <- filter_slider(
+  "Average Rating", "Predicted Rating", 
+  shared_data, 
+  min = 5, max = 10,
+  step = 0.1
+)
+
+users_filter <- filter_slider(
+  "Users Rated", "Predicted Users Rated", 
+  shared_data, 
+  min = 0, max = 10000,
+  step = 100
+)
+
+hurdle_filter <- filter_slider(
+  "Hurdle Prob", "Minimum Hurdle Probability", 
+  shared_data, 
+  min = 0, max = 1,
+  step = 0.05
+)
+
+category_filter <- filter_select(
+  "categories", "Categories", 
+  shared_data, 
+  ~categories,
+  multiple = TRUE
+)
+
+mechanic_filter <- filter_select(
+  "mechanics", "Mechanics", 
+  shared_data, 
+  ~mechanics,
+  multiple = TRUE
+)
+
+publisher_filter <- filter_select(
+  "publishers", "Publishers", 
+  shared_data, 
+  ~publishers,
+  multiple = TRUE
+)
+
+designer_filter <- filter_select(
+  "designers", "Designers", 
+  shared_data, 
+  ~designers,
+  multiple = TRUE
+)
+
+# Create the datatable
+predictions_table <- DT::datatable(
+  shared_data,
+  escape = FALSE,
+  rownames = FALSE,
+  extensions = c('Responsive', 'Buttons'),
+  class = list(stripe = FALSE),
+  options = list(
+    pageLength = 15,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel'),
+    scrollX = TRUE,
+    columnDefs = list(
+      list(
+        className = 'dt-center',
+        visible = TRUE,
+        targets = c("Image", "name_with_link", "Average Weight", "Average Rating", "Users Rated", "Geek Rating", "Hurdle Prob")
+      )
+    )
+  ),
+  selection = "none",
+  colnames = c(
+    "Image" = "Image",
+    "name_with_link" = "Game",
+    "Average Weight" = "Average Weight",
+    "Average Rating" = "Average Rating", 
+    "Users Rated" = "Users Rated",
+    "Geek Rating" = "Geek Rating",
+    "Hurdle Prob" = "Hurdle Prob"
+  )
+) |>
+  DT::formatStyle(
+    'Geek Rating',
+    backgroundColor = DT::styleInterval(seq(5, 9, 0.1), colorRampPalette(c("white", "dodgerblue2"))(length(seq(5, 9, 0.1)) + 1))
+  ) |>
+  DT::formatStyle(
+    'Average Rating',
+    backgroundColor = DT::styleInterval(seq(6, 10, 0.1), colorRampPalette(c("white", "dodgerblue2"))(length(seq(6, 10, 0.1)) + 1))
+  ) |>
+  DT::formatStyle(
+    'Users Rated',
+    backgroundColor = DT::styleInterval(c(0, 100, 500, seq(1000, 10000, 1000), 15000, 25000, 50000), colorRampPalette(c("white", "dodgerblue2"))(length(c(0, 100, 500, seq(1000, 10000, 1000), 15000, 25000, 50000)) + 1))
+  ) |>
+  DT::formatStyle(
+    'Average Weight',
+    backgroundColor = DT::styleInterval(seq(0.8, 5, 0.1), colorRampPalette(c("deepskyblue1", "white", "orange"))(length(seq(0.8, 5, 0.1)) + 1))
+  ) |>
+  DT::formatStyle(
+    'Hurdle Prob',
+    backgroundColor = DT::styleInterval(seq(0, 1, 0.1), colorRampPalette(c("white", "green"))(length(seq(0, 1, 0.1)) + 1))
+  )
+
+# Create the layout
+bscols(
+  list(
+    h4("Filters"),
+    first_time_filter,
+    year_filter,
+    weight_filter,
+    rating_filter,
+    users_filter,
+    hurdle_filter,
+    category_filter,
+    mechanic_filter,
+    publisher_filter,
+    designer_filter
+  ),
+  list(
+    h4("Results"),
+    predictions_table
+  ),
+  widths = c(3, 9)
+)
+```
+
+### Distributions
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# Create plots for distributions
+weight_dist <- plot_ly(shared_data, x = ~`Average Weight`, type = "histogram", 
+                      marker = list(color = "navy", opacity = 0.7),
+                      name = "Weight Distribution") |>
+  layout(title = "Predicted Weight Distribution",
+         xaxis = list(title = "Average Weight"),
+         yaxis = list(title = "Count"))
+
+rating_dist <- plot_ly(shared_data, x = ~`Average Rating`, type = "histogram", 
+                      marker = list(color = "navy", opacity = 0.7),
+                      name = "Rating Distribution") |>
+  layout(title = "Predicted Rating Distribution",
+         xaxis = list(title = "Average Rating"),
+         yaxis = list(title = "Count"))
+
+users_dist <- plot_ly(shared_data, x = ~`Users Rated`, type = "histogram", 
+                     marker = list(color = "navy", opacity = 0.7),
+                     name = "Users Rated Distribution") |>
+  layout(title = "Predicted Users Rated Distribution",
+         xaxis = list(title = "Users Rated"),
+         yaxis = list(title = "Count"))
+
+# Create layout for distribution plots
+bscols(
+  weight_dist,
+  rating_dist,
+  widths = c(6, 6)
+)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+users_dist
+```
+
+### Comparisons
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# Function to create category comparison plots
+create_comparison_plot <- function(data, category_var, metric = "Geek Rating", top_n = 10) {
+  # Get top categories by count
+  top_items <- data |>
+    group_by(!!sym(category_var)) |>
+    summarize(count = n()) |>
+    arrange(desc(count)) |>
+    head(top_n) |>
+    pull(!!sym(category_var))
+  
+  # Calculate average metric by category
+  plot_data <- data |>
+    filter(!!sym(category_var) %in% top_items) |>
+    group_by(!!sym(category_var)) |>
+    summarize(
+      avg_value = mean(!!sym(metric), na.rm = TRUE),
+      count = n()
+    ) |>
+    arrange(desc(avg_value))
+  
+  # Create plot
+  plot_ly(plot_data, 
+          x = ~avg_value, 
+          y = ~reorder(!!sym(category_var), avg_value),
+          type = "bar",
+          marker = list(color = ~count, colorscale = "Viridis"),
+          hoverinfo = "text",
+          text = ~paste0(!!sym(category_var), 
+                         "<br>Average ", metric, ": ", round(avg_value, 2),
+                         "<br>Games: ", count)) |>
+    layout(title = paste("Average", metric, "by", category_var),
+           xaxis = list(title = paste("Average", metric)),
+           yaxis = list(title = category_var),
+           coloraxis = list(colorbar = list(title = "Count")))
+}
+
+# Create category comparison plots
+category_plot <- create_comparison_plot(shared_data, "categories")
+mechanic_plot <- create_comparison_plot(shared_data, "mechanics")
+publisher_plot <- create_comparison_plot(shared_data, "publishers")
+
+# Display category comparison plot
+category_plot
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+# Display mechanic comparison plot
+mechanic_plot
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+# Display publisher comparison plot
+publisher_plot
+```
+
+### About This Explorer
+
+This interactive explorer allows you to filter and explore predictions from our BGG models. You can:
+
+- **Filter games** by year published, complexity, predicted rating, and more
+- **Explore specific categories, mechanics, publishers, or designers**
+- **Visualize distributions** of predicted weights, ratings, and user counts
+- **Compare predictions** across different categories, mechanics, and publishers
+- **Highlight first-time predictions** to identify games being predicted for the first time
+
+#### How to Use
+
+1. Use the filters in the left sidebar to narrow down the games you're interested in
+2. Check the "Show only first-time predictions" box to focus on games being predicted for the first time
+3. View the filtered results in the "Results Table" tab (first-time predictions are highlighted with a "NEW" badge)
+4. Explore distributions of predictions in the "Distributions" tab
+5. Compare predictions across categories, mechanics, and publishers in the "Comparisons" tab
+
+#### About the Models
+
+These predictions are generated using a multi-stage modeling approach:
+
+1. A **hurdle model** predicts whether games will reach a minimum threshold of user ratings (25 ratings)
+2. An **averageweight model** predicts game complexity on a scale of 1-5
+3. An **average rating model** predicts the average user rating
+4. A **users rated model** predicts the number of user ratings a game will receive
+
+The models are trained on historical BoardGameGeek data and are designed to predict how the BGG community will evaluate new games.

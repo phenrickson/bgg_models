@@ -1,0 +1,248 @@
+---
+title: "Explore BGG Model Predictions"
+subtitle: "Interactive exploration of board game predictions"
+format: 
+  html:
+    page-layout: full
+    code-fold: true
+---
+
+```{r setup}
+#| include: false
+#| echo: false
+options(knitr.duplicate.label = "allow")
+
+# Load required packages
+library(dplyr)
+library(bggUtils)
+library(DT)
+library(plotly)
+library(crosstalk)
+library(htmltools)
+library(stringr)
+library(forcats)
+library(targets)
+
+# Load source code
+tar_source("src")
+
+# Load predictions from targets
+tar_load(valid_predictions)
+
+# For demonstration, we'll use valid_predictions as our dataset
+# In a real implementation, you would load the actual predictions for upcoming games
+predictions <- valid_predictions
+
+# Add a flag for first-time predictions (placeholder - you'll implement the actual logic)
+predictions <- predictions |>
+  mutate(first_time_prediction = sample(c(TRUE, FALSE), n(), replace = TRUE, prob = c(0.2, 0.8)))
+
+# Create a shared data object for crosstalk
+shared_data <- SharedData$new(
+  predictions |>
+    # Format data for display
+    mutate(
+      # Add a visual indicator for first-time predictions
+      name_with_indicator = case_when(
+        first_time_prediction == TRUE ~ paste0(
+          "<span style='background-color: #ffeb3b; padding: 2px 5px; border-radius: 3px; margin-right: 5px; font-size: 0.8em;'>NEW</span>", 
+          name
+        ),
+        TRUE ~ name
+      ),
+      name_with_link = paste0(
+        "<a href='https://boardgamegeek.com/boardgame/", game_id, "' target='_blank'>",
+        name_with_indicator, " (", yearpublished, ")</a>"
+      ),
+      Image = paste0("<img src='", thumbnail, "' height='52'>"),
+      # Round numeric prediction columns
+      .pred_bayesaverage = round(.pred_bayesaverage, 2),
+      .pred_average = round(.pred_average, 2),
+      .pred_usersrated = round(.pred_usersrated, 2),
+      .pred_averageweight = round(.pred_averageweight, 2),
+      .pred_hurdle_yes = round(.pred_hurdle_yes, 2)
+    ) |>
+    rename(
+      `Average Weight` = .pred_averageweight,
+      `Average Rating` = .pred_average,
+      `Users Rated` = .pred_usersrated,
+      `Geek Rating` = .pred_bayesaverage,
+      `Hurdle Prob` = .pred_hurdle_yes
+    ),
+  ~game_id
+)
+
+# Get min/max years for the slider
+min_year <- min(predictions$yearpublished, na.rm = TRUE)
+max_year <- max(predictions$yearpublished, na.rm = TRUE)
+
+# Get unique categories, mechanics, etc. from the predictions
+# This assumes these columns are already in the predictions data
+# If not, you'll need to join them from the games data
+```
+
+## Interactive Explorer
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# Create filter controls
+# First-time predictions checkbox
+first_time_filter <- filter_checkbox(
+  "first_time_prediction", "First-time Predictions Only",
+  shared_data,
+  ~first_time_prediction
+)
+
+# Year range slider
+year_filter <- filter_slider(
+  "yearpublished", "Year Published", 
+  shared_data, 
+  column = ~yearpublished,
+  min = min_year, max = max_year,
+  step = 1
+)
+
+# Complexity range slider
+weight_filter <- filter_slider(
+  "weight_filter", "Predicted Complexity", 
+  shared_data, 
+  column = ~`Average Weight`,
+  min = 1, max = 5,
+  step = 0.1
+)
+
+# Rating range slider
+rating_filter <- filter_slider(
+  "rating_filter", "Predicted Rating", 
+  shared_data, 
+  column = ~`Average Rating`,
+  min = 5, max = 10,
+  step = 0.1
+)
+
+# Users rated range slider
+users_filter <- filter_slider(
+  "users_filter", "Predicted Users Rated", 
+  shared_data, 
+  column = ~`Users Rated`,
+  min = 0, max = 10000,
+  step = 100
+)
+
+# Hurdle probability slider
+hurdle_filter <- filter_slider(
+  "hurdle_filter", "Minimum Hurdle Probability", 
+  shared_data, 
+  column = ~`Hurdle Prob`,
+  min = 0, max = 1,
+  step = 0.05
+)
+
+# Create the datatable
+predictions_table <- DT::datatable(
+  shared_data,
+  escape = FALSE,
+  rownames = FALSE,
+  extensions = c('Responsive', 'Buttons'),
+  class = list(stripe = FALSE),
+  options = list(
+    pageLength = 15,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel'),
+    scrollX = TRUE
+  ),
+  selection = "none"
+)
+
+# Create the layout
+bscols(
+  list(
+    h4("Filters"),
+    first_time_filter,
+    year_filter,
+    weight_filter,
+    rating_filter,
+    users_filter,
+    hurdle_filter
+  ),
+  list(
+    h4("Results"),
+    predictions_table
+  ),
+  widths = c(3, 9)
+)
+```
+
+### Distributions
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# Create plots for distributions
+weight_dist <- plot_ly(shared_data, x = ~`Average Weight`, type = "histogram", 
+                      marker = list(color = "navy", opacity = 0.7),
+                      name = "Weight Distribution") |>
+  layout(title = "Predicted Weight Distribution",
+         xaxis = list(title = "Average Weight"),
+         yaxis = list(title = "Count"))
+
+rating_dist <- plot_ly(shared_data, x = ~`Average Rating`, type = "histogram", 
+                      marker = list(color = "navy", opacity = 0.7),
+                      name = "Rating Distribution") |>
+  layout(title = "Predicted Rating Distribution",
+         xaxis = list(title = "Average Rating"),
+         yaxis = list(title = "Count"))
+
+users_dist <- plot_ly(shared_data, x = ~`Users Rated`, type = "histogram", 
+                     marker = list(color = "navy", opacity = 0.7),
+                     name = "Users Rated Distribution") |>
+  layout(title = "Predicted Users Rated Distribution",
+         xaxis = list(title = "Users Rated"),
+         yaxis = list(title = "Count"))
+
+# Create layout for distribution plots
+bscols(
+  weight_dist,
+  rating_dist,
+  widths = c(6, 6)
+)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+users_dist
+```
+
+### About This Explorer
+
+This interactive explorer allows you to filter and explore predictions from our BGG models. You can:
+
+- **Filter games** by year published, complexity, predicted rating, and more
+- **Explore specific categories, mechanics, publishers, or designers**
+- **Visualize distributions** of predicted weights, ratings, and user counts
+- **Highlight first-time predictions** to identify games being predicted for the first time
+
+#### How to Use
+
+1. Use the filters in the left sidebar to narrow down the games you're interested in
+2. Check the "Show only first-time predictions" box to focus on games being predicted for the first time
+3. View the filtered results in the "Results Table" tab (first-time predictions are highlighted with a "NEW" badge)
+4. Explore distributions of predictions in the "Distributions" tab
+
+#### About the Models
+
+These predictions are generated using a multi-stage modeling approach:
+
+1. A **hurdle model** predicts whether games will reach a minimum threshold of user ratings (25 ratings)
+2. An **averageweight model** predicts game complexity on a scale of 1-5
+3. An **average rating model** predicts the average user rating
+4. A **users rated model** predicts the number of user ratings a game will receive
+
+The models are trained on historical BoardGameGeek data and are designed to predict how the BGG community will evaluate new games.
