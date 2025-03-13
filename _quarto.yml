@@ -2,7 +2,7 @@ project:
   type: website
   render:
   - index.qmd
-  - explore.qmd
+  - predictions.qmd
 
 website:
   title: "BGG Models"
@@ -10,8 +10,8 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: explore.qmd
-        text: Explore Predictions
+      - href: predictions.qmd
+        text: Pipeline
 format:
   html:
     author: "Phil Henrickson"
