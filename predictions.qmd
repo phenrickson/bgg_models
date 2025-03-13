@@ -1,0 +1,256 @@
+---
+title: "Predicting New Games"
+editor: source
+---
+```{r}
+#| warning: false
+#| message: false
+#| label: load packages and authenticate
+# Load required packages
+library(dplyr)
+library(bggUtils)
+library(tidymodels)
+library(vetiver)
+library(targets)
+library(qs2)
+library(reactable)
+library(fs)
+
+# Load source code
+tar_source("src")
+
+# Project settings
+config <- config::get()
+
+# Authenticate to GCS
+authenticate_to_gcs()
+```
+
+## Load Models
+
+```{r}
+#| warning: false
+#| message: false
+#| label: load models
+#|
+# Load objects from pipeline
+tar_load(hurdle_threshold)
+
+# Create model board connection
+model_board <- gcs_model_board(bucket = config$bucket, prefix = config$board)
+
+# Load model metadata
+tar_load(averageweight_vetiver)
+tar_load(average_vetiver)
+tar_load(usersrated_vetiver)
+tar_load(hurdle_vetiver)
+
+# load models
+averageweight_fit <- pin_read_model(model_board, averageweight_vetiver)
+average_fit <- pin_read_model(model_board, average_vetiver)
+usersrated_fit <- pin_read_model(model_board, usersrated_vetiver)
+hurdle_fit <- pin_read_model(model_board, hurdle_vetiver)
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| label: model-metadata
+
+# Function to extract model metadata
+extract_model_metadata <- function(model_name, vetiver_obj, board) {
+    tibble(
+        bucket = board$bucket,
+        path = board$prefix,
+        model_name = model_name,
+        hash = vetiver_obj$hash,
+        version = vetiver_obj$version
+    )
+}
+
+# Create a table with model metadata
+model_metadata <- bind_rows(
+    extract_model_metadata("averageweight", averageweight_vetiver, model_board),
+    extract_model_metadata("average", average_vetiver, model_board),
+    extract_model_metadata("usersrated", usersrated_vetiver, model_board),
+    extract_model_metadata("hurdle", hurdle_vetiver, model_board)
+)
+
+# Display the model metadata table
+model_metadata |>
+    knitr::kable(
+        caption = "Model Metadata",
+        col.names = c("Bucket", "Prefix", "Model", "Hash", "Version"),
+        format = "markdown"
+    )
+```
+
+## Load Games
+
+```{r}
+#| label: view games on gcp
+list_gcs_objs = function(
+    obj = "raw/objects/games",
+    bucket = "bgg_data",
+    prefix = "raw/objects/games",
+    versions = T,
+    detail = "full"
+) {
+    googleCloudStorageR::gcs_list_objects(
+        bucket = bucket,
+        prefix = prefix,
+        versions = T,
+        detail = detail
+    ) |>
+        filter(name == obj)
+}
+
+# get details of games objects from gcp
+games_objs = list_gcs_objs() |>
+    select(bucket, name, generation, size, updated) |>
+    arrange(desc(updated))
+
+# ids for each game
+games_generations = unique(games_objs$generation)
+
+# show most recent games objects
+games_objs |>
+    head(10) |>
+    knitr::kable(
+        caption = "Games",
+        format = "markdown"
+    )
+```
+
+```{r}
+#| label: load games objects from gcp
+i = 1
+# most recent batch
+games = get_games_from_gcp(
+    bucket = "bgg_data",
+    generation = games_generations[i]
+)
+
+# previous batch of games
+previous_games = get_games_from_gcp(
+    bucket = "bgg_data",
+    generation = games_generations[i + 1]
+)
+
+# Prepare games with preprocessor
+prepared_games <- prepare_games(games)
+```
+
+Number of games by `yearpublished` in recent and upcoming years.
+
+```{r}
+# Get valid years from targets to determine upcoming games
+tar_load(valid_predictions)
+
+valid_years <- valid_predictions |>
+    summarize(min_year = min(yearpublished), max_year = max(yearpublished))
+
+# Filter to upcoming games (games published after the validation period)
+end_valid_year <- valid_years$max_year
+
+# filter to only upcoming games
+upcoming_games <- prepared_games |>
+    filter(yearpublished > end_valid_year)
+
+# count games by year
+upcoming_games |>
+    group_by(yearpublished) |>
+    count() |>
+    knitr::kable()
+
+```
+
+New and upcoming games in most recent batch.
+
+```{r}
+
+upcoming_games_new = games |>
+    anti_join(previous_games, by = join_by(game_id)) |>
+    inner_join(upcoming_games, by = join_by(game_id)) |>
+    bggUtils:::unnest_info() |>
+    select(game_id, name, yearpublished) |>
+    mutate(first_time_prediction = T)
+
+upcoming_games_new |>
+    select(game_id, name, yearpublished) |>
+    arrange(desc(yearpublished)) |>
+    mutate(game_id = as.factor(game_id)) |>
+    reactable::reactable()
+
+```
+
+## Predictions
+
+Predict games with models.
+
+```{r}
+#| label: predict games
+# Generate predictions for upcoming games
+predictions <- upcoming_games |>
+    impute_averageweight(
+        model = averageweight_fit
+    ) |>
+    predict_hurdle(
+        model = hurdle_fit,
+        threshold = hurdle_threshold
+    ) |>
+    predict_bayesaverage(
+        average_model = average_fit,
+        usersrated_model = usersrated_fit
+    )
+
+# Add a flag for first-time predictions
+predictions <- predictions |>
+    left_join(
+        upcoming_games_new |> select(game_id, first_time_prediction),
+        by = join_by(game_id)
+    ) |>
+    mutate(first_time_prediction = replace_na(first_time_prediction, FALSE))
+
+```
+
+View predictions for games appearing for the first time
+
+```{r}
+predictions |>
+    filter(first_time_prediction == T) |>
+    select(yearpublished, game_id, name, starts_with(".pred")) |>
+    mutate(across(
+        starts_with(".pred_") & where(is.numeric),
+        round,
+        digits = 2
+    )) |>
+    rename_with(~ gsub("^.pred_", "", .), starts_with(".pred_")) |>
+    select(yearpublished, game_id, name, contains("hurdle"), everything()) |>
+    arrange(desc(bayesaverage)) |>
+    mutate(
+        game_id = as.factor(game_id),
+        yearpublished = as.factor(yearpublished)
+    ) |>
+    reactable::reactable()
+
+```
+
+## Save Predictions
+
+```{r}
+#| label: save predictions
+# Create directory if it doesn't exist
+fs::dir_create("data/processed", recurse = TRUE)
+
+# trim down predictions
+predictions_out =
+    predictions |>
+    select(yearpublished, game_id, name, starts_with(".pred_"))
+
+# pin locally to a gcs_model_board
+board = pins::board_folder("data/processed")
+
+# pin_predictions
+pins::pin_write(board, predictions_out, name = "predictions")
+```

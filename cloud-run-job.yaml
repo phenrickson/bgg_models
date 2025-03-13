@@ -1,0 +1,25 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: bgg-models-job
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/YOUR_PROJECT_ID/bgg-models:latest
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8Gi
+        env:
+        - name: GCS_AUTH_FILE
+          value: /secrets/service-account.json
+        volumeMounts:
+        - name: service-account
+          mountPath: /secrets
+      volumes:
+      - name: service-account
+        secret:
+          secretName: bgg-service-account
+      timeoutSeconds: 3600
+      serviceAccountName: YOUR_SERVICE_ACCOUNT@YOUR_PROJECT_ID.iam.gserviceaccount.com
