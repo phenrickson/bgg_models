@@ -171,7 +171,7 @@ upcoming_games <- prepared_games |>
 upcoming_games |>
     group_by(yearpublished) |>
     count() |>
-    mutate(yearpublished = as.factor(yearpublished)) |>
+    ungroup() |>
     gt::gt()
 
 ```
