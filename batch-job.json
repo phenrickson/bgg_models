@@ -1,0 +1,39 @@
+{
+  "taskGroups": [
+    {
+      "taskSpec": {
+        "runnables": [
+          {
+            "container": {
+              "imageUri": "gcr.io/YOUR_PROJECT_ID/bgg-models:latest",
+              "volumes": [
+                "/secrets:/secrets"
+              ],
+              "options": "-e GCS_AUTH_FILE=/secrets/service-account.json"
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "gcs": {
+              "remotePath": "gs://YOUR_BUCKET/service-account.json"
+            },
+            "mountPath": "/secrets/service-account.json"
+          }
+        ]
+      },
+      "taskCount": 1,
+      "parallelism": 1
+    }
+  ],
+  "logsPolicy": {
+    "destination": "CLOUD_LOGGING"
+  },
+  "allocationPolicy": {
+    "instances": [
+      {
+        "instanceTemplate": "projects/YOUR_PROJECT_ID/global/instanceTemplates/bgg-models-template"
+      }
+    ]
+  }
+}

@@ -1,5 +1,39 @@
 .scroll {
-max-height: 600px;
-overflow-y: scroll;
+  max-height: 600px;
+  overflow-y: scroll;
 }
 
+/* Full-width container for tables */
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+/* Ensure tables can be wider than the default content width */
+.table-container .datatables {
+  width: 100% !important;
+}
+
+/* Adjust column widths for better display */
+.dataTables_wrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Make sure the container is wide enough */
+.quarto-container {
+  max-width: 1400px !important;
+}
+
+/* Ensure the content area is wide enough for tables */
+.content-block {
+  padding: 0;
+  max-width: 100%;
+}
+
+/* Adjust column widths for specific columns */
+.dataTables_wrapper .dt-center {
+  text-align: center;
+}

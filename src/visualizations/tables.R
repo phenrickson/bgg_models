@@ -1,45 +1,39 @@
 # functions for add linkjing
 make_bgg_link = function(game_id) {
-    
-    paste0("https://boardgamegeek.com/boardgame/",
-           game_id)
+    paste0("https://boardgamegeek.com/boardgame/", game_id)
 }
 
-make_hyperlink = function(myurl,
-                          mytext=myurl) {
-    paste('<a href="',myurl,'">',mytext,'</a>')
+make_hyperlink = function(myurl, mytext = myurl) {
+    paste('<a href="', myurl, '">', mytext, '</a>')
 }
 
 make_web_image =
-    function(x, height=100) {
-        
-        web_image(url = x,
-                  height = px(height) 
-        ) 
-        
+    function(x, height = 100) {
+        web_image(url = x, height = px(height))
     }
 
-make_image_link = function(link,
-                           height = 52) {
-    
-    paste0('<img src =',
-           link,
-           ' height=',
-           paste(height, sep=""),
-           '>',
-           '</img>')
-    
+make_image_link = function(link, height = 52) {
+    paste0(
+        '<img src =',
+        link,
+        ' height=',
+        paste(height, sep = ""),
+        '>',
+        '</img>'
+    )
 }
 
-prep_predictions_dt = function(predictions,
-                               games) {
-    
+prep_predictions_dt = function(predictions, games) {
     predictions |>
         arrange(desc(.pred_bayesaverage)) |>
         filter(!is.na(thumbnail)) |>
         mutate(across(starts_with(".pred"), ~ round(.x, 2))) |>
-        mutate(name = make_hyperlink(make_bgg_link(game_id), 
-                                     mytext = paste(name, paste0("(",yearpublished, ")")))) |>
+        mutate(
+            name = make_hyperlink(
+                make_bgg_link(game_id),
+                mytext = paste(name, paste0("(", yearpublished, ")"))
+            )
+        ) |>
         mutate(
             Rank = row_number(),
             Image = make_image_link(thumbnail),
@@ -49,112 +43,325 @@ prep_predictions_dt = function(predictions,
             `Users Rated` = .pred_usersrated,
             `Geek Rating` = .pred_bayesaverage,
             .keep = 'none'
-        ) 
-}
-
-predictions_dt = function(predictions,
-                          games,
-                          pageLength = 10) {
-    
-    cols =  c("Rank",
-              "Image",
-              "Average Weight",
-              "Average Rating",
-              "Users Rated",
-              "Geek Rating")
-    
-    predictions |>
-        prep_predictions_dt(games = games) |>
-        DT::datatable(escape=F,
-                      rownames = F,
-                      extensions = c('Responsive'),
-                      #  caption = "Games",
-                      class = list(stripe =F),
-                      filter = list(position = 'top'),
-                      options = list(pageLength = pageLength,
-                                     initComplete = htmlwidgets::JS(
-                                         "function(settings, json) {",
-                                         paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
-                                         "}"),
-                                     scrollX=F,
-                                     columnDefs = list(
-                                         list(className = 'dt-center',
-                                              visible=T,
-                                              targets = cols
-                                         )
-                                     )
-                      )
         )
 }
 
-add_dt_colors = function(dt,
-                         seq,
-                         low_color = 'white',
-                         high_color = 'dodgerblue2',
-                         mid_color = NULL,
-                         column = 'Geek Rating') {
-    
+predictions_dt = function(
+    predictions,
+    games,
+    pageLength = 10,
+    lazy_load = TRUE
+) {
+    cols = c(
+        "Rank",
+        "Image",
+        "Average Weight",
+        "Average Rating",
+        "Users Rated",
+        "Geek Rating"
+    )
+
+    # Prepare data
+    prepared_data <- prep_predictions_dt(predictions, games = games)
+
+    # Create options list with base settings
+    dt_options <- list(
+        pageLength = pageLength,
+        deferRender = TRUE,
+        paging = TRUE,
+        autoWidth = TRUE,
+        scrollX = TRUE,
+        scrollCollapse = FALSE,
+        initComplete = htmlwidgets::JS(
+            "function(settings, json) {",
+            paste0(
+                "$(this.api().table().container()).css({'font-size': '",
+                '10pt',
+                "'});",
+                "$(this.api().table().container()).css({'width': '100%'});"
+            ),
+            "}"
+        ),
+        columnDefs = list(
+            list(className = 'dt-center', visible = TRUE, targets = cols),
+            list(
+                targets = "Game",
+                width = "200px",
+                render = htmlwidgets::JS(
+                    "function(data, type, row) {",
+                    "  if (type === 'display') {",
+                    "    return '<div style=\"width:200px; word-wrap:break-word;\">' + data + '</div>';",
+                    "  }",
+                    "  return data;",
+                    "}"
+                )
+            )
+        )
+    )
+
+    # Add lazy loading if enabled
+    if (lazy_load) {
+        # Create a unique ID for this table
+        table_id <- paste0("dt_", sample(1000:9999, 1))
+
+        # Add a wrapper div with the ID
+        html_wrapper <- htmltools::tags$div(
+            id = table_id,
+            style = "visibility: hidden;",
+            htmltools::tags$script(
+                htmltools::HTML(
+                    paste0(
+                        "document.addEventListener('DOMContentLoaded', function() {",
+                        "  var observer = new IntersectionObserver(function(entries) {",
+                        "    if (entries[0].isIntersecting) {",
+                        "      document.getElementById('",
+                        table_id,
+                        "').style.visibility = 'visible';",
+                        "      observer.disconnect();",
+                        "    }",
+                        "  }, { rootMargin: '200px' });",
+                        "  observer.observe(document.getElementById('",
+                        table_id,
+                        "'));",
+                        "});"
+                    )
+                )
+            )
+        )
+
+        # Create the datatable and wrap it
+        dt <- prepared_data |>
+            DT::datatable(
+                escape = FALSE,
+                rownames = FALSE,
+                extensions = c('Responsive', 'Scroller'),
+                class = list(stripe = FALSE),
+                filter = list(position = 'top'),
+                options = dt_options
+            )
+
+        # Return the wrapped datatable
+        htmltools::tagList(html_wrapper, dt)
+    } else {
+        # Create the datatable without wrapper
+        prepared_data |>
+            DT::datatable(
+                escape = FALSE,
+                rownames = FALSE,
+                extensions = c('Responsive', 'Scroller'),
+                class = list(stripe = FALSE),
+                filter = list(position = 'top'),
+                options = dt_options
+            )
+    }
+}
+
+add_dt_colors = function(
+    dt,
+    seq,
+    low_color = 'white',
+    high_color = 'dodgerblue2',
+    mid_color = NULL,
+    column = 'Geek Rating'
+) {
     cuts = seq
     my_color_ramp = colorRampPalette(c(low_color, mid_color, high_color))
-    max_color = my_color_ramp(length(cuts)-5)[length(cuts)-5]
-    
+    max_color = my_color_ramp(length(cuts) - 5)[length(cuts) - 5]
+
     dt |>
         DT::formatStyle(
             columns = column,
-            backgroundColor = 
-                DT::styleInterval(
-                    cuts = cuts,
-                    values = my_color_ramp(length(cuts)+1)
-                )
+            backgroundColor = DT::styleInterval(
+                cuts = cuts,
+                values = my_color_ramp(length(cuts) + 1)
+            )
         )
 }
 
 add_colors = function(dt) {
-    
+    # Check if dt is a tagList (from lazy loading)
+    if (inherits(dt, "shiny.tag.list")) {
+        # Extract the datatable from the tagList
+        # The datatable is the second element in the tagList
+        datatable_index <- which(sapply(
+            dt,
+            function(x) inherits(x, "datatables")
+        ))
+        if (length(datatable_index) > 0) {
+            # Apply colors to the datatable
+            colored_dt <- dt[[datatable_index]] |>
+                add_dt_colors(column = 'Geek Rating', seq = seq(5, 9, 0.1)) |>
+                add_dt_colors(
+                    column = 'Average Rating',
+                    seq = seq(6, 10, 0.1)
+                ) |>
+                add_dt_colors(
+                    column = 'Users Rated',
+                    seq = c(
+                        0,
+                        100,
+                        500,
+                        seq(1000, 10000, 1000),
+                        15000,
+                        25000,
+                        50000
+                    )
+                ) |>
+                add_dt_colors(
+                    column = 'Average Weight',
+                    low_color = 'deepskyblue1',
+                    mid_color = 'white',
+                    high_color = 'orange',
+                    seq = seq(0.8, 5, 0.1)
+                )
+
+            # Replace the datatable in the tagList with the colored one
+            dt[[datatable_index]] <- colored_dt
+            return(dt)
+        }
+    }
+
+    # If dt is a regular datatable or we couldn't find a datatable in the tagList
     dt |>
-        add_dt_colors(column = 'Geek Rating',
-                      seq = seq(5, 9, 0.1)) |>
-        add_dt_colors(column = 'Average Rating',
-                      seq = seq(6, 10, 0.1)) |>
-        add_dt_colors(column = 'Users Rated',
-                      seq = c(0, 100, 500, seq(1000, 10000, 1000), 15000, 25000, 50000)) |>
-        add_dt_colors(column = 'Average Weight',
-                      low_color = 'deepskyblue1',
-                      mid_color = 'white',
-                      high_color = 'orange',
-                      seq = seq(0.8, 5, 0.1))
+        add_dt_colors(column = 'Geek Rating', seq = seq(5, 9, 0.1)) |>
+        add_dt_colors(column = 'Average Rating', seq = seq(6, 10, 0.1)) |>
+        add_dt_colors(
+            column = 'Users Rated',
+            seq = c(0, 100, 500, seq(1000, 10000, 1000), 15000, 25000, 50000)
+        ) |>
+        add_dt_colors(
+            column = 'Average Weight',
+            low_color = 'deepskyblue1',
+            mid_color = 'white',
+            high_color = 'orange',
+            seq = seq(0.8, 5, 0.1)
+        )
 }
 
-hurdle_dt = function(data) {
+hurdle_dt = function(data, lazy_load = TRUE) {
+    # Prepare data
+    prepared_data <- data |>
+        arrange(desc(.pred_hurdle_yes)) |>
+        filter(!is.na(thumbnail)) |>
+        mutate(
+            name = make_hyperlink(
+                make_bgg_link(game_id),
+                mytext = paste(name, paste0("(", yearpublished, ")"))
+            )
+        ) |>
+        mutate(
+            Image = make_image_link(thumbnail),
+            Game = name,
+            Description = stringr::str_trunc(description, width = 150),
+            `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
+            `Ratings` = usersrated,
+            .keep = 'none'
+        )
 
-    data |>
-    arrange(desc(.pred_hurdle_yes)) |>
-    filter(!is.na(thumbnail)) |>
-    mutate(name = make_hyperlink(make_bgg_link(game_id), 
-                                 mytext = paste(name, paste0("(",yearpublished, ")")))) |>
-    mutate(Image = make_image_link(thumbnail),
-           Game = name,
-           Description = stringr::str_trunc(description, width = 150),
-           `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
-           `Ratings` = usersrated,
-           .keep = 'none') |>
-    DT::datatable(escape=F,
-                  rownames = F,
-                  extensions = c('Responsive'),
-                  class = list(stripe =F),
-                  filter = list(position = 'top'),
-                  options = list(pageLength = 15,
-                                 initComplete = htmlwidgets::JS(
-                                     "function(settings, json) {",
-                                     paste0("$(this.api().table().container()).css({'font-size': '", '10pt', "'});"),
-                                     "}"),
-                                 scrollX=F,
-                                 columnDefs = list(
-                                     list(className = 'dt-center',
-                                          visible=T,
-                                          targets = c("Image", "Pr(Hurdle)", "Ratings")
-                                     )
-                                 )
-                  )
-    ) 
+    # Create options list with base settings
+    dt_options <- list(
+        pageLength = 10,
+        deferRender = TRUE,
+        paging = TRUE,
+        autoWidth = TRUE,
+        scrollX = TRUE,
+        scrollCollapse = FALSE,
+        initComplete = htmlwidgets::JS(
+            "function(settings, json) {",
+            paste0(
+                "$(this.api().table().container()).css({'font-size': '",
+                '10pt',
+                "'});",
+                "$(this.api().table().container()).css({'width': '100%'});"
+            ),
+            "}"
+        ),
+        columnDefs = list(
+            list(
+                className = 'dt-center',
+                visible = TRUE,
+                targets = c("Image", "Pr(Hurdle)", "Ratings")
+            ),
+            list(
+                targets = "Game",
+                width = "200px",
+                render = htmlwidgets::JS(
+                    "function(data, type, row) {",
+                    "  if (type === 'display') {",
+                    "    return '<div style=\"width:200px; word-wrap:break-word;\">' + data + '</div>';",
+                    "  }",
+                    "  return data;",
+                    "}"
+                )
+            ),
+            list(
+                targets = "Description",
+                width = "200px",
+                render = htmlwidgets::JS(
+                    "function(data, type, row) {",
+                    "  if (type === 'display') {",
+                    "    return '<div style=\"width:200px; word-wrap:break-word;\">' + data + '</div>';",
+                    "  }",
+                    "  return data;",
+                    "}"
+                )
+            )
+        )
+    )
+
+    # Add lazy loading if enabled
+    if (lazy_load) {
+        # Create a unique ID for this table
+        table_id <- paste0("dt_", sample(1000:9999, 1))
+
+        # Add a wrapper div with the ID
+        html_wrapper <- htmltools::tags$div(
+            id = table_id,
+            style = "visibility: hidden;",
+            htmltools::tags$script(
+                htmltools::HTML(
+                    paste0(
+                        "document.addEventListener('DOMContentLoaded', function() {",
+                        "  var observer = new IntersectionObserver(function(entries) {",
+                        "    if (entries[0].isIntersecting) {",
+                        "      document.getElementById('",
+                        table_id,
+                        "').style.visibility = 'visible';",
+                        "      observer.disconnect();",
+                        "    }",
+                        "  }, { rootMargin: '200px' });",
+                        "  observer.observe(document.getElementById('",
+                        table_id,
+                        "'));",
+                        "});"
+                    )
+                )
+            )
+        )
+
+        # Create the datatable and wrap it
+        dt <- prepared_data |>
+            DT::datatable(
+                escape = FALSE,
+                rownames = FALSE,
+                extensions = c('Responsive', 'Scroller'),
+                class = list(stripe = FALSE),
+                filter = list(position = 'top'),
+                options = dt_options
+            )
+
+        # Return the wrapped datatable
+        htmltools::tagList(html_wrapper, dt)
+    } else {
+        # Create the datatable without wrapper
+        prepared_data |>
+            DT::datatable(
+                escape = FALSE,
+                rownames = FALSE,
+                extensions = c('Responsive', 'Scroller'),
+                class = list(stripe = FALSE),
+                filter = list(position = 'top'),
+                options = dt_options
+            )
+    }
 }
