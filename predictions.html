@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Phil Henrickson">
+<meta name="dcterms.date" content="2025-03-20">
+
+<title>Pipeline – BGG Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-27280757a5cc536e93d9bf7b62fec226.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="site_libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="site_libs/visNetwork-binding-2.1.2/visNetwork.js"></script>
+<script src="site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="site_libs/react-18.2.0/react.min.js"></script>
+<script src="site_libs/react-18.2.0/react-dom.min.js"></script>
+<script src="site_libs/reactwidget-2.0.0/react-tools.js"></script>
+<link href="site_libs/reactable-0.4.4/reactable.css" rel="stylesheet">
+<script src="site_libs/reactable-binding-0.4.4/reactable.js"></script>
+<style>
+.panel-tabset > .nav-tabs,
+.panel-tabset > .tab-content {border: none;}
+</style>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">BGG Models</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./assessment.qmd"> 
+<span class="menu-text">Methodology</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./predictions.html" aria-current="page"> 
+<span class="menu-text">Pipeline</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#load-models" id="toc-load-models" class="nav-link active" data-scroll-target="#load-models"><span class="header-section-number">1</span> Load Models</a></li>
+  <li><a href="#load-games" id="toc-load-games" class="nav-link" data-scroll-target="#load-games"><span class="header-section-number">2</span> Load Games</a></li>
+  <li><a href="#predictions" id="toc-predictions" class="nav-link" data-scroll-target="#predictions"><span class="header-section-number">3</span> Predictions</a></li>
+  <li><a href="#save-predictions" id="toc-save-predictions" class="nav-link" data-scroll-target="#save-predictions"><span class="header-section-number">4</span> Save Predictions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Pipeline</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Phil Henrickson </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 20, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bggUtils)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vetiver)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(targets)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(qs2)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reactable)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Load source code</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_source</span>(<span class="st">"src"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Project settings</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>config <span class="ot">&lt;-</span> config<span class="sc">::</span><span class="fu">get</span>()</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Authenticate to GCS</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">authenticate_to_gcs</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>targets<span class="sc">::</span><span class="fu">tar_visnetwork</span>(<span class="at">targets_only =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="visNetwork html-widget html-fill-item" id="htmlwidget-db418e5ae4c53ffd22a6" style="width:100%;height:371px;"></div>
+<script type="application/json" data-for="htmlwidget-db418e5ae4c53ffd22a6">{"x":{"nodes":{"name":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"type":["stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem"],"description":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"status":["uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate"],"seconds":[70.08799999999999,62.539,79.569,20.546,23.844,21.816,35.107,12.037,0.07099999999999999,12.392,6.424,32.162,29.06,2.258,0.003,0.003,87.82299999999999,57.911,0.032,2.12,0.035,0.033,8.999000000000001,70.669,61.637,83.298,19.683,0.028,0.093,2.053,2.357],"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branches":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"label":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"color":["#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823"],"id":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"level":[9,8,7,11,9,5,4,11,8,2,1,9,5,5,6,11,4,11,3,10,11,8,6,9,8,7,11,10,10,9,7],"shape":["dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot"]},"edges":{"from":["training_imputed","usersrated_tuned","hurdle_tuned","games_raw","training_and_validation","usersrated_fit","hurdle_final","hurdle_tuned","training_and_validation","valid_hurdle_metrics","average_tuned","averageweight_tuned","training_and_validation","usersrated_final","usersrated_tuned","valid_metrics","split","training_imputed","average_final","averageweight_final","split","usersrated_final","details","valid_metrics","valid_predictions","averageweight_fit","split","averageweight_fit","hurdle_fit","hurdle_threshold","split","average_fit","usersrated_fit","validation_imputed","hurdle_results","average_final","average_tuned","training_and_validation","valid_metrics","valid_predictions","averageweight_final","averageweight_tuned","training_and_validation","valid_metrics","hurdle_fit","training_and_validation","training_imputed","validation_imputed","games_prepared","split","average_fit","training_and_validation","average_tuned","averageweight_tuned","usersrated_tuned","hurdle_tuned","valid_hurdle_metrics","averageweight_fit","training_and_validation"],"to":["average_tuned","usersrated_fit","hurdle_fit","games_prepared","usersrated_final","usersrated_final","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","average_fit","averageweight_fit","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","hurdle_tuned","usersrated_tuned","test_predictions","test_predictions","test_predictions","test_predictions","tracking","tracking","valid_metrics","training_imputed","training_imputed","validation_imputed","validation_imputed","validation_imputed","validation_imputed","valid_predictions","valid_predictions","valid_predictions","hurdle_threshold","average_vetiver","average_vetiver","average_vetiver","average_vetiver","valid_hurdle_metrics","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","hurdle_final","hurdle_final","training_and_validation","training_and_validation","split","averageweight_tuned","average_final","average_final","details","details","details","hurdle_results","hurdle_tracking","averageweight_final","averageweight_final"],"arrows":["to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot","physics":false},"manipulation":{"enabled":false},"edges":{"smooth":{"type":"cubicBezier","forceDirection":"horizontal"}},"physics":{"stabilization":false},"interaction":{"zoomSpeed":1},"layout":{"hierarchical":{"enabled":true,"direction":"LR"}}},"groups":null,"width":null,"height":null,"idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":1,"to":1},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"},"legend":{"width":0.2,"useGroups":false,"position":"right","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["Up to date","Outdated","Stem"],"color":["#354823","#78B7C5","#899DA4"],"shape":["dot","dot","dot"]},"nodesToDataframe":true},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;white-space: nowrap;font-family: verdana;font-size:14px;font-color:#000000;background-color: #f5f4ed;-moz-border-radius: 3px;-webkit-border-radius: 3px;border-radius: 3px;border: 1px solid #808074;box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<section id="load-models" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="load-models"><span class="header-section-number">1</span> Load Models</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Load objects from pipeline</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(hurdle_threshold)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create model board connection</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>model_board <span class="ot">&lt;-</span> <span class="fu">gcs_model_board</span>(<span class="at">bucket =</span> config<span class="sc">$</span>bucket, <span class="at">prefix =</span> config<span class="sc">$</span>board)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Load model metadata</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(averageweight_vetiver)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(average_vetiver)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(usersrated_vetiver)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(hurdle_vetiver)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># load models</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>averageweight_fit <span class="ot">&lt;-</span> <span class="fu">pin_read_model</span>(model_board, averageweight_vetiver)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>average_fit <span class="ot">&lt;-</span> <span class="fu">pin_read_model</span>(model_board, average_vetiver)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>usersrated_fit <span class="ot">&lt;-</span> <span class="fu">pin_read_model</span>(model_board, usersrated_vetiver)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>hurdle_fit <span class="ot">&lt;-</span> <span class="fu">pin_read_model</span>(model_board, hurdle_vetiver)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract model metadata</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>extract_model_metadata <span class="ot">&lt;-</span> <span class="cf">function</span>(model_name, vetiver_obj, board) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">bucket =</span> board<span class="sc">$</span>bucket,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">path =</span> board<span class="sc">$</span>prefix,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">model_name =</span> model_name,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">hash =</span> vetiver_obj<span class="sc">$</span>hash,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">version =</span> vetiver_obj<span class="sc">$</span>version</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a table with model metadata</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>model_metadata <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">extract_model_metadata</span>(<span class="st">"averageweight"</span>, averageweight_vetiver, model_board),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">extract_model_metadata</span>(<span class="st">"average"</span>, average_vetiver, model_board),</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">extract_model_metadata</span>(<span class="st">"usersrated"</span>, usersrated_vetiver, model_board),</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">extract_model_metadata</span>(<span class="st">"hurdle"</span>, hurdle_vetiver, model_board)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the model metadata table</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>model_metadata <span class="sc">|&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">caption =</span> <span class="st">"Model Metadata"</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Bucket"</span>, <span class="st">"Prefix"</span>, <span class="st">"Model"</span>, <span class="st">"Hash"</span>, <span class="st">"Version"</span>),</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">format =</span> <span class="st">"markdown"</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Model Metadata</caption>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 18%">
+<col style="width: 22%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Bucket</th>
+<th style="text-align: left;">Prefix</th>
+<th style="text-align: left;">Model</th>
+<th style="text-align: left;">Hash</th>
+<th style="text-align: left;">Version</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">bgg_models</td>
+<td style="text-align: left;">dev/model/</td>
+<td style="text-align: left;">averageweight</td>
+<td style="text-align: left;">79313d79c1944fc8</td>
+<td style="text-align: left;">20250304T221625Z-79313</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_models</td>
+<td style="text-align: left;">dev/model/</td>
+<td style="text-align: left;">average</td>
+<td style="text-align: left;">66c6d76df420a7cf</td>
+<td style="text-align: left;">20250304T221529Z-66c6d</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">bgg_models</td>
+<td style="text-align: left;">dev/model/</td>
+<td style="text-align: left;">usersrated</td>
+<td style="text-align: left;">06e70d3dd6bb333a</td>
+<td style="text-align: left;">20250304T221420Z-06e70</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_models</td>
+<td style="text-align: left;">dev/model/</td>
+<td style="text-align: left;">hurdle</td>
+<td style="text-align: left;">9de9a43cd3d69c74</td>
+<td style="text-align: left;">20250304T221240Z-9de9a</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="load-games" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="load-games"><span class="header-section-number">2</span> Load Games</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>list_gcs_objs <span class="ot">=</span> <span class="cf">function</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">obj =</span> <span class="st">"raw/objects/games"</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">bucket =</span> <span class="st">"bgg_data"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">"raw/objects/games"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">versions =</span> T,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">detail =</span> <span class="st">"full"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    googleCloudStorageR<span class="sc">::</span><span class="fu">gcs_list_objects</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">bucket =</span> bucket,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">prefix =</span> prefix,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">versions =</span> T,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">detail =</span> detail</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(name <span class="sc">==</span> obj)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># get details of games objects from gcp</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>games_objs <span class="ot">=</span> <span class="fu">list_gcs_objs</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(bucket, name, generation, size, updated) <span class="sc">|&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(updated))</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ids for each game</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>games_generations <span class="ot">=</span> <span class="fu">unique</span>(games_objs<span class="sc">$</span>generation)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co"># show most recent games objects</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>games_objs <span class="sc">|&gt;</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">caption =</span> <span class="st">"Games"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">format =</span> <span class="st">"markdown"</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Games</caption>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 25%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">bucket</th>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">generation</th>
+<th style="text-align: left;">size</th>
+<th style="text-align: left;">updated</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1742489667404929</td>
+<td style="text-align: left;">76.7 Mb</td>
+<td style="text-align: left;">2025-03-20 16:54:27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1741629678449522</td>
+<td style="text-align: left;">73.6 Mb</td>
+<td style="text-align: left;">2025-03-10 18:01:18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1740875193707566</td>
+<td style="text-align: left;">73.5 Mb</td>
+<td style="text-align: left;">2025-03-02 00:26:33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1732133366577344</td>
+<td style="text-align: left;">72.1 Mb</td>
+<td style="text-align: left;">2024-11-20 20:09:26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1730333447804461</td>
+<td style="text-align: left;">71.8 Mb</td>
+<td style="text-align: left;">2024-10-31 00:10:47</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1728676924892464</td>
+<td style="text-align: left;">71.5 Mb</td>
+<td style="text-align: left;">2024-10-11 20:02:04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1726869993009335</td>
+<td style="text-align: left;">71.2 Mb</td>
+<td style="text-align: left;">2024-09-20 22:06:33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1724967426023865</td>
+<td style="text-align: left;">70.9 Mb</td>
+<td style="text-align: left;">2024-08-29 21:37:06</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1723671710966893</td>
+<td style="text-align: left;">70.8 Mb</td>
+<td style="text-align: left;">2024-08-14 21:41:51</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1721888393714463</td>
+<td style="text-align: left;">70.5 Mb</td>
+<td style="text-align: left;">2024-07-25 06:19:53</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># most recent batch</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>games <span class="ot">=</span> <span class="fu">get_games_from_gcp</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">bucket =</span> <span class="st">"bgg_data"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation =</span> games_generations[i]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># previous batch of games</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>previous_games <span class="ot">=</span> <span class="fu">get_games_from_gcp</span>(</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">bucket =</span> <span class="st">"bgg_data"</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation =</span> games_generations[i <span class="sc">+</span> <span class="dv">1</span>]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare games with preprocessor</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>prepared_games <span class="ot">&lt;-</span> <span class="fu">prepare_games</span>(games)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Number of games by <code>yearpublished</code> in recent and upcoming years.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get valid years from targets to determine upcoming games</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(valid_predictions)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>valid_years <span class="ot">&lt;-</span> valid_predictions <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">min_year =</span> <span class="fu">min</span>(yearpublished), <span class="at">max_year =</span> <span class="fu">max</span>(yearpublished))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter to upcoming games (games published after the validation period)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>end_valid_year <span class="ot">&lt;-</span> valid_years<span class="sc">$</span>max_year</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># filter to only upcoming games</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>upcoming_games <span class="ot">&lt;-</span> prepared_games <span class="sc">|&gt;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(yearpublished <span class="sc">&gt;</span> end_valid_year)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># count games by year</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>upcoming_games <span class="sc">|&gt;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(yearpublished) <span class="sc">|&gt;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">count</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">yearpublished =</span> <span class="fu">as.factor</span>(yearpublished)) <span class="sc">|&gt;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    gt<span class="sc">::</span><span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="boefcgjmri" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#boefcgjmri table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#boefcgjmri thead, #boefcgjmri tbody, #boefcgjmri tfoot, #boefcgjmri tr, #boefcgjmri td, #boefcgjmri th {
+  border-style: none;
+}
+
+#boefcgjmri p {
+  margin: 0;
+  padding: 0;
+}
+
+#boefcgjmri .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#boefcgjmri .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#boefcgjmri .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#boefcgjmri .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#boefcgjmri .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#boefcgjmri .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#boefcgjmri .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#boefcgjmri .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#boefcgjmri .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#boefcgjmri .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#boefcgjmri .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#boefcgjmri .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#boefcgjmri .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#boefcgjmri .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#boefcgjmri .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#boefcgjmri .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#boefcgjmri .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#boefcgjmri .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#boefcgjmri .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#boefcgjmri .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#boefcgjmri .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#boefcgjmri .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#boefcgjmri .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#boefcgjmri .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#boefcgjmri .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#boefcgjmri .gt_left {
+  text-align: left;
+}
+
+#boefcgjmri .gt_center {
+  text-align: center;
+}
+
+#boefcgjmri .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#boefcgjmri .gt_font_normal {
+  font-weight: normal;
+}
+
+#boefcgjmri .gt_font_bold {
+  font-weight: bold;
+}
+
+#boefcgjmri .gt_font_italic {
+  font-style: italic;
+}
+
+#boefcgjmri .gt_super {
+  font-size: 65%;
+}
+
+#boefcgjmri .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#boefcgjmri .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#boefcgjmri .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#boefcgjmri .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#boefcgjmri .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#boefcgjmri .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#boefcgjmri .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#boefcgjmri .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#boefcgjmri div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n">n</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr class="gt_group_heading_row">
+      <th colspan="1" class="gt_group_heading" scope="col" id="2024">2024</th>
+    </tr>
+    <tr class="gt_row_group_first"><td headers="2024  n" class="gt_row gt_right">5460</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="1" class="gt_group_heading" scope="col" id="2025">2025</th>
+    </tr>
+    <tr class="gt_row_group_first"><td headers="2025  n" class="gt_row gt_right">2421</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="1" class="gt_group_heading" scope="col" id="2026">2026</th>
+    </tr>
+    <tr class="gt_row_group_first"><td headers="2026  n" class="gt_row gt_right">167</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="1" class="gt_group_heading" scope="col" id="2027">2027</th>
+    </tr>
+    <tr class="gt_row_group_first"><td headers="2027  n" class="gt_row gt_right">3</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="1" class="gt_group_heading" scope="col" id="2028">2028</th>
+    </tr>
+    <tr class="gt_row_group_first"><td headers="2028  n" class="gt_row gt_right">4</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<p>New and upcoming games in most recent batch.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>upcoming_games_new <span class="ot">=</span> games <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">anti_join</span>(previous_games, <span class="at">by =</span> <span class="fu">join_by</span>(game_id)) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(upcoming_games, <span class="at">by =</span> <span class="fu">join_by</span>(game_id)) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    bggUtils<span class="sc">:::</span><span class="fu">unnest_info</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(game_id, name, yearpublished) <span class="sc">|&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">first_time_prediction =</span> T)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>upcoming_games_new <span class="sc">|&gt;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(game_id, name, yearpublished) <span class="sc">|&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(yearpublished)) <span class="sc">|&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">game_id =</span> <span class="fu">as.factor</span>(game_id)) <span class="sc">|&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    reactable<span class="sc">::</span><span class="fu">reactable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="reactable html-widget html-fill-item" id="htmlwidget-1bc9cc3168b9611ec69a" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1bc9cc3168b9611ec69a">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"game_id":["440412","440571","440663","440808","440819","440942","440991","441449","335827","437807","439518","440386","440398","440399","440400","440497","440505","440518","440521","440536","440603","440606","440608","440609","440614","440619","440620","440621","440626","440627","440628","440629","440630","440634","440641","440645","440662","440664","440667","440672","440674","440675","440676","440677","440685","440689","440690","440692","440695","440697","440709","440716","440719","440721","440724","440725","440726","440727","440728","440736","440747","440748","440749","440751","440759","440762","440764","440775","440801","440803","440809","440811","440818","440820","440843","440846","440850","440852","440856","440867","440869","440873","440875","440885","440886","440893","440900","440901","440902","440903","440908","440912","440917","440919","440922","440926","440935","440936","440937","440938","440939","440940","440941","440943","440944","440977","440982","440983","440984","440989","440990","440993","440994","440996","441003","441004","441005","441019","441036","441046","441091","441094","441097","441104","441112","441114","441176","441310","441313","441347","441354","441364","441553","439217","439627","439996","440567","440616","440631","440669","440714","440730","440732","440733","440742","440750","440814","440980","441009","441093","441096","441102","441105","441312","441356"],"name":["Crumb Snatchers","Arrival","14ers","Wee Folk","Oquur: The Story of Mons","Trismegistus: New Edition","Helldivers 2: The Board Game","Odysseus","Fleets: Galactic Warfare","Anxiety","Vex!","Showbiz Tails","Mission Savane","BalaDino","Potion Express","Cleaning Service","Snow Climbing","ジェネリックテイキング (Generic Taking)","Sunset","Mi Cielo","Dante Alighieri: Comedia – Paradiso","Compile: Main 2","HITSTER: 100%NL","Duat","Artisimo","Best Board Game Ever: Build Your Board Game Empire","Mal Ardent","Wordsmiths","Bigly","La Traque","Triangulate","ButtChess + 1","Temple ParaDice","Driving Me Crazy!","Lines in the Sand: Six Battles in WWII North Africa","Tag You're It!","Heredity: Those Kids!","La Bataille de Lauban, 1945","Trenches: Night Raid","Build the Mothership","Explore the System","Smuggle the Goods","Raid the Cache","Space Piracy","Chicken Farm","Tank Up","Prop Hunt the Board Game","NiNE","Ruinborn: Dungeons of Cabora","Squeaky Kingdom","Wildhearts Academy","Kunterbunter Bauernhof","Allenby's and Lawrence's Desert Wars","Schooled","FlipLets","Buzzin' Picnic","Wild Rummy: Zoology","当头一棒：诺门罕战役 (A HEAD-ON BLOW: Battle of Khalkhin Gol 1939)","Le village aux 5 dragons","CODER.IO","Victory or Martyrdom","Meeple Diver","Gokyesa: The Flying Artist","PBI 2025","The Mire","ThreeHorn","Eppi: Book 2 – The Chocolate Cheat","Legendary: Game of Thrones Deck Building Game","Море волнуется (The Sea Is Rough)","Food Fight Frenzy","Kaleidoscope","Quarrel","Crime Maps: Das goldene Vermächtnis","Bug Run","Moonshine","Dungeon Post","The Fisherman","Cribbage Clash","Connect 4 Frenzy","Relic Wars","Watercolor","Brutal Beatdown: Savage","Skulls of Sedlec: Essential Collection","Thesauros","Beast Slayers","Blue & Gray Deluxe Edition","Sharking","Parlament","Die Landschaften","The Bible is Funny Volume II","Mercado de trueque","Héroes de 4 Patas","Mercando Ando","Hitster 100% en Español","Fish n' Ships Aegean","Go Poo! The Game","Audience","Hold the Line: Hannibal","Biome Blitz","South Mountain 1862","1862 War in Virginia","Epic Battle of Alesia","Pillars of Fate","Mafia Blitz","Goblin Rush","UO Catcher","69: A Nice Card Game. About Numbers.","Snow Leopard Shadow","Tetris Tumble XL","Nuclear Winds","Kittens Love Sushi 2: Feeding Frenzy","WRLD","KeyForge: Discovery","Tank Board Game II: Hex","Brutal Beatdown: Training","Clients Versus Architects","Bot or Not","Lunchbox Lair","Quiltable: Fireplace Quilts","Sausages: The Card Game","Space Junkers","In the Blink of a Dragon's Eye","Genius Idea","Civil","SHAPER","Soothsayers","Woodlanders","Arkitects","Reforest: Old Growth","Conquering Hell: The Battle of Monfaucon, September 26-28, 1918","Wrecking Ball","Outfox","Battle Pages","One Card: Clepto","BeFree Board Game","Super Sandwich Stacker","Challengers Of The Realm","Void Admiral: A Space Combat Miniature Wargame","Uzzle: Crossico","Monopoly: Armenia","Save the Wedding","That's Dope: Family Game Night Edition","That's Dope: Safe For Work Edition Vol. 1","That's Dope: After Dark Edition Vol. 1","The Disappearance of George Devenport","Patata!","Clash of Steel: War of Unification – American vs German Complete Starter Set","Castles & Conquests","Don’t Fall For It!","喵江湖 (Meow Jianghu)","Never Mind the Matchlocks","Sector AL-IX","곡예사 GokYeSa : The Flying Artist","Don't Spell PIG","The Bank Heist"],"yearpublished":[2026,2026,2026,2026,2026,2026,2026,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024]},"columns":[{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"yearpublished","name":"yearpublished","type":"numeric"}],"dataKey":"ab271559a463097e44a5ea8ab120ace4"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="predictions" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="predictions"><span class="header-section-number">3</span> Predictions</h2>
+<p>Predict games with models.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate predictions for upcoming games</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> upcoming_games <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">impute_averageweight</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> averageweight_fit</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">predict_hurdle</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> hurdle_fit,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">threshold =</span> hurdle_threshold</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">predict_bayesaverage</span>(</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">average_model =</span> average_fit,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">usersrated_model =</span> usersrated_fit</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a flag for first-time predictions</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> predictions <span class="sc">|&gt;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        upcoming_games_new <span class="sc">|&gt;</span> <span class="fu">select</span>(game_id, first_time_prediction),</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">join_by</span>(game_id)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">first_time_prediction =</span> <span class="fu">replace_na</span>(first_time_prediction, <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>View predictions for games appearing for the first time</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(first_time_prediction <span class="sc">==</span> T) <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(yearpublished, game_id, name, <span class="fu">starts_with</span>(<span class="st">".pred"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">starts_with</span>(<span class="st">".pred_"</span>) <span class="sc">&amp;</span> <span class="fu">where</span>(is.numeric),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        round,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">digits =</span> <span class="dv">2</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    )) <span class="sc">|&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename_with</span>(<span class="sc">~</span> <span class="fu">gsub</span>(<span class="st">"^.pred_"</span>, <span class="st">""</span>, .), <span class="fu">starts_with</span>(<span class="st">".pred_"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(yearpublished, game_id, name, <span class="fu">contains</span>(<span class="st">"hurdle"</span>), <span class="fu">everything</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(bayesaverage)) <span class="sc">|&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">game_id =</span> <span class="fu">as.factor</span>(game_id),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">yearpublished =</span> <span class="fu">as.factor</span>(yearpublished)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    reactable<span class="sc">::</span><span class="fu">reactable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="reactable html-widget html-fill-item" id="htmlwidget-a9d13fb1333bb63b205a" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a9d13fb1333bb63b205a">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"yearpublished":["2026","2026","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2026","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2026","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2024","2025","2024","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2024","2024","2025","2025","2025","2025","2025","2026","2025","2025","2025","2025","2024","2025","2024","2025","2024","2025","2026","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2026","2025","2024","2026","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2024","2025","2025","2024","2024","2024","2024","2025","2025","2025","2025","2024","2024","2024","2025"],"game_id":["440942","440663","440606","440695","440764","440885","441004","440775","440567","440630","440505","440662","441036","441313","440619","440808","440820","440935","440993","440994","335827","440709","440843","440867","441094","440621","441003","441009","441104","441354","441449","440614","440620","440689","440742","440846","440856","440875","440901","440917","440937","440941","441091","440609","440714","440716","440721","440943","441112","439217","440608","440616","440685","440725","440727","440736","440749","440751","440803","440814","440893","440982","440996","441096","441102","440603","440664","440667","440719","440747","440819","440873","440936","440938","440940","440980","441046","441093","441347","439627","440497","440571","440627","440672","440674","440675","440676","440677","440692","440728","440759","440818","440852","440869","440922","440939","440989","440991","441114","441356","440412","440518","440536","440626","440628","440634","440641","440645","440690","440724","440748","440762","440809","440811","440850","440886","440900","440902","440903","440908","440912","440944","440977","440983","440990","441019","441097","441176","441310","441364","441553","437807","439518","439996","440386","440398","440399","440400","440521","440629","440631","440697","440726","440730","440732","440733","440750","440801","440919","440984","441005","441105","441312","440669","440926"],"name":["Trismegistus: New Edition","14ers","Compile: Main 2","Ruinborn: Dungeons of Cabora","Eppi: Book 2 – The Chocolate Cheat","Thesauros","Clients Versus Architects","Legendary: Game of Thrones Deck Building Game","Challengers Of The Realm","Temple ParaDice","Snow Climbing","Heredity: Those Kids!","Quiltable: Fireplace Quilts","Reforest: Old Growth","Best Board Game Ever: Build Your Board Game Empire","Wee Folk","Bug Run","Audience","WRLD","KeyForge: Discovery","Fleets: Galactic Warfare","Wildhearts Academy","Moonshine","Relic Wars","In the Blink of a Dragon's Eye","Wordsmiths","Brutal Beatdown: Training","Don’t Fall For It!","Civil","Wrecking Ball","Odysseus","Artisimo","Mal Ardent","Tank Up","The Disappearance of George Devenport","Dungeon Post","Connect 4 Frenzy","Skulls of Sedlec: Essential Collection","Parlament","Mercando Ando","Biome Blitz","Pillars of Fate","Space Junkers","Duat","Save the Wedding","Kunterbunter Bauernhof","Schooled","Mafia Blitz","SHAPER","One Card: Clepto","HITSTER: 100%NL","Void Admiral: A Space Combat Miniature Wargame","Chicken Farm","Buzzin' Picnic","当头一棒：诺门罕战役 (A HEAD-ON BLOW: Battle of Khalkhin Gol 1939)","CODER.IO","Gokyesa: The Flying Artist","PBI 2025","Food Fight Frenzy","Clash of Steel: War of Unification – American vs German Complete Starter Set","Blue & Gray Deluxe Edition","69: A Nice Card Game. About Numbers.","Tank Board Game II: Hex","Never Mind the Matchlocks","Sector AL-IX","Dante Alighieri: Comedia – Paradiso","La Bataille de Lauban, 1945","Trenches: Night Raid","Allenby's and Lawrence's Desert Wars","Victory or Martyrdom","Oquur: The Story of Mons","Brutal Beatdown: Savage","Hold the Line: Hannibal","South Mountain 1862","Epic Battle of Alesia","Castles & Conquests","Sausages: The Card Game","喵江湖 (Meow Jianghu)","Conquering Hell: The Battle of Monfaucon, September 26-28, 1918","BeFree Board Game","Cleaning Service","Arrival","La Traque","Build the Mothership","Explore the System","Smuggle the Goods","Raid the Cache","Space Piracy","NiNE","Le village aux 5 dragons","The Mire","Crime Maps: Das goldene Vermächtnis","Cribbage Clash","Watercolor","Fish n' Ships Aegean","1862 War in Virginia","Nuclear Winds","Helldivers 2: The Board Game","Soothsayers","The Bank Heist","Crumb Snatchers","ジェネリックテイキング (Generic Taking)","Mi Cielo","Bigly","Triangulate","Driving Me Crazy!","Lines in the Sand: Six Battles in WWII North Africa","Tag You're It!","Prop Hunt the Board Game","FlipLets","Meeple Diver","ThreeHorn","Kaleidoscope","Quarrel","The Fisherman","Beast Slayers","Sharking","Die Landschaften","The Bible is Funny Volume II","Mercado de trueque","Héroes de 4 Patas","Goblin Rush","UO Catcher","Snow Leopard Shadow","Kittens Love Sushi 2: Feeding Frenzy","Lunchbox Lair","Genius Idea","Woodlanders","Arkitects","Outfox","Battle Pages","Anxiety","Vex!","Super Sandwich Stacker","Showbiz Tails","Mission Savane","BalaDino","Potion Express","Sunset","ButtChess + 1","Uzzle: Crossico","Squeaky Kingdom","Wild Rummy: Zoology","That's Dope: Family Game Night Edition","That's Dope: Safe For Work Edition Vol. 1","That's Dope: After Dark Edition Vol. 1","Patata!","Море волнуется (The Sea Is Rough)","Hitster 100% en Español","Tetris Tumble XL","Bot or Not","곡예사 GokYeSa : The Flying Artist","Don't Spell PIG","Monopoly: Armenia","Go Poo! The Game"],"hurdle_yes":[0.88,0.78,0.75,0.67,0.52,0.51,0.04,0.3,0.45,0.69,0.68,0.63,0.25,0.77,0.3,0.32,0.23,0.54,0.56,0.26,0.32,0.11,0.51,0.4,0.14,0.17,0.2,0.61,0.03,0.38,0.22,0.14,0.03,0.25,0.21,0.17,0.76,0.53,0.12,0.06,0.52,0.45,0.26,0.43,0.26,0.15,0.56,0.08,0.42,0.22,0.28,0.01,0.16,0.26,0.17,0.13,0.42,0.09,0.35,0.13,0.76,0.31,0.05,0.02,0.05,0.29,0.06,0.12,0,0.5,0.05,0.53,0.16,0.2,0.61,0,0.17,0.05,0.01,0.02,0.03,0.29,0.09,0.03,0.02,0.03,0.03,0.03,0.48,0.22,0.1,0.22,0.02,0.03,0.09,0.59,0,0.05,0.14,0.07,0.43,0.14,0.06,0.02,0.02,0.1,0,0.07,0.05,0.03,0.25,0.06,0.02,0.03,0.03,0.02,0.08,0.07,0.13,0.13,0.04,0.17,0.16,0.04,0.02,0.03,0.06,0.4,0.05,0.03,0.05,0.04,0.02,0.03,0.03,0.08,0.1,0.11,0.06,0.01,0.06,0.05,0.03,0.13,0.1,0.1,0.06,0.03,0.05,0.04,0.05,0.19,0.01,0.08,0.15],"hurdle_class":["yes","yes","yes","yes","yes","yes","no","yes","yes","yes","yes","yes","yes","yes","yes","yes","yes","yes","yes","yes","yes","no","yes","yes","no","yes","yes","yes","no","yes","yes","no","no","yes","yes","yes","yes","yes","no","no","yes","yes","yes","yes","yes","no","yes","no","yes","yes","yes","no","no","yes","yes","no","yes","no","yes","no","yes","yes","no","no","no","yes","no","no","no","yes","no","yes","no","yes","yes","no","yes","no","no","no","no","yes","no","no","no","no","no","no","yes","yes","no","yes","no","no","no","yes","no","no","no","no","yes","no","no","no","no","no","no","no","no","no","yes","no","no","no","no","no","no","no","no","no","no","yes","no","no","no","no","no","yes","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","yes","no","no","no"],"usersrated":[850,500,400,200,200,200,200,200,150,200,150,150,150,150,150,150,150,150,150,100,100,150,150,100,100,100,100,150,100,150,100,150,100,100,100,100,150,150,100,100,100,100,150,100,100,100,100,100,100,100,100,50,100,100,50,100,100,50,100,50,50,100,50,50,50,100,50,50,50,50,50,50,50,50,50,50,100,100,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50],"average":[7.99,7.54,7.46,8.11,7.81,7.86,7.69,7.25,7.63,7.06,7.33,7.42,7.37,7.25,7.14,7.11,7.06,7.07,7.04,7.77,7.59,6.93,6.97,7.59,7.55,7.44,7.38,6.81,7.47,6.79,7.47,6.61,7.23,7.16,7.25,7.18,6.68,6.7,7.11,7.12,7.11,7.27,6.61,6.9,7.07,6.89,7.04,6.98,7.07,6.76,6.71,7.84,6.75,6.83,7.91,6.82,6.78,8.07,6.73,8.05,7.8,6.8,8.07,8.12,7.86,6.65,7.54,7.6,7.74,7.71,7.46,7.41,7.4,7.45,7.58,7.55,6.47,6.64,7.52,7.09,7.06,7.24,7.04,7.19,7.19,7.21,7.19,7.05,6.94,7.07,6.94,7.26,7.18,6.99,7.1,7.34,7.01,7.27,7.09,7.03,6.86,6.6,6.66,6.62,6.6,6.62,6.89,6.9,6.57,6.83,6.69,6.77,6.88,6.83,6.87,6.87,6.75,6.75,6.55,6.72,6.58,6.72,6.59,6.82,6.53,6.76,6.69,6.84,6.55,6.63,6.64,6.3,6.36,6.52,6.37,6.39,6.46,6.42,6.4,6.5,6.52,6.26,6.38,6.5,6.49,6.49,6.36,6.29,6.45,6.34,6.46,6.42,6.5,5.89,6.04],"bayesaverage":[6.24,5.91,5.83,5.74,5.71,5.71,5.7,5.66,5.65,5.64,5.63,5.63,5.63,5.62,5.61,5.61,5.61,5.61,5.61,5.61,5.6,5.6,5.6,5.6,5.6,5.59,5.59,5.59,5.59,5.59,5.59,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.57,5.57,5.57,5.57,5.57,5.57,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.51,5.51],"averageweight":[3.44,2.09,2.47,3.26,2.26,3.47,3.18,2.32,2.64,1.97,1.79,2.64,1.69,2.17,1.74,1.93,1.83,1.68,1.52,2.82,3.1,1.96,1.58,2.5,1.87,2.66,2.13,1,2.48,1.07,2.39,1.08,2.11,2.09,2.61,1.35,1,1.51,2.5,2.27,1.96,2.38,1.64,1.45,2.29,1.07,1.62,1.44,1.26,1.07,1.23,2.69,1.55,1.31,3.15,1.93,1.27,2.57,1.06,3.16,2.91,1.48,2.82,2.56,2.89,1.61,2.89,2.11,2.08,2.48,2.47,2.16,2.37,2.43,2.64,2.55,1.15,1.47,2.47,3.07,1.93,3.15,2.35,2.04,2.01,2.05,2.04,1.87,1.57,2.38,1.88,2.71,2.33,2.04,1.73,1.78,1.8,2.84,2.32,2.34,1.53,1.49,1.74,1.56,1.53,1.35,2.12,1.6,1.79,1.43,1.48,1.28,2,1.74,1.93,2.27,1.32,1.56,1.12,1.64,1.17,1.46,1.14,1.88,1.28,1.35,1.27,1.78,1.56,1.29,1.99,1.1,1.24,1.14,1.34,1.14,1.09,1.18,1.31,1.48,1.34,1.3,1.46,1.41,1.36,1.36,1.38,1.13,1.62,1.47,1.34,1.26,1.14,1.28,1.17]},"columns":[{"id":"yearpublished","name":"yearpublished","type":"factor"},{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"hurdle_yes","name":"hurdle_yes","type":"numeric"},{"id":"hurdle_class","name":"hurdle_class","type":"factor"},{"id":"usersrated","name":"usersrated","type":"numeric"},{"id":"average","name":"average","type":"numeric"},{"id":"bayesaverage","name":"bayesaverage","type":"numeric"},{"id":"averageweight","name":"averageweight","type":"numeric"}],"dataKey":"0f60d1de22d715d41cab2340394ab251"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="save-predictions" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="save-predictions"><span class="header-section-number">4</span> Save Predictions</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create directory if it doesn't exist</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fs<span class="sc">::</span><span class="fu">dir_create</span>(<span class="st">"data/processed"</span>, <span class="at">recurse =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># trim down predictions</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>predictions_out <span class="ot">=</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    predictions <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(yearpublished, game_id, name, <span class="fu">starts_with</span>(<span class="st">".pred_"</span>))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Save locally first</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>local_board <span class="ot">=</span> pins<span class="sc">::</span><span class="fu">board_folder</span>(<span class="st">"data/processed"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>pins<span class="sc">::</span><span class="fu">pin_write</span>(local_board, predictions_out, <span class="at">name =</span> <span class="st">"predictions"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to Google Cloud Storage</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a GCS board connection for predictions</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>gcs_pred_board <span class="ot">&lt;-</span> pins<span class="sc">::</span><span class="fu">board_gcs</span>(</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">bucket =</span> config<span class="sc">$</span>bucket,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">"data/"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">versioned =</span> T</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Pin predictions to GCS</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>pins<span class="sc">::</span><span class="fu">pin_write</span>(gcs_pred_board, predictions_out, <span class="at">name =</span> <span class="st">"predictions"</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Print confirmation message</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Predictions saved to GCS bucket:"</span>,</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    config<span class="sc">$</span>bucket,</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"with prefix:"</span>,</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(config<span class="sc">$</span>board, <span class="st">"/predictions"</span>),</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Predictions saved to GCS bucket: bgg_models with prefix: dev/model//predictions </code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/phenrickson\.github\.io\/bgg_models\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
