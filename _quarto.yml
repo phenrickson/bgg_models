@@ -11,7 +11,7 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: assessment.qmd
+      - href: methodology.qmd
         text: Methodology
       - href: predictions.qmd
         text: Pipeline
