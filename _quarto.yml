@@ -1,8 +1,9 @@
 project:
   type: website
   render:
-  - index.qmd
   - predictions.qmd
+  - methodology.qmd
+  - index.qmd
 
 website:
   title: "BGG Models"
@@ -10,6 +11,8 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: assessment.qmd
+        text: Methodology
       - href: predictions.qmd
         text: Pipeline
 format:
@@ -28,6 +31,7 @@ format:
     fig-align: center
     theme: cerulean
     html-table-processing: none
+    page-layout: full
     include-in-header:
     - text: |
           <style>

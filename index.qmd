@@ -2,12 +2,8 @@
 title: "Predicting Upcoming Board Games"
 subtitle: "Predictive Models for BoardGameGeek Ratings"
 editor: source
+echo: false
 ---
-```{r}
-#| include: false
-#| echo: false
-options(knitr.duplicate.label = "allow")
-```
 
 ```{r}
 #| include: false
@@ -40,10 +36,9 @@ tar_load(valid_hurdle_metrics)
 tar_load(hurdle_results)
 
 # find valid_years
-valid_years = 
-    valid_predictions |> 
-    summarize(min_year = min(yearpublished),
-              max_year = max(yearpublished))
+valid_years =
+    valid_predictions |>
+    summarize(min_year = min(yearpublished), max_year = max(yearpublished))
 
 # set ggplot theme
 theme_set(bggUtils::theme_bgg())
@@ -54,352 +49,41 @@ theme_set(bggUtils::theme_bgg())
 #| label: load games from gcs
 
 # load games from gcp
-games = 
+games_raw =
     get_games_from_gcp(bucket = "bgg_data")
 
 # prepare games with preprocessor
-active_games = 
-    games |>
+games =
+    games_raw |>
     prepare_games()
 ```
 
-# Pipeline
+```{r}
+#| message: false
+#| warning: false
+#| label: load predictions
 
-<!-- # ```{r, results = "asis", echo = FALSE} -->
-<!-- #   cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T), "```"), sep = "\n") -->
-<!-- # ``` -->
+# read in predictions
+board = pins::board_folder("data/processed")
+predictions = pins::pin_read(board, name = "predictions") |>
+    inner_join(games)
+
+```
+
+# Models
 
 I use historical data from BoardGameGeek (BGG) to train a number of predictive models for community ratings. I first classify games based on their probability of achieving a minimum number of ratings on BGG. I then estimate each game's complexity (average weight) in order to predicts its number of user ratings and average rating. I then use these estimates to predict the expected Geek Rating.
-
-The following (somewhat messy) visualization displays the status of the current pipeline used to train models and predict new games.
-
-```{r}
-#| fig-align: center
-#| fig-height: 4
-#| message: false
-#| warning: false
-targets::tar_visnetwork(targets_only =T)
-
-```
-
-<!-- # Models -->
-
-```{r}
-#| message: false
-#| warning: false
-#| label: load models
-
-model_board = gcs_model_board(bucket = config$bucket, prefix = config$board)
-
-tar_load(averageweight_vetiver)
-tar_load(average_vetiver)
-tar_load(usersrated_vetiver)
-tar_load(hurdle_vetiver)
-tar_load(hurdle_threshold)
-
-averageweight_fit =
-    pin_read_model(model_board,
-                   averageweight_vetiver)
-
-average_fit =
-    pin_read_model(model_board,
-                   average_vetiver)
-
-usersrated_fit =
-    pin_read_model(model_board,
-                   usersrated_vetiver)
-
-hurdle_fit =
-    pin_read_model(model_board,
-                   hurdle_vetiver)
-```
 
 ```{r}
 #| message: false
 #| warning: false
 #| label: filter to upcoming games
 
-end_valid_year = valid_years$max_year 
+end_valid_year = valid_years$max_year
 
-upcoming_games = 
-    active_games |>
+upcoming_games =
+    games |>
     filter(yearpublished > end_valid_year)
-
-```
-
-## Assessment
-
-How did the models perform in predicting games?
-
-I used a training-validation approach based around the year in which games were published. I creating a training set of games published prior to **`r valid_years$min_year`** and evaluated its performance in predicting games published from **`r valid_years$min_year`** to **`r valid_years$max_year`**.
-<!-- 
-```{r}
-plot_games_by_split = function(data) {
-
-plot_data =
-    data |>
-        bggUtils:::unnest_outcomes() |>
-        inner_join(
-            data |>
-                bggUtils:::unnest_info()
-        ) |>
-        add_hurdle() |>
-        mutate(
-            yearpublished = case_when(
-                yearpublished < 1960 ~ 1959,
-                TRUE ~ yearpublished
-            )
-        ) |>
-        mutate(
-            hurdle = case_when(
-                hurdle == 'yes' ~ '>25 ratings',
-                hurdle == 'no' ~ '<25 ratings'
-            )
-        ) |>
-        group_by(yearpublished, hurdle) |>
-        count()
-
-plot_data |>
-        ggplot(aes(x = yearpublished, y = n, fill = hurdle)) +
-        geom_col()+
-        scale_color_manual(values = c("grey60","navy"))
-}
-
-plot_games_by_split(games)
-```
- -->
-
-### BGG Ratings
-
-How did the model perform in predicting new games? I evaluate the model primarily on games that achieved at least 25 ratings.
-
-::: {.panel-tabset}
-
-```{r}
-#| message: false
-#| warning: false
-#| label: display plots for predictions from validation set
-
-plot_data = 
-valid_predictions |>
-    pivot_outcomes() |>
-    left_join(
-        games |>
-            bggUtils:::unnest_outcomes() |>
-            select(game_id, usersrated),
-        by = join_by(game_id)
-    ) |>
-    left_join(
-        valid_predictions |>
-            select(game_id, hurdle, .pred_hurdle_yes)
-    ) |>
-    mutate(hurdle = case_when(hurdle == 'yes' ~ '>25 ratings',
-                              hurdle == 'no' ~ '<25 ratings'))
-
-plot_hurdle_yes = 
-plot_data |>
-    filter(hurdle == '>25 ratings') |>
-    plot_predictions(color = hurdle,
-                     alpha = 0.15)+
-    scale_color_manual(values = c("navy"))+
-    guides(color = 'none')
-
-plot_hurdle_no =
-plot_data |>
-    filter(hurdle == '<25 ratings') |>
-    plot_predictions(color = hurdle,
-                     alpha = 0.15)+
-    scale_color_manual(values = c("coral"))+
-    guides(color = 'none')
-
-```
-
-#### Games with >25 Ratings
-
-```{r}
-#| warning: false
-#| message: false
-plot_hurdle_yes
-
-```
-
-#### Games with <25 Ratings
-
-```{r}
-#| warning: false
-#| message: false
-plot_hurdle_no
-
-```
-
-:::
-
-```{r}
-
-targets_tracking_details(metrics = valid_metrics,
-                         details = details) |>
-    select(model, minratings, outcome, any_of(c("rmse", "mae", "mape", "rsq", "ccc"))) |>
-    filter(minratings == 25) |>
-    select(minratings, everything()) |>
-    gt::gt() |>
-    gt::tab_options(quarto.disable_processing = T) |>
-    gtExtras::gt_theme_espn()
-
-```
-
-What were the top predictions in the validation set?
-
-```{r}
-
-valid_predictions |>
-    filter(.pred_hurdle_class == 'yes') |>
-    select(-starts_with(".pred_hurdle")) |>
-    slice_max(.pred_bayesaverage, n =150, with_ties = F) |>
-    predictions_dt(games = games) |>
-    add_colors()
-
-```
-
-### Hurdle
-
-I use a hurdle model to predict whether games are expected to receive enough ratings to be assigned a geek rating (25 ratings). This is a classification model which assigns a probability to a game; in order to classify games, I need to determine the appropriate threshold.
-
-I set the threshold at `r hurdle_threshold` - this is the point that maximizes the (F2 measure) and minimizes false negatives. For the purpose of this model, including a game that did not receive a Geek rating is much worse than missing a game that did.
-
-::: {.panel-tabset}
-
-#### Threshold
-
-```{r}
-
-valid_predictions |> 
-    ggplot(aes(x=.pred_hurdle_yes, fill = hurdle))+
-    geom_density(alpha = 0.5)+
-    scale_color_manual()+
-    theme(legend.title = element_text())+
-    xlab("Pr(User Ratings >= 25)")+
-    scale_fill_manual(values = c("coral", "navy"))+
-    guides(fill = guide_legend(title = 'User Ratings >=25'))+
-    geom_vline(xintercept = hurdle_threshold,
-               linetype = 'dotted')
-```
-
-
-#### Metrics
-
-```{r}
-
-prob_metrics = metric_set(yardstick::roc_auc,
-                          yardstick::pr_auc)
-
-prob_hurdle_metrics = 
-    valid_predictions |>
-    group_by(outcome = 'hurdle') |>
-    prob_metrics(truth = hurdle,
-                 .pred_hurdle_yes,
-                 event_level = 'second')
-
-valid_hurdle_metrics |>
-    bind_rows(prob_hurdle_metrics) |>
-    gt::gt() |>
-    gt::tab_options(quarto.disable_processing = T) |>
-    gt::fmt_number(columns = c(".estimate"),
-                   decimals = 3) |>
-    gtExtras::gt_theme_espn()
-
-```
-
-#### Confusion Matrix
-
-```{r}
-
-valid_predictions |>
-    conf_mat(hurdle, .pred_hurdle_class) |>
-    autoplot(type = 'heatmap')
-
-```
-
-:::
-
-## Features
-
-Which features were influential for predicting each BGG outcome?
-
-```{r}
-#| message: false
-#| warning: false
-average_plot = 
-    average_fit |> 
-    extract_vetiver_features() |>
-    plot_model_features()+
-    labs(title = 'Average Rating')
-
-averageweight_plot = 
-    averageweight_fit |> 
-    extract_vetiver_features() |>
-    plot_model_features()+
-    labs(title = 'Average Weight')
-
-usersrated_plot = 
-    usersrated_fit |> 
-    extract_vetiver_features() |>
-    plot_model_features()+
-    labs(title = 'Users Rated')
-
-```
-
-::: {.panel-tabset}
-
-### Average Weight
-
-```{r}
-#| fig-height: 7
-#| results: asis
-#| echo: false
-
-averageweight_plot
-
-```
-
-### Average 
-
-```{r}
-#| fig-height: 7
-#| results: asis
-#| echo: false
-average_plot
-
-```
-
-### Users Rated
-
-```{r}
-#| fig-height: 7
-#| results: asis
-#| echo: false
-usersrated_plot
-
-```
-
-:::
-
-# Predictions
-
-```{r}
-# predict games
-predictions = 
-    upcoming_games |>
-    impute_averageweight(
-        model = averageweight_fit
-    ) |>
-    predict_hurdle(
-        model = hurdle_fit,
-        threshold = hurdle_threshold
-    ) |>
-    predict_bayesaverage(
-        average_model = average_fit,
-        usersrated_model = usersrated_fit
-    )
 
 ```
 
@@ -409,6 +93,10 @@ The following table displays predicted BGG outcomes for games that are expected 
 
 ```{r}
 #| echo: false
+#| warning: false
+#| message: false
+#| label: upcoming-games-table
+#| column: page-inset-right
 
 # table
 predictions |>
@@ -416,22 +104,30 @@ predictions |>
     select(-starts_with(".pred_hurdle")) |>
     # this goddamn bah humbug game
     filter(game_id != 388225) |>
-    predictions_dt(games = games) |>
+    predictions_dt(
+        games = games,
+        lazy_load = TRUE,
+        pageLength = 10
+    ) |>
     add_colors()
 
 ```
 
 ## Hurdle
 
-This table displays predicted probabilities for whether games will achieve enough ratings (25) to be assigned a Geek Rating.
+This table displays predicted probabilities for whether games will achieve enough ratings (25) to be assigned a Geek Rating
 
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
+#| label: hurdle-table
+#| column: page-inset-right
 
 predictions |>
     filter(.pred_hurdle_class == 'yes') |>
-    hurdle_dt()
+    hurdle_dt(
+        lazy_load = TRUE
+    )
 
 ```

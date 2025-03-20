@@ -1,5 +1,5 @@
 ---
-title: "Predicting New Games"
+title: "Pipeline"
 editor: source
 ---
 ```{r}
@@ -25,6 +25,16 @@ config <- config::get()
 # Authenticate to GCS
 authenticate_to_gcs()
 ```
+
+```{r}
+#| fig-align: center
+#| fig-height: 4
+#| message: false
+#| warning: false
+targets::tar_visnetwork(targets_only = T)
+
+```
+
 
 ## Load Models
 
@@ -161,7 +171,8 @@ upcoming_games <- prepared_games |>
 upcoming_games |>
     group_by(yearpublished) |>
     count() |>
-    knitr::kable()
+    mutate(yearpublished = as.factor(yearpublished)) |>
+    gt::gt()
 
 ```
 
@@ -248,9 +259,27 @@ predictions_out =
     predictions |>
     select(yearpublished, game_id, name, starts_with(".pred_"))
 
-# pin locally to a gcs_model_board
-board = pins::board_folder("data/processed")
+# Save locally first
+local_board = pins::board_folder("data/processed")
+pins::pin_write(local_board, predictions_out, name = "predictions")
 
-# pin_predictions
-pins::pin_write(board, predictions_out, name = "predictions")
+# Save to Google Cloud Storage
+# Create a GCS board connection for predictions
+gcs_pred_board <- pins::board_gcs(
+    bucket = config$bucket,
+    prefix = "data/",
+    versioned = T
+)
+
+# Pin predictions to GCS
+pins::pin_write(gcs_pred_board, predictions_out, name = "predictions")
+
+# Print confirmation message
+cat(
+    "Predictions saved to GCS bucket:",
+    config$bucket,
+    "with prefix:",
+    paste0(config$board, "/predictions"),
+    "\n"
+)
 ```
