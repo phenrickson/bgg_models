@@ -138,7 +138,10 @@ top_preds =
             filter(!is.na(thumbnail)) |>
             head(25) |>
             predictions_gt(games = games) |>
-            gtExtras::gt_theme_nytimes()
+            gtExtras::gt_theme_nytimes() |>
+            gt::tab_header(
+                title = paste("Top Upcoming Predictions:", .x)
+            )
     )
 
 ```

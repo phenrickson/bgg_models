@@ -468,7 +468,7 @@ What were the model's top predictions in the validation set?
 
 ```{r}
 #| label: validation-predictions-table
-#| column: page-inset-right
+#| column: screen-inset-right
 
 valid_predictions |>
     filter(.pred_hurdle_class == 'yes') |>
