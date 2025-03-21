@@ -117,16 +117,17 @@ predictions |>
 
 ## Top Predictions by Year
 
-What are currently the top predictions for each year?
+What are the model's top predictions for each year?
 
 ```{r}
+#| warning: false
+#| message: false
 
 years = predictions |>
     group_by(yearpublished) |>
     count() |>
     head(4) |>
     pull(yearpublished)
-
 
 top_preds =
     map(
@@ -185,29 +186,105 @@ top_preds[[4]]
 
 ## Top Predictions by Category
 
-What are the top predictions for different genres of upcoming games?
+What are the model's top predictions for different genres of upcoming games?
 
 ```{r}
+#| include: false
+categories = c(
+    'Economic',
+    'Card Game',
+    'Wargame',
+    'Abstract Strategy',
+    'Dice',
+    'Party Game'
+)
+
+games_and_categories =
+    games_raw |>
+    bggUtils:::unnest_categories() |>
+    inner_join(
+        tibble(value = categories)
+    )
+
+top_categories = map(
+    categories,
+    ~ predictions |>
+        filter(!is.na(thumbnail)) |>
+        inner_join(
+            games_and_categories |>
+                filter(value == .x),
+            by = join_by(game_id)
+        ) |>
+        head(25) |>
+        predictions_gt(games = games) |>
+        gtExtras::gt_theme_nytimes() |>
+        gt::tab_header(
+            title = paste("Top Upcoming Predictions:", .x)
+        )
+)
 
 ```
 
 ::: {.panel-tabset}
 
-### Economic
+### `r categories[1]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[1]]
+
+```
+
+### `r categories[2]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[2]]
+
+```
+
+### `r categories[3]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[3]]
+
+```
+
+### `r categories[4]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[4]]
+
+```
+
+### `r categories[5]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[5]]
+
+```
 
 
-### War Game
+### `r categories[6]`
 
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[6]]
 
-### Card Game
-
-
-### Party
-
+```
 
 :::
 
-## Hurdle Predictions
+<!-- ## Hurdle Predictions
 
 Which games are expected to receive enough ratings to be assigned a Geek rating?
 
@@ -223,4 +300,4 @@ predictions |>
         lazy_load = TRUE
     )
 
-```
+``` -->

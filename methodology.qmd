@@ -139,6 +139,72 @@ graph LR
 
 ## Data
 
+```{r}
+
+# data
+# raw pull from bgg
+tar_load(games_raw)
+# split for train/valid/test
+tar_load(split)
+
+# get training set
+train_data =
+    split |>
+    training()
+
+# get validation set
+valid_data =
+    split |>
+    validation()
+
+# full data
+full_data =
+    bind_rows(train_data, valid_data)
+```
+
+# Data
+
+As of my most recent data job, there are **`r nrow(games)`** individual games on BGG. For each of these games, I have information about the game (playing time, mechanisms, components, publishers, artists, designers, etc), as well as information voted on by the BGG community (average rating, average weight).
+
+```{r}
+
+full_data |>
+    sample_n(1000) |>
+    visdat::vis_dat()
+
+```
+
+## Outcomes
+
+The data is at the game level, where I observe the BGG community’s aggregated ratings for individual games. This means I do not have data on the underlying ratings for games, only the average, standard deviation, or sum of the distribution.
+
+I examine four different community outcomes for games: average weight rating (complexity), number of user ratings, average user rating, and geek rating. Only a subset of games have received enough votes by the BGG community to receive a geek rating, which is a bayesian average based on the number of ratings as well as the average rating. 
+
+```{r}
+#| message: false
+
+full_data |>
+    filter_geek() |>
+    log_ratings() |>
+    plot_outcomes_distributions() +
+    theme_set(theme_light() + theme(legend.position = 'top'))
+
+```
+
+Each of these BGG outcomes (average weight, average, user ratings) is related to each other in some way, which is important to keep in mind as we think about modeling these outcomes. 
+
+The average weight tends to be highly correlated with the average rating, while not being correlated with the number of user ratings. The geek rating is a function of the average and user ratings, which means it is also then correlated with the average weight.
+
+```{r}
+
+full_data |>
+    plot_outcomes_relationships() +
+    theme_set(theme_light() + theme(legend.position = 'top'))
+
+```
+
+### Number of Ratings
+
 I train and evaluate the models primarily on games that have achieved at least 25 ratings, as this is the required number of user ratings for a game to receive a Geek rating. 
 
 The majority of games on BoardGameGeek do not actually receive this number of ratings, especially in recent years as the number of games published has dramatically increased. My main aim is to predict games that are set to be published and available to purchase, and many of the over 100k games on BGG have not been been published or distributed. 
