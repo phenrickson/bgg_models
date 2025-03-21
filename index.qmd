@@ -73,7 +73,7 @@ predictions = pins::pin_read(board, name = "predictions") |>
 
 ```
 
-# Models
+# Predictions
 
 I use historical data from BoardGameGeek (BGG) to train a number of predictive models for community ratings. I first classify games based on their probability of achieving a minimum number of ratings on BGG. I then estimate each game's complexity (average weight) in order to predicts its number of user ratings and average rating. I then use these estimates to predict the expected Geek Rating.
 
@@ -99,7 +99,7 @@ The following table displays predicted BGG outcomes for games that are expected 
 #| warning: false
 #| message: false
 #| label: upcoming-games-table
-#| column: screen-inset-right
+#| column: page-inset-right
 
 # table
 predictions |>
@@ -152,7 +152,6 @@ top_preds =
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_preds[[1]]
 
 ```
@@ -161,7 +160,6 @@ top_preds[[1]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_preds[[2]]
 
 ```
@@ -170,7 +168,6 @@ top_preds[[2]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_preds[[3]]
 
 ```
@@ -180,7 +177,6 @@ top_preds[[3]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_preds[[4]]
 
 ```
@@ -234,7 +230,6 @@ top_categories = map(
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[1]]
 
 ```
@@ -243,7 +238,6 @@ top_categories[[1]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[2]]
 
 ```
@@ -252,7 +246,6 @@ top_categories[[2]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[3]]
 
 ```
@@ -261,7 +254,6 @@ top_categories[[3]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[4]]
 
 ```
@@ -270,7 +262,6 @@ top_categories[[4]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[5]]
 
 ```
@@ -280,7 +271,6 @@ top_categories[[5]]
 
 ```{r}
 #| class: scroll
-#| column: screen-inset-right
 top_categories[[6]]
 
 ```
@@ -296,7 +286,7 @@ Which games are expected to receive enough ratings to be assigned a Geek rating?
 #| message: false
 #| warning: false
 #| label: hurdle-table
-#| column: screen-inset-right
+#| column: page
 
 predictions |>
     hurdle_dt(

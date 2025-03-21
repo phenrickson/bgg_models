@@ -22,11 +22,6 @@
   margin: 0 auto;
 }
 
-/* Make sure the container is wide enough */
-.quarto-container {
-  max-width: 1400px !important;
-}
-
 /* Ensure the content area is wide enough for tables */
 .content-block {
   padding: 0;
