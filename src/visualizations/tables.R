@@ -26,8 +26,12 @@ make_image_link = function(link, height = 52) {
 prep_predictions_dt = function(predictions, games) {
     predictions |>
         arrange(desc(.pred_bayesaverage)) |>
-        filter(!is.na(thumbnail)) |>
-        mutate(across(starts_with(".pred"), ~ round(.x, 2))) |>
+        mutate(
+            across(
+                c(starts_with(".pred"), -starts_with(".pred_hurdle_class")),
+                ~ round(.x, 2)
+            )
+        ) |>
         mutate(
             name = make_hyperlink(
                 make_bgg_link(game_id),
@@ -364,4 +368,211 @@ hurdle_dt = function(data, lazy_load = TRUE) {
                 options = dt_options
             )
     }
+}
+
+# Prepare data for gt table
+prep_predictions_gt = function(predictions, games, max_rows = 50) {
+    result <- predictions |>
+        arrange(desc(.pred_bayesaverage))
+
+    result |>
+        head(max_rows) |> # Limit to specified number of rows
+        mutate(
+            across(
+                c(starts_with(".pred"), -starts_with(".pred_hurdle_class")),
+                ~ round(.x, 2)
+            )
+        ) |>
+        mutate(
+            name = make_hyperlink(
+                make_bgg_link(game_id),
+                mytext = paste(name, paste0("(", yearpublished, ")"))
+            )
+        ) |>
+        mutate(
+            Rank = row_number(),
+            Image = thumbnail, # Store just the URL, not the HTML
+            Game = name,
+            `Average Weight` = .pred_averageweight,
+            `Average Rating` = .pred_average,
+            `Users Rated` = .pred_usersrated,
+            `Geek Rating` = .pred_bayesaverage,
+            .keep = 'none'
+        )
+}
+
+# Create a non-interactive gt table
+predictions_gt = function(
+    predictions,
+    games,
+    max_rows = 50
+) {
+    # Columns to include
+    cols = c(
+        "Rank",
+        "Image",
+        "Game",
+        "Average Weight",
+        "Average Rating",
+        "Users Rated",
+        "Geek Rating"
+    )
+
+    # Prepare data
+    prepared_data <- prep_predictions_gt(
+        predictions,
+        games = games,
+        max_rows = max_rows
+    )
+
+    # Create gt table
+    gt_table <- prepared_data |>
+        gt::gt() |>
+        # Set table options
+        gt::tab_options(
+            table.width = gt::pct(100),
+            column_labels.font.weight = "bold",
+            data_row.padding = gt::px(2)
+        ) |>
+        # Format columns
+        gt::fmt_markdown(columns = c("Game")) |> # Remove Image from fmt_markdown
+        gt::cols_align(align = "center", columns = -c("Game")) |>
+        # Set equal column widths
+        gt::cols_width(
+            Rank ~ gt::px(60),
+            Image ~ gt::px(100),
+            Game ~ gt::px(150),
+            `Average Weight` ~ gt::px(75),
+            `Average Rating` ~ gt::px(75),
+            `Users Rated` ~ gt::px(75),
+            `Geek Rating` ~ gt::px(75)
+        )
+
+    # Add color scales
+    gt_table <- gt_table |>
+        # Geek Rating color scale
+        gt::data_color(
+            columns = "Geek Rating",
+            colors = scales::col_numeric(
+                palette = c("white", "dodgerblue2"),
+                domain = c(5, 9)
+            )
+        ) |>
+        # Average Rating color scale
+        gt::data_color(
+            columns = "Average Rating",
+            colors = scales::col_numeric(
+                palette = c("white", "dodgerblue2"),
+                domain = c(6, 10)
+            )
+        ) |>
+        # Users Rated color scale
+        gt::data_color(
+            columns = "Users Rated",
+            colors = scales::col_numeric(
+                palette = c("white", "dodgerblue2"),
+                domain = c(0, 50000)
+            )
+        ) |>
+        # Average Weight color scale
+        gt::data_color(
+            columns = "Average Weight",
+            colors = scales::col_numeric(
+                palette = c("deepskyblue1", "white", "orange"),
+                domain = c(0.8, 3, 5)
+            )
+        ) |>
+        gt::text_transform(
+            locations = gt::cells_body(columns = c("Image")),
+            fn = function(x) {
+                gt::web_image(
+                    url = x, # Now x is just the URL, not HTML
+                    height = 50
+                )
+            }
+        )
+
+    return(gt_table)
+}
+
+# Function for hurdle model table
+hurdle_gt = function(data, max_rows = 50) {
+    # Check if thumbnail exists in the data
+    has_thumbnail <- "thumbnail" %in% names(data)
+
+    # Prepare data
+    result <- data |>
+        arrange(desc(.pred_hurdle_yes))
+
+    # Only filter by thumbnail if it exists
+    if (has_thumbnail) {
+        result <- result |>
+            filter(!is.na(thumbnail))
+    }
+
+    prepared_data <- result |>
+        head(max_rows) |> # Limit to specified number of rows
+        mutate(
+            name = make_hyperlink(
+                make_bgg_link(game_id),
+                mytext = paste(name, paste0("(", yearpublished, ")"))
+            )
+        ) |>
+        mutate(
+            Image = thumbnail, # Store just the URL, not the HTML
+            Game = name,
+            Description = stringr::str_trunc(description, width = 150),
+            `Pr(Hurdle)` = round(.pred_hurdle_yes, 3),
+            `Ratings` = usersrated,
+            .keep = 'none'
+        )
+
+    # Create gt table
+    gt_table <- prepared_data |>
+        gt::gt() |>
+        # Set table options
+        gt::tab_options(
+            table.width = gt::pct(100),
+            table.font.size = gt::px(10),
+            column_labels.font.weight = "bold",
+            data_row.padding = gt::px(2)
+        ) |>
+        # Format columns
+        gt::fmt_markdown(columns = c("Game", "Description")) |> # Remove Image from fmt_markdown
+        gt::cols_align(
+            align = "center",
+            columns = c("Image", "Pr(Hurdle)", "Ratings")
+        ) |>
+        gt::cols_width(
+            Image ~ gt::px(100),
+            Game ~ gt::px(200),
+            Description ~ gt::px(200),
+            `Pr(Hurdle)` ~ gt::px(100),
+            `Ratings` ~ gt::px(100)
+        ) |>
+        # Add title
+        gt::tab_header(
+            title = "Hurdle Model Predictions"
+        )
+
+    # Add color scale for Pr(Hurdle)
+    gt_table <- gt_table |>
+        gt::data_color(
+            columns = "Pr(Hurdle)",
+            colors = scales::col_numeric(
+                palette = c("white", "dodgerblue2"),
+                domain = c(0, 1)
+            )
+        ) |>
+        gt::text_transform(
+            locations = gt::cells_body(columns = c("Image")),
+            fn = function(x) {
+                gt::web_image(
+                    url = x, # Now x is just the URL, not HTML
+                    height = 50
+                )
+            }
+        )
+
+    return(gt_table)
 }

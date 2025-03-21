@@ -3,6 +3,9 @@ title: "Predicting Upcoming Board Games"
 subtitle: "Predictive Models for BoardGameGeek Ratings"
 editor: source
 echo: false
+format: 
+    html:
+        html-table-processing: none
 ---
 
 ```{r}
@@ -96,12 +99,11 @@ The following table displays predicted BGG outcomes for games that are expected 
 #| warning: false
 #| message: false
 #| label: upcoming-games-table
-#| column: page-inset-right
+#| column: screen-inset-right
 
 # table
 predictions |>
     filter(.pred_hurdle_class == 'yes') |>
-    select(-starts_with(".pred_hurdle")) |>
     # this goddamn bah humbug game
     filter(game_id != 388225) |>
     predictions_dt(
@@ -113,21 +115,192 @@ predictions |>
 
 ```
 
-## Hurdle
+## Top Predictions by Year
 
-This table displays predicted probabilities for whether games will achieve enough ratings (25) to be assigned a Geek Rating
+What are the model's top predictions for each year?
+
+```{r}
+#| warning: false
+#| message: false
+
+years = predictions |>
+    group_by(yearpublished) |>
+    count() |>
+    head(4) |>
+    pull(yearpublished)
+
+top_preds =
+    map(
+        years,
+        ~ predictions |>
+            filter(yearpublished == .x) |>
+            arrange(desc(.pred_bayesaverage)) |>
+            filter(!is.na(thumbnail)) |>
+            head(25) |>
+            predictions_gt(games = games) |>
+            gtExtras::gt_theme_nytimes() |>
+            gt::tab_header(
+                title = paste("Top Upcoming Predictions:", .x)
+            )
+    )
+
+```
+
+::: {.panel-tabset}
+
+### `r years[1]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_preds[[1]]
+
+```
+
+### `r years[2]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_preds[[2]]
+
+```
+
+### `r years[3]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_preds[[3]]
+
+```
+
+### `r years[4]`
+
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_preds[[4]]
+
+```
+
+:::
+
+## Top Predictions by Category
+
+What are the model's top predictions for different genres of upcoming games?
+
+```{r}
+#| include: false
+categories = c(
+    'Economic',
+    'Card Game',
+    'Wargame',
+    'Abstract Strategy',
+    'Dice',
+    'Party Game'
+)
+
+games_and_categories =
+    games_raw |>
+    bggUtils:::unnest_categories() |>
+    inner_join(
+        tibble(value = categories)
+    )
+
+top_categories = map(
+    categories,
+    ~ predictions |>
+        filter(!is.na(thumbnail)) |>
+        inner_join(
+            games_and_categories |>
+                filter(value == .x),
+            by = join_by(game_id)
+        ) |>
+        head(25) |>
+        predictions_gt(games = games) |>
+        gtExtras::gt_theme_nytimes() |>
+        gt::tab_header(
+            title = paste("Top Upcoming Predictions:", .x)
+        )
+)
+
+```
+
+::: {.panel-tabset}
+
+### `r categories[1]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[1]]
+
+```
+
+### `r categories[2]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[2]]
+
+```
+
+### `r categories[3]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[3]]
+
+```
+
+### `r categories[4]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[4]]
+
+```
+
+### `r categories[5]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[5]]
+
+```
+
+
+### `r categories[6]`
+
+```{r}
+#| class: scroll
+#| column: screen-inset-right
+top_categories[[6]]
+
+```
+
+:::
+
+<!-- ## Hurdle Predictions
+
+Which games are expected to receive enough ratings to be assigned a Geek rating?
 
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
 #| label: hurdle-table
-#| column: page-inset-right
+#| column: screen-inset-right
 
 predictions |>
-    filter(.pred_hurdle_class == 'yes') |>
     hurdle_dt(
         lazy_load = TRUE
     )
 
-```
+``` -->
