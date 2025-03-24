@@ -193,6 +193,7 @@ categories = c(
     'Economic',
     'Card Game',
     'Wargame',
+    'Fantasy',
     'Abstract Strategy',
     'Dice',
     'Party Game'
@@ -208,12 +209,14 @@ games_and_categories =
 top_categories = map(
     categories,
     ~ predictions |>
+        filter(game_id != 388225) |>
         filter(!is.na(thumbnail)) |>
         inner_join(
             games_and_categories |>
                 filter(value == .x),
             by = join_by(game_id)
         ) |>
+        arrange(desc(.pred_bayesaverage)) |>
         head(25) |>
         predictions_gt(games = games) |>
         gtExtras::gt_theme_nytimes() |>
@@ -274,6 +277,15 @@ top_categories[[5]]
 top_categories[[6]]
 
 ```
+
+### `r categories[7]`
+
+```{r}
+#| class: scroll
+top_categories[[7]]
+
+```
+
 
 :::
 
