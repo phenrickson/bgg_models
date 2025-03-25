@@ -69,7 +69,9 @@ games =
 # read in predictions
 board = pins::board_folder("data/processed")
 predictions = pins::pin_read(board, name = "predictions") |>
-    inner_join(games)
+    inner_join(games) |>
+    # this goddamn bah humbug game
+    filter(game_id != 388225)
 
 ```
 
