@@ -1,6 +1,7 @@
 ---
 title: "Methodology"
 format: html
+freeze: auto
 ---
 ```{r}
 #| warning: false
