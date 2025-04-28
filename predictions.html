@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.43">
+<meta name="generator" content="quarto-1.7.29">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Phil Henrickson">
-<meta name="dcterms.date" content="2025-04-19">
+<meta name="dcterms.date" content="2025-04-28">
 
 <title>Pipeline – BGG Models</title>
 <style>
@@ -23,8 +23,9 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -35,7 +36,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -66,15 +67,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-27280757a5cc536e93d9bf7b62fec226.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-1a684dc9b4359bfff7775ddc648ea797.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -122,7 +124,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -208,7 +210,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 19, 2025</p>
+      <p class="date">April 28, 2025</p>
     </div>
   </div>
   
@@ -249,8 +251,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>targets<span class="sc">::</span><span class="fu">tar_visnetwork</span>(<span class="at">targets_only =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="visNetwork html-widget html-fill-item" id="htmlwidget-9f1f0805d0eb6e95713f" style="width:100%;height:371px;"></div>
-<script type="application/json" data-for="htmlwidget-9f1f0805d0eb6e95713f">{"x":{"nodes":{"name":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"type":["stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem"],"description":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"status":["uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate"],"seconds":[70.08799999999999,62.539,79.569,20.546,23.844,21.816,35.107,12.037,0.07099999999999999,12.392,6.424,32.162,29.06,2.258,0.003,0.003,87.82299999999999,57.911,0.032,2.12,0.035,0.033,8.999000000000001,70.669,61.637,83.298,19.683,0.028,0.093,2.053,2.357],"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branches":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"label":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"color":["#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823"],"id":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"level":[9,8,7,11,9,5,4,11,8,2,1,9,5,5,6,11,4,11,3,10,11,8,6,9,8,7,11,10,10,9,7],"shape":["dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot"]},"edges":{"from":["training_imputed","usersrated_tuned","hurdle_tuned","games_raw","training_and_validation","usersrated_fit","hurdle_final","hurdle_tuned","training_and_validation","valid_hurdle_metrics","average_tuned","averageweight_tuned","training_and_validation","usersrated_final","usersrated_tuned","valid_metrics","split","training_imputed","average_final","averageweight_final","split","usersrated_final","details","valid_metrics","valid_predictions","averageweight_fit","split","averageweight_fit","hurdle_fit","hurdle_threshold","split","average_fit","usersrated_fit","validation_imputed","hurdle_results","average_final","average_tuned","training_and_validation","valid_metrics","valid_predictions","averageweight_final","averageweight_tuned","training_and_validation","valid_metrics","hurdle_fit","training_and_validation","training_imputed","validation_imputed","games_prepared","split","average_fit","training_and_validation","average_tuned","averageweight_tuned","usersrated_tuned","hurdle_tuned","valid_hurdle_metrics","averageweight_fit","training_and_validation"],"to":["average_tuned","usersrated_fit","hurdle_fit","games_prepared","usersrated_final","usersrated_final","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","average_fit","averageweight_fit","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","hurdle_tuned","usersrated_tuned","test_predictions","test_predictions","test_predictions","test_predictions","tracking","tracking","valid_metrics","training_imputed","training_imputed","validation_imputed","validation_imputed","validation_imputed","validation_imputed","valid_predictions","valid_predictions","valid_predictions","hurdle_threshold","average_vetiver","average_vetiver","average_vetiver","average_vetiver","valid_hurdle_metrics","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","hurdle_final","hurdle_final","training_and_validation","training_and_validation","split","averageweight_tuned","average_final","average_final","details","details","details","hurdle_results","hurdle_tracking","averageweight_final","averageweight_final"],"arrows":["to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot","physics":false},"manipulation":{"enabled":false},"edges":{"smooth":{"type":"cubicBezier","forceDirection":"horizontal"}},"physics":{"stabilization":false},"interaction":{"zoomSpeed":1},"layout":{"hierarchical":{"enabled":true,"direction":"LR"}}},"groups":null,"width":null,"height":null,"idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":1,"to":1},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"},"legend":{"width":0.2,"useGroups":false,"position":"right","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["Up to date","Outdated","Stem"],"color":["#354823","#78B7C5","#899DA4"],"shape":["dot","dot","dot"]},"nodesToDataframe":true},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;white-space: nowrap;font-family: verdana;font-size:14px;font-color:#000000;background-color: #f5f4ed;-moz-border-radius: 3px;-webkit-border-radius: 3px;border-radius: 3px;border: 1px solid #808074;box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);"},"evals":[],"jsHooks":[]}</script>
+<div class="visNetwork html-widget html-fill-item" id="htmlwidget-90558752546d6d7e8b27" style="width:100%;height:371px;"></div>
+<script type="application/json" data-for="htmlwidget-90558752546d6d7e8b27">{"x":{"nodes":{"name":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"type":["stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem","stem"],"description":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"status":["uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","outdated","uptodate","uptodate","uptodate","uptodate"],"seconds":[70.08799999999999,62.539,79.569,20.546,23.844,21.816,35.107,12.037,0.07099999999999999,12.392,6.424,32.162,29.06,2.258,0.003,0.003,87.82299999999999,57.911,0.032,2.12,0.035,0.033,8.999000000000001,70.669,61.637,83.298,19.683,0.028,0.093,2.053,2.357],"bytes":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branches":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"label":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"color":["#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#78B7C5","#354823","#354823","#354823","#354823"],"id":["average_final","average_fit","average_tuned","average_vetiver","averageweight_final","averageweight_fit","averageweight_tuned","averageweight_vetiver","details","games_prepared","games_raw","hurdle_final","hurdle_fit","hurdle_results","hurdle_threshold","hurdle_tracking","hurdle_tuned","hurdle_vetiver","split","test_predictions","tracking","training_and_validation","training_imputed","usersrated_final","usersrated_fit","usersrated_tuned","usersrated_vetiver","valid_hurdle_metrics","valid_metrics","valid_predictions","validation_imputed"],"level":[9,8,7,11,9,5,4,11,8,2,1,9,5,5,6,11,4,11,3,10,11,8,6,9,8,7,11,10,10,9,7],"shape":["dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot","dot"]},"edges":{"from":["training_imputed","usersrated_tuned","hurdle_tuned","games_raw","training_and_validation","usersrated_fit","hurdle_final","hurdle_tuned","training_and_validation","valid_hurdle_metrics","average_tuned","averageweight_tuned","training_and_validation","usersrated_final","usersrated_tuned","valid_metrics","split","training_imputed","average_final","averageweight_final","split","usersrated_final","details","valid_metrics","valid_predictions","averageweight_fit","split","averageweight_fit","hurdle_fit","hurdle_threshold","split","average_fit","usersrated_fit","validation_imputed","hurdle_results","average_final","average_tuned","training_and_validation","valid_metrics","valid_predictions","averageweight_final","averageweight_tuned","training_and_validation","valid_metrics","hurdle_fit","training_and_validation","training_imputed","validation_imputed","games_prepared","split","average_fit","training_and_validation","average_tuned","averageweight_tuned","usersrated_tuned","hurdle_tuned","valid_hurdle_metrics","averageweight_fit","training_and_validation"],"to":["average_tuned","usersrated_fit","hurdle_fit","games_prepared","usersrated_final","usersrated_final","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","hurdle_vetiver","average_fit","averageweight_fit","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","usersrated_vetiver","hurdle_tuned","usersrated_tuned","test_predictions","test_predictions","test_predictions","test_predictions","tracking","tracking","valid_metrics","training_imputed","training_imputed","validation_imputed","validation_imputed","validation_imputed","validation_imputed","valid_predictions","valid_predictions","valid_predictions","hurdle_threshold","average_vetiver","average_vetiver","average_vetiver","average_vetiver","valid_hurdle_metrics","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","averageweight_vetiver","hurdle_final","hurdle_final","training_and_validation","training_and_validation","split","averageweight_tuned","average_final","average_final","details","details","details","hurdle_results","hurdle_tracking","averageweight_final","averageweight_final"],"arrows":["to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot","physics":false},"manipulation":{"enabled":false},"edges":{"smooth":{"type":"cubicBezier","forceDirection":"horizontal"}},"physics":{"stabilization":false},"interaction":{"zoomSpeed":1},"layout":{"hierarchical":{"enabled":true,"direction":"LR"}}},"groups":null,"width":null,"height":null,"idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":1,"to":1},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"},"legend":{"width":0.2,"useGroups":false,"position":"right","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["Up to date","Outdated","Stem"],"color":["#354823","#78B7C5","#899DA4"],"shape":["dot","dot","dot"]},"nodesToDataframe":true},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;white-space: nowrap;font-family: verdana;font-size:14px;font-color:#000000;background-color: #f5f4ed;-moz-border-radius: 3px;-webkit-border-radius: 3px;border-radius: 3px;border: 1px solid #808074;box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <section id="load-models" class="level2" data-number="1">
@@ -421,72 +423,72 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
+<td style="text-align: left;">1745860932921040</td>
+<td style="text-align: left;">77.3 Mb</td>
+<td style="text-align: left;">2025-04-28 17:22:12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bgg_data</td>
+<td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1745074120055107</td>
 <td style="text-align: left;">77.1 Mb</td>
 <td style="text-align: left;">2025-04-19 14:48:40</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1744392659954256</td>
 <td style="text-align: left;">77 Mb</td>
 <td style="text-align: left;">2025-04-11 17:30:59</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1743780453796724</td>
 <td style="text-align: left;">76.9 Mb</td>
 <td style="text-align: left;">2025-04-04 15:27:33</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1742943479411730</td>
 <td style="text-align: left;">76.8 Mb</td>
 <td style="text-align: left;">2025-03-25 22:57:59</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1742911503045718</td>
 <td style="text-align: left;">76.7 Mb</td>
 <td style="text-align: left;">2025-03-25 14:05:03</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1742489667404929</td>
 <td style="text-align: left;">76.7 Mb</td>
 <td style="text-align: left;">2025-03-20 16:54:27</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1741629678449522</td>
 <td style="text-align: left;">73.6 Mb</td>
 <td style="text-align: left;">2025-03-10 18:01:18</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1740875193707566</td>
 <td style="text-align: left;">73.5 Mb</td>
 <td style="text-align: left;">2025-03-02 00:26:33</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">bgg_data</td>
 <td style="text-align: left;">raw/objects/games</td>
 <td style="text-align: left;">1732133366577344</td>
 <td style="text-align: left;">72.1 Mb</td>
 <td style="text-align: left;">2024-11-20 20:09:26</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">bgg_data</td>
-<td style="text-align: left;">raw/objects/games</td>
-<td style="text-align: left;">1730333447804461</td>
-<td style="text-align: left;">71.8 Mb</td>
-<td style="text-align: left;">2024-10-31 00:10:47</td>
 </tr>
 </tbody>
 </table>
@@ -537,23 +539,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    gt<span class="sc">::</span><span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="ifqlovrbrq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ifqlovrbrq table {
+<div id="qvhsunnlhf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qvhsunnlhf table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ifqlovrbrq thead, #ifqlovrbrq tbody, #ifqlovrbrq tfoot, #ifqlovrbrq tr, #ifqlovrbrq td, #ifqlovrbrq th {
+#qvhsunnlhf thead, #qvhsunnlhf tbody, #qvhsunnlhf tfoot, #qvhsunnlhf tr, #qvhsunnlhf td, #qvhsunnlhf th {
   border-style: none;
 }
 
-#ifqlovrbrq p {
+#qvhsunnlhf p {
   margin: 0;
   padding: 0;
 }
 
-#ifqlovrbrq .gt_table {
+#qvhsunnlhf .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -579,12 +581,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_caption {
+#qvhsunnlhf .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ifqlovrbrq .gt_title {
+#qvhsunnlhf .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -596,7 +598,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#ifqlovrbrq .gt_subtitle {
+#qvhsunnlhf .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -608,7 +610,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#ifqlovrbrq .gt_heading {
+#qvhsunnlhf .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -620,13 +622,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_bottom_border {
+#qvhsunnlhf .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_col_headings {
+#qvhsunnlhf .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -641,7 +643,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_col_heading {
+#qvhsunnlhf .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -661,7 +663,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ifqlovrbrq .gt_column_spanner_outer {
+#qvhsunnlhf .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -673,15 +675,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#ifqlovrbrq .gt_column_spanner_outer:first-child {
+#qvhsunnlhf .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ifqlovrbrq .gt_column_spanner_outer:last-child {
+#qvhsunnlhf .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ifqlovrbrq .gt_column_spanner {
+#qvhsunnlhf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -693,11 +695,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#ifqlovrbrq .gt_spanner_row {
+#qvhsunnlhf .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ifqlovrbrq .gt_group_heading {
+#qvhsunnlhf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -723,7 +725,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#ifqlovrbrq .gt_empty_group_heading {
+#qvhsunnlhf .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -738,15 +740,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#ifqlovrbrq .gt_from_md > :first-child {
+#qvhsunnlhf .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ifqlovrbrq .gt_from_md > :last-child {
+#qvhsunnlhf .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ifqlovrbrq .gt_row {
+#qvhsunnlhf .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -765,7 +767,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ifqlovrbrq .gt_stub {
+#qvhsunnlhf .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -778,7 +780,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ifqlovrbrq .gt_stub_row_group {
+#qvhsunnlhf .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -792,15 +794,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#ifqlovrbrq .gt_row_group_first td {
+#qvhsunnlhf .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ifqlovrbrq .gt_row_group_first th {
+#qvhsunnlhf .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ifqlovrbrq .gt_summary_row {
+#qvhsunnlhf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -810,16 +812,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ifqlovrbrq .gt_first_summary_row {
+#qvhsunnlhf .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_first_summary_row.thick {
+#qvhsunnlhf .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ifqlovrbrq .gt_last_summary_row {
+#qvhsunnlhf .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -829,7 +831,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_grand_summary_row {
+#qvhsunnlhf .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -839,7 +841,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ifqlovrbrq .gt_first_grand_summary_row {
+#qvhsunnlhf .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -849,7 +851,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_last_grand_summary_row_top {
+#qvhsunnlhf .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -859,11 +861,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_striped {
+#qvhsunnlhf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ifqlovrbrq .gt_table_body {
+#qvhsunnlhf .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -872,7 +874,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_footnotes {
+#qvhsunnlhf .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -886,7 +888,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_footnote {
+#qvhsunnlhf .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -895,7 +897,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ifqlovrbrq .gt_sourcenotes {
+#qvhsunnlhf .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -909,7 +911,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ifqlovrbrq .gt_sourcenote {
+#qvhsunnlhf .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -917,72 +919,72 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ifqlovrbrq .gt_left {
+#qvhsunnlhf .gt_left {
   text-align: left;
 }
 
-#ifqlovrbrq .gt_center {
+#qvhsunnlhf .gt_center {
   text-align: center;
 }
 
-#ifqlovrbrq .gt_right {
+#qvhsunnlhf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ifqlovrbrq .gt_font_normal {
+#qvhsunnlhf .gt_font_normal {
   font-weight: normal;
 }
 
-#ifqlovrbrq .gt_font_bold {
+#qvhsunnlhf .gt_font_bold {
   font-weight: bold;
 }
 
-#ifqlovrbrq .gt_font_italic {
+#qvhsunnlhf .gt_font_italic {
   font-style: italic;
 }
 
-#ifqlovrbrq .gt_super {
+#qvhsunnlhf .gt_super {
   font-size: 65%;
 }
 
-#ifqlovrbrq .gt_footnote_marks {
+#qvhsunnlhf .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ifqlovrbrq .gt_asterisk {
+#qvhsunnlhf .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ifqlovrbrq .gt_indent_1 {
+#qvhsunnlhf .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ifqlovrbrq .gt_indent_2 {
+#qvhsunnlhf .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ifqlovrbrq .gt_indent_3 {
+#qvhsunnlhf .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ifqlovrbrq .gt_indent_4 {
+#qvhsunnlhf .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ifqlovrbrq .gt_indent_5 {
+#qvhsunnlhf .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ifqlovrbrq .katex-display {
+#qvhsunnlhf .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ifqlovrbrq div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#qvhsunnlhf div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -995,13 +997,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="yearpublished" class="gt_row gt_right">2024</td>
-<td headers="n" class="gt_row gt_right">5514</td></tr>
+<td headers="n" class="gt_row gt_right">5531</td></tr>
     <tr><td headers="yearpublished" class="gt_row gt_right">2025</td>
-<td headers="n" class="gt_row gt_right">2840</td></tr>
+<td headers="n" class="gt_row gt_right">2951</td></tr>
     <tr><td headers="yearpublished" class="gt_row gt_right">2026</td>
-<td headers="n" class="gt_row gt_right">228</td></tr>
+<td headers="n" class="gt_row gt_right">242</td></tr>
     <tr><td headers="yearpublished" class="gt_row gt_right">2027</td>
-<td headers="n" class="gt_row gt_right">7</td></tr>
+<td headers="n" class="gt_row gt_right">9</td></tr>
     <tr><td headers="yearpublished" class="gt_row gt_right">2028</td>
 <td headers="n" class="gt_row gt_right">4</td></tr>
   </tbody>
@@ -1029,8 +1031,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    reactable<span class="sc">::</span><span class="fu">reactable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="reactable html-widget html-fill-item" id="htmlwidget-8151302488b7344999ae" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-8151302488b7344999ae">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"game_id":["443294","444058","444091","444114","444216","444234","444252","444257","444290","436219","438114","440930","442992","443052","443053","443077","443116","443207","443295","443317","443622","443707","443708","443710","443834","443866","443868","443869","443870","443876","443926","443934","443942","443944","443946","443947","443948","443949","443950","443985","443986","443988","444023","444024","444026","444027","444028","444038","444039","444040","444042","444049","444057","444062","444063","444105","444115","444119","444120","444123","444125","444130","444164","444169","444174","444178","444180","444186","444187","444196","444197","444209","444211","444217","444226","444227","444233","444236","444241","444243","444258","444267","444291","444292","444294","444302","444303","444305","444308","444309","444310","444311","444313","444314","444315","444328","444335","444337","444338","444350","444353","444368","444379","444396","444427","444449","444450","444470","444476","444479","444480","444481","444489","444498","444500","444506","443698","443788","443812","443827","443832","443957","443983","443984","444029","444035","444037","444078","444080","444104","444175","444184","444307","444370","444463","444471","444477","444478"],"name":["Boktor","Terrorscape 2","Lands of Conquest","Morph TCG","Dracula is Dead","Agea","Prestige","Carta Imperia: Rise of Rome","Banana Rush","Stitch: The Fix for 626","Kansas: Roll & Write","Skirmish","단청 : 카드로 하는 윷놀이 디즈니 에디션 (Dancheong: Yut-nori with cards – Disney edition)","Swapple: RHS","Bean Counters Inc.","One Piece: Assault on Marineford","Sketch!","Meritorious","Battle of Brandywine: A Time for Heroes","Realms","Cofrade Go","Ronin","Ladybugs","Kingdom Builder: Family & Friends Compact Edition","BeFree for Kids Board Game","Hairfoot Jousting","Voidfighter","Burrows & Badgers: Second Edition – A Skirmish Game of Anthropomorphic Animals","Dragon Rampant: Second Edition – Fantasy Wargaming Rules","Emostories","Cosmic Run: Mission One","Crunch the Numbers","The Little Flower Shop: Open for Business","The Magical World of Disney Trivia: Kids Edition","Leftover Letters","My Perfect City","Pen Pals","Spell It Out","Word Wrap","Sous Scellés: La fille du troisième","Fake Crime","The Cults of Underghast","Bird Brain","Elemystic","Cat Says Moo","Death Knights","Las Ligas de la Ñ: Eñesutras","Acorn Delivery （どんぐりデリバリー）","American Revolution: Washington","American Revolution: Greene","Pierwsza osada","Tonkin!","EUKAO","World of Tanks: The Card Game","Intelliwar: Accession To The Throne","Victory by Any Means Campaign Guide (Third Edition)","Data Chain","Float Your Boat","Controlled Chaos","TRAQ: Tu Réponds À Quoi","범인은 이 안에 있다 (The Criminal Is In Here)","Lonsi","BattleTech: Experimental Technical Readout – RISC","Screenplay","Crossroads: An Old West Adventure","Unknown Identity","The Coorg War","Space Gits","Geomandering","Quest in a Box","Tonnerre de Tuiles","Uffbasse!","BombArctic","Rytíři a raubíři","Dicemancy","Zombies At Home","Ciudad Arcoiris","NIJI","Bluestone","Hagia Sophia","The Hobbit: There and Back Again","Foragers","Corps of Discovery: Ultimate Edition","Clue: Advent Calendar – Secrets Under Snowfall","Bonaparte: le wargame – jeu de bataille avec figurines pour la période 1792-1802","VARZ TCG","Conquerors and Conquests","Gimcana x Girona","Conquest For The Capital","ワードジャンクション (Word Junction)","Nenuphar Jazz","Landis","Terreur","My Scouter","Player 12","Matica Quest: The Card Game","Rise of the Oak Dell","Field of Bees","Tokyo Ghoul District Battle","Puppet Master: Return to Bodega Bay Inn","Really Bad Santa","Seafood Chain","MutantSlayers: Post-apocalyptic skirmish game in wrecked lands","One Great Expedition","Notorious Pirates","Not A Real-Word Game","Battles for the Ardennes: Deluxe Edition","Vapor Willie","Toca Raul","Криза (Crisis)","It's a Zoo","Battle of Hoth","Burst","Happy DayZ: American Dream","Happy DayZ: Woodstock Fever","Recórcholis!","Duck That Goose","KIBU JUMPER: Secret 6","You Shady Pooch","BeFree for Starters board game","BeFree for Champions","MIDT","Sous Scellés: Les Maudits de Fosse-aux-Ronces","Sous Scellés: Ultime Châtiment","Rey Mono","Harvest or Conquest","ぽいよね (Poiyone)","新銳桌遊小買家 (New Boardgame Buyer 2024)","營火派對 Hello! Bonfire","Tiny Backyard Grove","Slingz","More Money More Problems","Mind Worlds","Inside Out 2: Mixed-Emotions Card Game","Gangue do Palhaço","Véio do Saco","Procissão das Almas","Bicho Papão"],"yearpublished":[2026,2026,2026,2026,2026,2026,2026,2026,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024]},"columns":[{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"yearpublished","name":"yearpublished","type":"numeric"}],"dataKey":"a26f1acba8d0bc2e77a1d45112fa4e34"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item" id="htmlwidget-05ed12d7bd2013666052" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-05ed12d7bd2013666052">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"game_id":["445029","444545","444877","444941","445063","445124","441628","444527","444547","444551","444556","444557","444582","444590","444648","444659","444663","444683","444684","444687","444690","444696","444698","444700","444725","444735","444752","444755","444757","444778","444779","444781","444782","444804","444825","444831","444845","444860","444861","444869","444876","444878","444879","444880","444883","444884","444886","444888","444891","444892","444893","444897","444900","444906","444915","444935","444936","444937","444945","444975","445003","445007","445009","445011","445012","445014","445020","445023","445028","445030","445031","445032","445037","445039","445042","445043","445050","445054","445065","445071","445080","445105","445108","445109","445118","445119","445122","445123","445134","445140","445142","445143","445144","445145","445195","445225","445309","445351","445361","445370","440516","444674","444678","444707","444740","444776","444796","444816","444821","444862","444864","444881","444896","444908","444922","444923","444928","444930","444944","444995","445035","445036","445076","445115","445116","445136","445141","445147","445357","445359"],"name":["Hold’em High: Outlaws and Industry","Clash of Clans: The Epic Raid","Pyramire","Gothic: A Shadow's Quest","Touché: The Swashbucklers","Pigs Rule","Stupor Mundi: Master Print Edition","Bean to Bar","Llama Llama","Tearable Quest","Gales of November","Topple Tanks","SMOL TACTICS","RING BUSTER","Tornado Splash","...But That's Only HALF the Story!","Códicus","Pilgrims: Curious Adventures","Operation CanCon: Canadian Nineties Music Shopping Gamebook","Badgers","The Massive-Verse Fighting Card Game: Team Up!","Be Herd","The Great Train Rescue","Renaissance and Write","The Game","1918: A First World War Miniatures Game","Ukiyo-e","Globalization","Wire","Foundation","Fart Drop","MEMORY21: Actions & Sounds (Original) Edition","MEMORY21: Picture Edition","Full Dice","Swearmints: Spicy NSFW Edition","DeckHand: Race for Infamy","A Tricky Escape","Fate-Fortune-Djinn","TomeBound","Strataugury","Malifaux (Fourth Edition)","Kissa Naapurissa","TroubleZ Run! Revenge of the Jellynator","Removal","Karak: Labyrinth","Reptile Tank","Crash Derby","何食べたい (What Do You Want to Eat?)","Sugar Rush","Kitten's Kitchen","PWNED!","M.A.D.: Mutually Assured Destruction","Mint Kingdom","The Game of Life: Barbie","Pocket Paladin","Mime Master","This is my spot","Tilt","CHARGE","Ace On The Case","The Dog Ate My Homework","Am I the ASS?: The Game","Top Frog","Sherlock Holmes: Supernatural","Sherlock Holmes: Darkness Over London","Morphid","EXIT: Das Spiel – Adventskalender: Der Zauber von Weihnachten","Stomp Stomp Dino!","Safari Spaceship","Capybaras vs Pelicans","Tectonic Tribes","TOWER","WorditO!","Póker a Voces","Chessetto","Ultimatum: can you turn the tide?","Leuchtturm voraus!","Wie Arsch auf Eimer","The Urban Calculus","Fair Trade Souvenirs","Pilastri","Titan Zero","Crime Files: Fallakte – Verliebt, verlobt, verwitwet","Crime Files Adventskalender: Fallakte – Winter-Einbruch","Zen e Raiva","Going Viral","Hide the Body","Lunar Trick","Treasure Island: Age of Pirates","Mushinko","Depot","Segnum","Atomorph","PUSHDROP","ヒストリーオブ自民","Grab That Dino","NOLA: 1895","Strandbüfé","Control to Catastrophe: Caesar","Wardens of Morath: Heroic Fantasy Skirmish Combat","トリックアンドトリートテイキング (Trick and Treat Taking)","The Battle of Agnadello 1509","Dare to Ding","Flow","Sunspot","Slepli","Cambio: Into the Wild","Escape from the Lost Temple","猴猴玩啊 (Ho·Ho·Won)","World In My Pocket","Hadrai'da: Ascendant World of Kylia TCG","Klattschen: Bolzplatz Edition","Art Jam The Card Game","Warring States: China","13 Heroes","Shin Cucco","Game of Red Flags","らくらく冒険者の幸せ異世界ライフの独立拡張～旅仲間の冒険盟約～ (Rakuraku Boukensha no Shiawase Isekai Life no Dokuritsu Kakuchou ~Tabi Nakama no Bouken Meiyaku~)","LENGTH","Moka","CollectO!","DuetO!","Royal Gambit","Crime Files: Fallakte – Atemlos im Allgäu","Crime Files: Fallakte – Endstation Ostfriesland","Multitasking","WellMess","April 14th 1865","Murder at Shrike Bay: Puzzle Magazine","Secret of the Crimson Pendant: A Puzzle Magazine"],"yearpublished":[2027,2026,2026,2026,2026,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024]},"columns":[{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"yearpublished","name":"yearpublished","type":"numeric"}],"dataKey":"3083e10d47af895e12f9fd3ae56b0dce"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -1085,8 +1087,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    reactable<span class="sc">::</span><span class="fu">reactable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="reactable html-widget html-fill-item" id="htmlwidget-1a7e1dd1d0560075a368" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-1a7e1dd1d0560075a368">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"yearpublished":["2025","2025","2025","2026","2026","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2026","2025","2026","2026","2025","2025","2025","2026","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2026","2025","2025","2024","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2024","2025","2025","2024","2025","2024","2025","2025","2025","2025","2024","2025","2025","2025","2025","2024","2025","2025","2025","2024","2025","2025","2026","2025","2024","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2024","2025","2025","2025","2025","2025","2026","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2024","2024","2025","2025","2025","2024","2024","2025","2025","2025","2025","2025","2024","2024","2025","2025","2025"],"game_id":["444481","443986","443710","444290","444091","444313","444427","443207","444302","444335","444396","444243","444186","444115","444291","444114","444187","444234","444257","440930","443295","443707","444058","444062","444130","444180","444258","444292","444463","436219","443708","443985","444226","443294","443926","443947","443983","443984","443988","444024","444217","444350","444449","438114","443052","444294","444379","444450","444478","444479","443116","443827","443869","443870","444037","444049","444080","444211","444236","444353","444470","444477","443317","443866","443868","444023","444029","444042","444164","444174","444175","444178","444241","444252","444308","443832","443934","443942","443946","443948","443949","443950","444035","444039","444040","444105","444120","444125","444303","444311","444315","443053","443622","444026","444027","444028","444038","444057","444063","444078","444104","444119","444123","444169","444196","444209","444216","444227","444267","444305","444307","444309","444310","444337","444368","444476","444498","444500","442992","443077","443698","443788","443812","443834","443876","443944","443957","444184","444197","444233","444314","444328","444338","444370","444471","444480","444489","444506"],"name":["Battle of Hoth","Fake Crime","Kingdom Builder: Family & Friends Compact Edition","Banana Rush","Lands of Conquest","Terreur","Notorious Pirates","Meritorious","VARZ TCG","Rise of the Oak Dell","One Great Expedition","Hagia Sophia","Space Gits","Data Chain","Corps of Discovery: Ultimate Edition","Morph TCG","Geomandering","Agea","Carta Imperia: Rise of Rome","Skirmish","Battle of Brandywine: A Time for Heroes","Ronin","Terrorscape 2","World of Tanks: The Card Game","Lonsi","The Coorg War","The Hobbit: There and Back Again","Clue: Advent Calendar – Secrets Under Snowfall","Gangue do Palhaço","Stitch: The Fix for 626","Ladybugs","Sous Scellés: La fille du troisième","Dicemancy","Boktor","Cosmic Run: Mission One","My Perfect City","Sous Scellés: Les Maudits de Fosse-aux-Ronces","Sous Scellés: Ultime Châtiment","The Cults of Underghast","Elemystic","Rytíři a raubíři","Puppet Master: Return to Bodega Bay Inn","Not A Real-Word Game","Kansas: Roll & Write","Swapple: RHS","Bonaparte: le wargame – jeu de bataille avec figurines pour la période 1792-1802","MutantSlayers: Post-apocalyptic skirmish game in wrecked lands","Battles for the Ardennes: Deluxe Edition","Bicho Papão","Криза (Crisis)","Sketch!","BeFree for Starters board game","Burrows & Badgers: Second Edition – A Skirmish Game of Anthropomorphic Animals","Dragon Rampant: Second Edition – Fantasy Wargaming Rules","ぽいよね (Poiyone)","Tonkin!","營火派對 Hello! Bonfire","BombArctic","NIJI","Really Bad Santa","Vapor Willie","Procissão das Almas","Realms","Hairfoot Jousting","Voidfighter","Bird Brain","Rey Mono","Pierwsza osada","BattleTech: Experimental Technical Readout – RISC","Crossroads: An Old West Adventure","Slingz","Unknown Identity","Bluestone","Prestige","Conquest For The Capital","BeFree for Champions","Crunch the Numbers","The Little Flower Shop: Open for Business","Leftover Letters","Pen Pals","Spell It Out","Word Wrap","Harvest or Conquest","American Revolution: Washington","American Revolution: Greene","Victory by Any Means Campaign Guide (Third Edition)","Controlled Chaos","범인은 이 안에 있다 (The Criminal Is In Here)","Conquerors and Conquests","Landis","Player 12","Bean Counters Inc.","Cofrade Go","Cat Says Moo","Death Knights","Las Ligas de la Ñ: Eñesutras","Acorn Delivery （どんぐりデリバリー）","EUKAO","Intelliwar: Accession To The Throne","新銳桌遊小買家 (New Boardgame Buyer 2024)","Tiny Backyard Grove","Float Your Boat","TRAQ: Tu Réponds À Quoi","Screenplay","Quest in a Box","Uffbasse!","Dracula is Dead","Zombies At Home","Foragers","Gimcana x Girona","Mind Worlds","ワードジャンクション (Word Junction)","Nenuphar Jazz","Field of Bees","Seafood Chain","Toca Raul","Happy DayZ: American Dream","Happy DayZ: Woodstock Fever","단청 : 카드로 하는 윷놀이 디즈니 에디션 (Dancheong: Yut-nori with cards – Disney edition)","One Piece: Assault on Marineford","Duck That Goose","KIBU JUMPER: Secret 6","You Shady Pooch","BeFree for Kids Board Game","Emostories","The Magical World of Disney Trivia: Kids Edition","MIDT","More Money More Problems","Tonnerre de Tuiles","Ciudad Arcoiris","My Scouter","Matica Quest: The Card Game","Tokyo Ghoul District Battle","Inside Out 2: Mixed-Emotions Card Game","Véio do Saco","It's a Zoo","Burst","Recórcholis!"],"hurdle_yes":[0.99,0.29,0.98,0.06,0.17,0.73,0.79,0.07,0.05,0.57,0.79,0.62,0.21,0.08,0.93,0.06,0.28,0.22,0.57,0.03,0.3,0.95,0.41,0.42,0.04,0.03,0.96,0.19,0.31,0.91,0.94,0.28,0.43,0.09,0.26,0.36,0.29,0.33,0.02,0.41,0.44,0.7,0.09,0.11,0.17,0.04,0.02,0.05,0.39,0.21,0.42,0.03,0.73,0.95,0.31,0.02,0.77,0.89,0.33,0.33,0.3,0.67,0.01,0.91,0.74,0.21,0.08,0.63,0.03,0,0.19,0.05,0.03,0.22,0.02,0.02,0.26,0.32,0.19,0.11,0.11,0.15,0.01,0.03,0.03,0.09,0.02,0.21,0.04,0.09,0.16,0.11,0.06,0.12,0.02,0.06,0.11,0.15,0.03,0.1,0.02,0.02,0.19,0.24,0.02,0.29,0.18,0.02,0.01,0.03,0,0.03,0.15,0.02,0.01,0.14,0.17,0.17,0.06,0.07,0.04,0.14,0.07,0.01,0.03,0.04,0.02,0.05,0.16,0.08,0.06,0.02,0.14,0.27,0.08,0.33,0.06,0.18],"hurdle_class":["yes","yes","yes","no","yes","yes","yes","no","no","yes","yes","yes","yes","no","yes","no","yes","yes","yes","no","yes","yes","yes","yes","no","no","yes","yes","yes","yes","yes","yes","yes","no","yes","yes","yes","yes","no","yes","yes","yes","no","no","yes","no","no","no","yes","yes","yes","no","yes","yes","yes","no","yes","yes","yes","yes","yes","yes","no","yes","yes","yes","no","yes","no","no","yes","no","no","yes","no","no","yes","yes","yes","no","no","no","no","no","no","no","no","yes","no","no","yes","no","no","no","no","no","no","no","no","no","no","no","yes","yes","no","yes","yes","no","no","no","no","no","no","no","no","no","yes","yes","no","no","no","no","no","no","no","no","no","no","yes","no","no","no","no","yes","no","yes","no","yes"],"usersrated":[500,450,300,250,150,200,200,200,150,200,250,200,100,150,150,100,100,150,100,150,100,150,100,100,100,100,150,200,150,150,150,100,100,100,100,100,100,100,100,100,100,100,100,100,100,50,50,50,100,100,100,100,50,50,100,50,100,100,100,100,100,100,50,50,50,100,100,100,50,50,100,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,100,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50],"average":[7.89,7.15,7.64,7.92,8.18,7.55,7.55,7.5,8.05,7.5,7.14,7.42,8.44,7.29,7.39,7.72,7.84,7.14,7.91,6.9,7.67,6.98,7.62,7.63,7.65,7.65,6.99,6.6,6.99,6.83,6.86,7.37,7.32,7.18,7.08,7.22,7.26,7.26,7.28,7.16,7.2,7.2,7.13,7.05,7.01,8.3,8.42,8.37,6.87,6.92,6.81,6.74,7.96,8.09,6.68,8.09,6.86,6.86,6.74,6.83,6.81,6.77,7.43,7.47,7.56,6.59,6.61,6.63,7.37,7.45,6.56,7.41,7.56,7.38,7.5,7.09,7.12,7.25,7.15,7.12,7.2,7.14,7.27,7.1,7.1,7.27,6.37,6.99,7.15,6.94,6.94,6.72,6.59,6.56,6.85,6.8,6.63,6.9,6.63,6.56,6.89,6.59,6.62,6.71,6.72,6.78,6.76,6.79,6.81,6.93,6.9,6.91,6.62,6.58,6.61,6.62,6.54,6.54,6.38,6.31,6.34,6.45,6.34,6.17,6.41,6.3,6.34,6.35,6.49,6.48,6.3,6.19,6.38,6.17,6.46,6.49,6.52,6.51],"bayesaverage":[5.98,5.8,5.78,5.77,5.69,5.69,5.69,5.68,5.68,5.68,5.68,5.67,5.64,5.63,5.63,5.61,5.61,5.61,5.61,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.59,5.59,5.59,5.59,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.58,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52],"averageweight":[2.05,1.33,2.07,2.86,3.45,2.76,2.49,2.94,3.03,2.16,2.54,1.9,2.53,1.87,2.62,2.77,2.95,2.33,3.08,1.76,2.58,2.1,2.33,2.65,2.66,3.02,1.74,1.45,2.1,1.22,1.77,2.61,2.29,2.42,1.6,1.72,2.46,2.35,2.51,2.27,1.99,2.21,1.09,1.72,1.53,2.56,2.77,3.94,1.93,1.51,1.23,1.94,3.13,2.77,1.36,2.62,1.62,1.23,1.2,1.07,1.96,1.5,2.73,2.5,2.79,1.21,1.21,1.51,2.03,2.23,1.34,2.2,2.55,3.12,2.93,2.84,1.6,1.95,1.55,1.78,1.75,1.56,3.17,1.96,1.96,2.92,1.25,1.93,2.64,2.11,1.24,1.43,1.01,1.15,1.86,1.46,1.01,1.9,1.99,1.42,1.91,1.3,1.18,1.55,1.34,1.72,1.66,1.54,1.79,1.7,2.15,1.56,1.27,1.56,1.39,1.42,1.32,1.32,1.19,1.32,1.46,1.33,1.58,1.39,1.46,1,1.58,1.86,1.48,1.15,1.02,1.45,1.26,1.26,1.47,1.33,1.54,1.18]},"columns":[{"id":"yearpublished","name":"yearpublished","type":"factor"},{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"hurdle_yes","name":"hurdle_yes","type":"numeric"},{"id":"hurdle_class","name":"hurdle_class","type":"factor"},{"id":"usersrated","name":"usersrated","type":"numeric"},{"id":"average","name":"average","type":"numeric"},{"id":"bayesaverage","name":"bayesaverage","type":"numeric"},{"id":"averageweight","name":"averageweight","type":"numeric"}],"dataKey":"f810e87e010c12588aea2b6de4df882f"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item" id="htmlwidget-698abbb8dd41310ddfbc" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-698abbb8dd41310ddfbc">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"yearpublished":["2025","2026","2025","2025","2025","2025","2025","2025","2024","2024","2025","2025","2026","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2026","2025","2024","2025","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2024","2025","2024","2025","2025","2025","2025","2025","2025","2025","2025","2024","2025","2025","2025","2024","2024","2027","2025","2025","2025","2025","2024","2024","2025","2024","2025","2025","2025","2025","2024","2025","2026","2025","2024","2025","2025","2025","2025","2025","2024","2025","2025","2025","2026","2025","2024","2025","2025","2025","2024","2025","2024","2025","2025","2025","2024","2024","2024","2024","2024","2025","2025","2025","2024","2024","2025","2024","2025"],"game_id":["444831","444545","441628","445009","445309","444684","444778","445119","445357","445359","444582","444893","444941","445144","444527","444862","445014","444869","444886","444900","445023","444556","444659","444915","444930","445042","445105","444547","444551","444683","444687","444700","444735","444752","444779","444880","444936","444995","445020","445028","445124","445134","445147","445370","444648","444821","444876","444879","444883","444884","444891","444892","445012","445030","445031","445039","445050","445118","445141","445351","445361","444674","444755","444776","445011","445065","445122","445145","445225","444557","444698","444725","444740","444845","444860","444861","444864","444908","445029","445043","445080","445108","445109","445115","445116","445195","440516","444590","444663","444690","444782","444796","444825","444877","444878","444881","444888","444897","444906","444935","444937","444944","444945","444975","445037","445063","445071","445076","445123","445142","445143","444678","444696","444707","444757","444781","444804","444816","444896","444922","444923","444928","445003","445007","445032","445035","445036","445054","445136","445140"],"name":["DeckHand: Race for Infamy","Clash of Clans: The Epic Raid","Stupor Mundi: Master Print Edition","Top Frog","NOLA: 1895","Operation CanCon: Canadian Nineties Music Shopping Gamebook","Foundation","Going Viral","Murder at Shrike Bay: Puzzle Magazine","Secret of the Crimson Pendant: A Puzzle Magazine","SMOL TACTICS","PWNED!","Gothic: A Shadow's Quest","Atomorph","Bean to Bar","World In My Pocket","Morphid","Strataugury","Crash Derby","Mint Kingdom","Stomp Stomp Dino!","Gales of November","...But That's Only HALF the Story!","Pocket Paladin","らくらく冒険者の幸せ異世界ライフの独立拡張～旅仲間の冒険盟約～ (Rakuraku Boukensha no Shiawase Isekai Life no Dokuritsu Kakuchou ~Tabi Nakama no Bouken Meiyaku~)","Chessetto","Titan Zero","Llama Llama","Tearable Quest","Pilgrims: Curious Adventures","Badgers","Renaissance and Write","1918: A First World War Miniatures Game","Ukiyo-e","Fart Drop","Removal","This is my spot","Moka","EXIT: Das Spiel – Adventskalender: Der Zauber von Weihnachten","Safari Spaceship","Pigs Rule","Treasure Island: Age of Pirates","April 14th 1865","Wardens of Morath: Heroic Fantasy Skirmish Combat","Tornado Splash","猴猴玩啊 (Ho·Ho·Won)","Malifaux (Fourth Edition)","TroubleZ Run! Revenge of the Jellynator","Karak: Labyrinth","Reptile Tank","Sugar Rush","Kitten's Kitchen","Sherlock Holmes: Darkness Over London","Capybaras vs Pelicans","Tectonic Tribes","Póker a Voces","Leuchtturm voraus!","Zen e Raiva","WellMess","Strandbüfé","Control to Catastrophe: Caesar","The Battle of Agnadello 1509","Globalization","Slepli","Sherlock Holmes: Supernatural","The Urban Calculus","Hide the Body","PUSHDROP","Grab That Dino","Topple Tanks","The Great Train Rescue","The Game","Sunspot","A Tricky Escape","Fate-Fortune-Djinn","TomeBound","Hadrai'da: Ascendant World of Kylia TCG","Warring States: China","Hold’em High: Outlaws and Industry","Ultimatum: can you turn the tide?","Pilastri","Crime Files: Fallakte – Verliebt, verlobt, verwitwet","Crime Files Adventskalender: Fallakte – Winter-Einbruch","Crime Files: Fallakte – Atemlos im Allgäu","Crime Files: Fallakte – Endstation Ostfriesland","ヒストリーオブ自民","トリックアンドトリートテイキング (Trick and Treat Taking)","RING BUSTER","Códicus","The Massive-Verse Fighting Card Game: Team Up!","MEMORY21: Picture Edition","Cambio: Into the Wild","Swearmints: Spicy NSFW Edition","Pyramire","Kissa Naapurissa","Klattschen: Bolzplatz Edition","何食べたい (What Do You Want to Eat?)","M.A.D.: Mutually Assured Destruction","The Game of Life: Barbie","Mime Master","Tilt","LENGTH","CHARGE","Ace On The Case","WorditO!","Touché: The Swashbucklers","Fair Trade Souvenirs","Royal Gambit","Lunar Trick","Depot","Segnum","Dare to Ding","Be Herd","Flow","Wire","MEMORY21: Actions & Sounds (Original) Edition","Full Dice","Escape from the Lost Temple","Art Jam The Card Game","13 Heroes","Shin Cucco","Game of Red Flags","The Dog Ate My Homework","Am I the ASS?: The Game","TOWER","CollectO!","DuetO!","Wie Arsch auf Eimer","Multitasking","Mushinko"],"hurdle_yes":[0.61,0.73,0.64,0.75,0.03,0.22,0.01,0.19,0.23,0.23,0.15,0.23,0.36,0,0.15,0.01,0,0.59,0.34,0.18,0.32,0.37,0.03,0.21,0.19,0.06,0.54,0.25,0.17,0.45,0.33,0.77,0.02,0.24,0.12,0.36,0.24,0.05,0.58,0.04,0.4,0.01,0.32,0.04,0.19,0.24,0.02,0.28,0.36,0.68,0.42,0.48,0.12,0.51,0.79,0.36,0.44,0.2,0.15,0.45,0.03,0.05,0.01,0.03,0.13,0.02,0.36,0.41,0.06,0.15,0,0.09,0.06,0.02,0.02,0.11,0.02,0.02,0.07,0.03,0.16,0.14,0.12,0.13,0.13,0.01,0.16,0.03,0.05,0.17,0.06,0.08,0.1,0.02,0.09,0.05,0.19,0.03,0.54,0.17,0.11,0.6,0.63,0.02,0.12,0.07,0.15,0.05,0.17,0.21,0.24,0.11,0.11,0.06,0.06,0.03,0.01,0.05,0.13,0.11,0.13,0.08,0.06,0.06,0.02,0.08,0.02,0.46,0.03,0.02],"hurdle_class":["yes","yes","yes","yes","no","yes","no","yes","yes","yes","no","yes","yes","no","no","no","no","yes","yes","yes","yes","yes","no","yes","yes","no","yes","yes","yes","yes","yes","yes","no","yes","no","yes","yes","no","yes","no","yes","no","yes","no","yes","yes","no","yes","yes","yes","yes","yes","no","yes","yes","yes","yes","yes","no","yes","no","no","no","no","no","no","yes","yes","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","yes","no","no","no","no","no","no","yes","no","yes","yes","no","yes","yes","no","no","no","no","no","yes","yes","yes","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","no","yes","no","no"],"usersrated":[1050,400,200,200,150,100,150,150,150,150,150,150,100,100,100,100,100,100,100,100,150,100,100,100,100,100,100,100,100,100,100,100,50,100,100,100,100,100,100,100,100,100,100,50,100,100,50,100,100,100,100,100,50,100,100,100,100,100,100,100,50,50,50,50,50,50,100,100,100,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,100,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50],"average":[7.65,7.5,7.75,7.28,7.82,8.36,7.49,7.56,7.48,7.49,7.07,7.1,7.73,7.72,7.51,7.53,7.7,7.4,7.36,7.38,6.75,7.28,7.22,7.25,7.22,7.11,7.26,6.91,6.92,6.93,6.88,6.98,8.53,6.9,6.95,6.92,6.87,6.93,6.88,6.88,6.92,7.02,6.88,8.42,6.67,6.66,7.77,6.67,6.84,6.82,6.71,6.73,7.77,6.73,6.74,6.78,6.85,6.84,6.69,6.84,8,7.61,7.66,7.36,7.71,7.35,6.51,6.52,6.6,6.99,6.99,7.28,7.1,6.98,7.08,7.17,7.19,7.17,7.15,6.96,7.1,7.18,7.21,7.12,7.12,7.14,6.6,6.56,6.77,6.88,6.75,6.72,6.58,6.81,6.54,6.63,6.55,6.91,6.05,6.63,6.82,6.58,6.61,6.76,6.69,6.81,6.61,6.71,6.8,6.68,6.61,6.39,6.5,6.42,6.49,6.49,6.39,6.44,6.44,6.4,6.52,6.15,6.2,6.13,6.51,6.45,6.35,6.52,6.52,6.34],"bayesaverage":[6.24,5.83,5.7,5.66,5.66,5.64,5.64,5.64,5.64,5.64,5.61,5.61,5.61,5.61,5.6,5.6,5.6,5.59,5.59,5.59,5.59,5.58,5.58,5.58,5.58,5.58,5.58,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.57,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.56,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.54,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.53,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52,5.52],"averageweight":[2.5,2.66,3.19,2.23,3.49,3.04,2.74,2.44,2.58,2.59,1.44,1.76,3.01,2.53,3.39,3.09,2.52,2.66,2.3,2.31,1.43,2.53,1.19,2.19,2.5,1.46,2.18,1.26,1.44,1.89,1.64,1.92,2.84,1.6,1.19,1.74,1,1.93,1.89,1.73,1.42,2.25,1.76,3.11,1.43,1.35,3.01,1.16,1.45,1.59,1.31,1.18,1.93,1.17,1.52,1.46,1.66,1.48,1.57,1.53,2.55,2.89,3.45,2.61,1.9,2.23,1.2,1.12,1.18,2.13,2.05,2.21,1.87,1.74,2.24,2.19,2.22,2.07,2.13,2.25,1.81,2.52,2.57,2.52,2.52,2.48,1.65,1.71,1.29,1.84,1.19,1.13,1.33,1.83,1.06,1.36,1.15,1.89,1.47,1.08,1.41,1.46,1.31,1.37,1.35,1.89,1.47,1.5,1.49,1.19,1.38,1.43,1.24,1.47,1.48,1.17,1.29,1.7,1.33,1.13,1.17,1.28,1.11,1.01,1.54,1.2,1.14,1.26,1.04,1.4]},"columns":[{"id":"yearpublished","name":"yearpublished","type":"factor"},{"id":"game_id","name":"game_id","type":"factor"},{"id":"name","name":"name","type":"character"},{"id":"hurdle_yes","name":"hurdle_yes","type":"numeric"},{"id":"hurdle_class","name":"hurdle_class","type":"factor"},{"id":"usersrated","name":"usersrated","type":"numeric"},{"id":"average","name":"average","type":"numeric"},{"id":"bayesaverage","name":"bayesaverage","type":"numeric"},{"id":"averageweight","name":"averageweight","type":"numeric"}],"dataKey":"1a98eb59d70d7f478f57f9f38b12225a"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -1137,236 +1139,242 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
-      }
-    }
-    return false;
-  }
-  const onCopySuccess = function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
-  });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
-    });
-    clipboardModal.on('success', onCopySuccess);
-  }
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-    var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/phenrickson\.github\.io\/bgg_models\/");
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
-    }
-    // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-        // undo the damage that might have been done by quarto-nav.js in the case of
-        // links that we want to consider external
-        if (link.dataset.originalHref !== undefined) {
-          link.href = link.dataset.originalHref;
-        }
-      }
-    }
-  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
-    const config = {
-      allowHTML: true,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start',
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
     };
-    if (contentFn) {
-      config.content = contentFn;
-    }
-    if (onTriggerFn) {
-      config.onTrigger = onTriggerFn;
-    }
-    if (onUntriggerFn) {
-      config.onUntrigger = onUntriggerFn;
-    }
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      if (note) {
-        return note.innerHTML;
-      } else {
-        return "";
-      }
-    });
-  }
-  const xrefs = window.document.querySelectorAll('a.quarto-xref');
-  const processXRef = (id, note) => {
-    // Strip column container classes
-    const stripColumnClz = (el) => {
-      el.classList.remove("page-full", "page-columns");
-      if (el.children) {
-        for (const child of el.children) {
-          stripColumnClz(child);
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
         }
       }
+      return false;
     }
-    stripColumnClz(note)
-    if (id === null || id.startsWith('sec-')) {
-      // Special case sections, only their first couple elements
-      const container = document.createElement("div");
-      if (note.children && note.children.length > 2) {
-        container.appendChild(note.children[0].cloneNode(true));
-        for (let i = 1; i < note.children.length; i++) {
-          const child = note.children[i];
-          if (child.tagName === "P" && child.innerText === "") {
-            continue;
-          } else {
-            container.appendChild(child.cloneNode(true));
-            break;
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
           }
         }
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(container);
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/phenrickson\.github\.io\/bgg_models\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
         }
-        return container.innerHTML
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
       } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
         if (window.Quarto?.typesetMath) {
           window.Quarto.typesetMath(note);
         }
-        return note.innerHTML;
-      }
-    } else {
-      // Remove any anchor links if they are present
-      const anchorLink = note.querySelector('a.anchorjs-link');
-      if (anchorLink) {
-        anchorLink.remove();
-      }
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(note);
-      }
-      if (note.classList.contains("callout")) {
-        return note.outerHTML;
-      } else {
-        return note.innerHTML;
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
       }
     }
-  }
-  for (var i=0; i<xrefs.length; i++) {
-    const xref = xrefs[i];
-    tippyHover(xref, undefined, function(instance) {
-      instance.disable();
-      let url = xref.getAttribute('href');
-      let hash = undefined; 
-      if (url.startsWith('#')) {
-        hash = url;
-      } else {
-        try { hash = new URL(url).hash; } catch {}
-      }
-      if (hash) {
-        const id = hash.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note !== null) {
-          try {
-            const html = processXRef(id, note.cloneNode(true));
-            instance.setContent(html);
-          } finally {
-            instance.enable();
-            instance.show();
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
           }
         } else {
-          // See if we can fetch this
-          fetch(url.split('#')[0])
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.getElementById(id);
+            const note = htmlDoc.querySelector('main.content');
             if (note !== null) {
-              const html = processXRef(id, note);
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
               instance.setContent(html);
             } 
           }).finally(() => {
@@ -1374,185 +1382,161 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             instance.show();
           });
         }
-      } else {
-        // See if we can fetch a full url (with no hash to target)
-        // This is a special case and we should probably do some content thinning / targeting
-        fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(html, "text/html");
-          const note = htmlDoc.querySelector('main.content');
-          if (note !== null) {
-            // This should only happen for chapter cross references
-            // (since there is no id in the URL)
-            // remove the first header
-            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-              note.children[0].remove();
-            }
-            const html = processXRef(null, note);
-            instance.setContent(html);
-          } 
-        }).finally(() => {
-          instance.enable();
-          instance.show();
-        });
-      }
-    }, function(instance) {
-    });
-  }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            div.style.left = 0;
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-        // Handle positioning of the toggle
-    window.addEventListener(
-      "resize",
-      throttle(() => {
-        elRect = undefined;
-        if (selectedAnnoteEl) {
-          selectCodeLines(selectedAnnoteEl);
-        }
-      }, 10)
-    );
-    function throttle(fn, ms) {
-    let throttle = false;
-    let timer;
-      return (...args) => {
-        if(!throttle) { // first call gets through
-            fn.apply(this, args);
-            throttle = true;
-        } else { // all the others get throttled
-            if(timer) clearTimeout(timer); // cancel #2
-            timer = setTimeout(() => {
-              fn.apply(this, args);
-              timer = throttle = false;
-            }, ms);
-        }
-      };
-    }
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+      }, function(instance) {
       });
     }
-  }
-});
-</script>
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 </div> <!-- /content -->
 
 
